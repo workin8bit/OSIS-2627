@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard & Saklar Pemilihan - E-Pilketos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --text: #0a0a0a;
+      --muted: #525252;
+      --yellow: #facc15;
+      --yellow-hover: #eab308;
+      --yellow-border: #ca8a04;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 20px;
+      width: 100%;
+    }
+
+    /* Header Nav */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+    }
+
+    /* Top icon bar */
+    .nav-icon-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fafc;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .nav-icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .nav-icon-btn:hover {
+      background: #f1f5f9;
+      color: #000;
+    }
+    .nav-icon-btn.active {
+      background: var(--yellow);
+      color: #000;
+      border: 1px solid var(--yellow-border);
+    }
+    .nav-icon-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+    .nav-icon-btn::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+    }
+    .nav-icon-btn:hover::after {
+      opacity: 1;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+    .btn-yellow {
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+    }
+    .btn-yellow:hover {
+      background: var(--yellow-hover);
+    }
+    .btn-black {
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+    }
+    .btn-black:hover {
+      background: var(--yellow-hover);
+    }
+    .btn-danger {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+    .btn svg {
+      width: 15px;
+      height: 15px;
+      stroke-width: 2;
+      stroke: currentColor;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+    }
+
+    /* Gateway Screen */
+    .gateway-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .gateway-card {
+      width: 100%;
+      max-width: 400px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      background: #fff;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: #000;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-input:focus {
+      border-color: var(--yellow-border);
+      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25);
+    }
+
+    /* Admin Sub Nav */
+    .admin-main {
+      flex: 1;
+      padding: 32px 0 60px;
+      display: none; /* muncul setelah login */
+    }
+    .admin-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin: 24px 0;
+      padding-bottom: 8px;
+      overflow-x: auto;
+    }
+    .admin-nav-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .admin-nav-item:hover {
+      background: #f8fafc;
+      color: #000;
+    }
+    .admin-nav-item.active {
+      background: var(--yellow);
+      color: #000;
+      border-color: var(--yellow-border);
+    }
+    .admin-nav-item svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+      stroke: currentColor;
+    }
+
+    .admin-section {
+      display: none;
+    }
+    .admin-section.active {
+      display: block;
+    }
+
+    /* Cards & Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: #fff;
+    }
+    .stat-card.highlight {
+      border-color: var(--yellow-border);
+      background: #fefce8;
+    }
+    .stat-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .stat-num {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      margin-top: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12px;
+    }
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: #f8fafc;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    .badge-voted {
+      background: #dcfce7;
+      color: #15803d;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid #bbf7d0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .badge-unvoted {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid #fde68a;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Candidate CRUD Cards */
+    .cand-manage-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.15s ease;
+    }
+    .cand-manage-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .cand-manage-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .cand-num-badge {
+      width: 44px;
+      height: 44px;
+      background: var(--yellow);
+      color: #000;
+      font-family: ui-monospace, monospace;
+      font-size: 18px;
+      font-weight: 900;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--yellow-border);
+      flex-shrink: 0;
+    }
+
+    /* Switch Rows */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .control-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: #fff;
+    }
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .switch-row:last-child {
+      border-bottom: none;
+    }
+    .switch-row input[type="checkbox"] {
+      width: 42px;
+      height: 22px;
+      accent-color: #ca8a04;
+      cursor: pointer;
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-width: 620px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      color: #000;
+      outline: none;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 70px;
+    }
+    .form-group textarea:focus {
+      border-color: var(--yellow-border);
+      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 0;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: auto;
+    }
+    .footer-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER BRAND & ICON NAV -->
+  <header>
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand">
+        <img src="logo-osis.jpg" alt="Logo OSIS" class="brand-logo" />
+        <div>
+          <div class="brand-title">E-Pilketos</div>
+          <div class="brand-sub">SMA Negeri 3 Rembang</div>
+        </div>
+      </a>
+
+      <!-- Icon-only line navigation bar -->
+      <nav class="nav-icon-bar" aria-label="Navigasi Ikon">
+        <a href="index.html" class="nav-icon-btn" data-tooltip="Beranda &amp; Paslon" aria-label="Beranda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </a>
+        <a href="login.html" class="nav-icon-btn" data-tooltip="Login Siswa (NIS)" aria-label="Login Siswa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </a>
+        <a href="bilik-suara.html" class="nav-icon-btn" data-tooltip="Bilik Suara (Coblos)" aria-label="Bilik Suara">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+        </a>
+        <a href="quick-count.html" class="nav-icon-btn" data-tooltip="Quick Count Hasil Live" aria-label="Quick Count">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </a>
+        <a href="admin.html" class="nav-icon-btn active" data-tooltip="Panel Panitia OSIS" aria-label="Admin Panitia">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- SCREEN 1: KUNCI GATEWAY ADMIN -->
+  <main class="gateway-wrap" id="adminLockScreen">
+    <div class="gateway-card">
+      <span class="tag">Hak Akses Panitia</span>
+      <h1 style="font-size: 22px; font-weight: 900; margin-top: 10px;">Buka Panel Admin</h1>
+      <p style="font-size: 12px; color: var(--muted); margin-top: 4px;">
+        Masukkan kata kunci keamanan administrator pemilihan OSIS.
+      </p>
+
+      <div style="margin-top: 20px;">
+        <input
+          type="password"
+          id="adminPassInput"
+          class="form-input"
+          placeholder="Kunci Keamanan (cth: admin123)"
+          style="text-align: center; font-family: ui-monospace, monospace; font-size: 14px;"
+        />
+        <div id="lockError" style="display: none; color: #b91c1c; font-size: 11px; margin-top: 8px; font-family: ui-monospace, monospace;">
+          Kunci admin tidak cocok!
+        </div>
+        <button
+          onclick="unlockAdmin()"
+          class="btn btn-black"
+          style="width: 100%; margin-top: 14px; padding: 12px;"
+        >
+          Masuk Dashboard Panitia
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <div style="margin-top: 18px; font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace;">
+        Kunci bawaan pengujian: <code>admin123</code>
+      </div>
+    </div>
+  </main>
+
+  <!-- SCREEN 2: PANEL DASHBOARD ADMIN UTAMA -->
+  <main class="admin-main container" id="adminDashboard">
+    <!-- Top Header Profile & Exit -->
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="tag">Administrator</span>
+          <span style="font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted);">
+            Sesi Aktif · SMA Negeri 3 Rembang
+          </span>
+        </div>
+        <h1 style="font-size: 26px; font-weight: 900; margin-top: 4px;">Pusat Kendali Pemilihan OSIS</h1>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button onclick="lockAdmin()" class="btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Kunci Sesi
+        </button>
+        <a href="quick-count.html" target="_blank" class="btn btn-black">
+          Buka Live Quick Count
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="7" y1="17" x2="17" y2="7"></line>
+            <polyline points="7 7 17 7 17 17"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Admin Sub-Navigation with Line Icons -->
+    <div class="admin-nav">
+      <button class="admin-nav-item active" onclick="switchAdminTab('dashboard', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        Ikhtisar Suara
+      </button>
+      <button class="admin-nav-item" onclick="switchAdminTab('pemilih', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        DPT &amp; Import CSV
+      </button>
+      <button class="admin-nav-item" onclick="switchAdminTab('kandidat', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        Kelola Paslon
+      </button>
+      <button class="admin-nav-item" onclick="switchAdminTab('pengaturan', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Status &amp; Pengaturan
+      </button>
+    </div>
+
+    <!-- TAB 1: IKHTISAR SUARA & STATISTIK -->
+    <section class="admin-section active" id="sec-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-title">Total Pemilih (DPT)</div>
+          <div class="stat-num" id="statDpt">950</div>
+          <div style="font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace;">Siswa terverifikasi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Total Suara Masuk</div>
+          <div class="stat-num" id="statVoted">824</div>
+          <div style="font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace;">Surat suara tersimpan</div>
+        </div>
+        <div class="stat-card highlight">
+          <div class="stat-title">Tingkat Partisipasi</div>
+          <div class="stat-num" id="statPart">86.7%</div>
+          <div style="font-size: 11px; color: #78350f; font-family: ui-monospace, monospace;">Target min. 80% terpenuhi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Paslon Terdaftar</div>
+          <div class="stat-num" id="statCandCount">03</div>
+          <div style="font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace;">Status aktif di bilik</div>
+        </div>
+      </div>
+
+      <!-- Quick Tally Mini View -->
+      <div style="margin-top: 24px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
+        <h3 style="font-size: 15px; font-weight: 800;">Perolehan Suara Pasangan Calon Saat Ini</h3>
+        <div id="quickTallyBars" style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: DPT & IMPORT CSV -->
+    <section class="admin-section" id="sec-pemilih">
+      <!-- Import Tool Card -->
+      <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="font-size: 16px; font-weight: 800;">Unggah &amp; Perbarui Data DPT (CSV)</h3>
+            <p style="font-size: 12px; color: var(--muted); margin-top: 2px;">
+              Gunakan file CSV dengan kolom: <code>nis,nama,kelas,password</code>
+            </p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <a href="template-pemilih-osis.csv" download class="btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Unduh Template CSV
+            </a>
+            <label class="btn btn-black" style="cursor: pointer;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Pilih &amp; Import CSV
+              <input type="file" id="csvFileInput" accept=".csv" onchange="handleCsvFile(event)" style="display: none;" />
+            </label>
+          </div>
+        </div>
+
+        <div id="importSuccessAlert" style="display: none; margin-top: 14px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 16px; border-radius: 8px; font-size: 12px; color: #166534; font-family: ui-monospace, monospace;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width: 14px; height: 14px; vertical-align: middle; display: inline-block; margin-right: 4px;">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Sukses mengimpor <span id="importedCount">0</span> siswa baru ke basis data DPT!
+        </div>
+      </div>
+
+      <!-- Tabel Daftar Pemilih -->
+      <div style="margin-top: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <h3 style="font-size: 16px; font-weight: 800;">Daftar Pemilih Terdaftar (DPT)</h3>
+        <input
+          type="text"
+          id="searchVoter"
+          placeholder="Cari NIS / Nama Siswa..."
+          oninput="filterVoterTable()"
+          class="form-input"
+          style="max-width: 260px;"
+        />
+      </div>
+
+      <div class="table-wrap">
+        <table id="voterTable">
+          <thead>
+            <tr>
+              <th>NIS</th>
+              <th>Nama Siswa</th>
+              <th>Kelas</th>
+              <th>Sandi</th>
+              <th>Status Memilih</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="voterTableBody">
+            <!-- Data baris awal -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: KELOLA PASLON (CRUD LENGKAP) -->
+    <section class="admin-section" id="sec-kandidat">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 16px; font-weight: 800;">Daftar Pasangan Calon (CRUD Lengkap)</h3>
+          <p style="font-size: 12px; color: var(--muted);">Tambah baru, ubah visi misi &amp; orasi, atau hapus kandidat secara real-time</p>
+        </div>
+        <button class="btn btn-black" onclick="openAddCandidateModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Tambah Paslon Baru
+        </button>
+      </div>
+
+      <!-- Daftar Card Paslon Interaktif -->
+      <div id="candidateCardsList" style="margin-top: 16px; display: grid; gap: 16px;">
+        <!-- Dihasilkan secara dinamis oleh JavaScript -->
+      </div>
+    </section>
+
+    <!-- TAB 4: STATUS BILIK & PENGATURAN -->
+    <section class="admin-section" id="sec-pengaturan">
+      <div class="controls-grid">
+        <div class="control-card">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 10px;">Status Saklar Pemilihan</h3>
+          <div class="switch-row">
+            <div>
+              <div style="font-weight: 700; font-size: 13px;">Buka Bilik Pemilihan</div>
+              <div style="font-size: 11px; color: var(--muted);">Mengizinkan siswa login dan mencoblos</div>
+            </div>
+            <input type="checkbox" id="toggleVoteOpen" checked onchange="notifySetting('Status Bilik Pemilihan diperbarui')" />
+          </div>
+          <div class="switch-row">
+            <div>
+              <div style="font-weight: 700; font-size: 13px;">Publikasikan Quick Count</div>
+              <div style="font-size: 11px; color: var(--muted);">Menampilkan halaman tabulasi hasil live</div>
+            </div>
+            <input type="checkbox" id="toggleResultsOpen" checked onchange="notifySetting('Publikasi Quick Count diperbarui')" />
+          </div>
+        </div>
+
+        <div class="control-card">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 10px;">Zona Berbahaya</h3>
+          <p style="font-size: 11px; color: var(--muted); margin-bottom: 14px;">
+            Tindakan ini memerlukan kehati-hatian tinggi sebelum digunakan.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn btn-danger" onclick="if(confirm('Yakin ingin mereset seluruh suara pemilih kembali ke 0?')) alert('Suara telah direset!');">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+              Reset Semua Suara Pemilih (Ulang Pemilihan)
+            </button>
+            <button class="btn" onclick="restoreDefaultCandidates()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M19 12H5"></path>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Pulihkan Paslon Bawaan Awal
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL FORM CRUD PASLON (TAMBAH / EDIT) -->
+  <div class="modal-overlay" id="candidateModal">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <h3 id="modalTitle" style="font-size: 18px; font-weight: 900;">Tambah Pasangan Calon Baru</h3>
+        <button class="btn" style="padding: 4px 8px; font-size: 16px;" onclick="closeCandidateModal()">&times;</button>
+      </div>
+
+      <form id="candidateForm" onsubmit="saveCandidate(event)">
+        <input type="hidden" id="candId" value="" />
+
+        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 12px;">
+          <div class="form-group">
+            <label for="candNum">Nomor Urut *</label>
+            <input type="number" id="candNum" class="form-input" required min="1" max="99" style="font-family: ui-monospace, monospace; font-weight: 800;" />
+          </div>
+          <div class="form-group">
+            <label for="candClass">Kelas / Asal Paslon *</label>
+            <input type="text" id="candClass" class="form-input" required placeholder="Cth: XII IPA 1 &amp; XI IPA 2" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="candName">Nama Calon Ketua &amp; Wakil *</label>
+          <input type="text" id="candName" class="form-input" required placeholder="Cth: Andi Pratama &amp; Maya Lestari" />
+        </div>
+
+        <div class="form-group">
+          <label for="candSlogan">Slogan Kampanye / Motto</label>
+          <input type="text" id="candSlogan" class="form-input" placeholder="Cth: Bersama Wujudkan OSIS Inklusif dan Berdaya" />
+        </div>
+
+        <div class="form-group">
+          <label for="candVisi">Visi Utama *</label>
+          <textarea id="candVisi" required placeholder="Deskripsikan visi jangka panjang pasangan calon..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="candMisi">Misi Prioritas (Pisahkan dengan baris baru / enter) *</label>
+          <textarea id="candMisi" required placeholder="Misi 1&#10;Misi 2&#10;Misi 3" style="min-height: 90px;"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="candCaption">Keterangan Cuplikan Video / GIF</label>
+          <input type="text" id="candCaption" class="form-input" placeholder="Cth: ORASI SINGKAT: VISI DIGITALISASI OSIS" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn" onclick="closeCandidateModal()">Batal</button>
+          <button type="submit" class="btn btn-black">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Simpan Perubahan Paslon
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-wrap">
+      <div>
+        <strong>E-Pilketos</strong> · Panel Pengawas &amp; Administrator Pemilihan OSIS
+      </div>
+      <div>
+        SMA Negeri 3 Rembang · Hak Akses Panitia Terenkripsi
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // DATA DEFAULT AWAL PASLON
+    const INITIAL_CANDIDATES = [
+      {
+        id: 1,
+        num: 1,
+        name: "Andi Pratama",
+        className: "XII IPA 1",
+        slogan: "Bersama Wujudkan OSIS yang Lebih Baik",
+        visi: "Terwujudnya OSIS yang inovatif dan inklusif sebagai wadah aktualisasi diri seluruh siswa SMA Negeri 3 Rembang.",
+        misi: [
+          "Membuka ruang kreativitas melalui festival seni, budaya, dan teknologi.",
+          "Digitalisasi pengumuman dan administrasi pengurus OSIS.",
+          "Menampung aspirasi siswa melalui kotak saran digital terbuka."
+        ],
+        caption: "ORASI SINGKAT: VISI DIGITALISASI OSIS",
+        votes: 372
+      },
+      {
+        id: 2,
+        num: 2,
+        name: "Siti Rahmawati",
+        className: "XII IPA 2",
+        slogan: "Kreatif, Kolaboratif, Berkarakter",
+        visi: "OSIS menjadi rumah kedua yang membina karakter, mengasah potensi, dan mempererat kebersamaan seluruh warga sekolah.",
+        misi: [
+          "Program mentoring antarangkatan dan penguatan buddy system siswa baru.",
+          "Penguatan kegiatan keagamaan dan pembiasaan akhlak terpuji.",
+          "Lomba intra-kelas berkala untuk menjaga kekompakan angkatan."
+        ],
+        caption: "ORASI SINGKAT: BUDDY SYSTEM & KEHARMONISAN SISWA",
+        votes: 296
+      },
+      {
+        id: 3,
+        num: 3,
+        name: "Budi Santoso",
+        className: "XII IPS 1",
+        slogan: "Suaramu, Wujudkan!",
+        visi: "Setiap aspirasi siswa menjadi nyata melalui program kerja OSIS yang transparan dan berbasis kebutuhan siswa.",
+        misi: [
+          "Survei kebutuhan siswa awal semester sebagai dasar program kerja.",
+          "Transparansi anggaran kas dan publikasi laporan kegiatan berkala.",
+          "Revitalisasi fasilitas santai, taman baca, dan perlengkapan olahraga."
+        ],
+        caption: "ORASI SINGKAT: TRANSPARANSI & FASILITAS SISWA",
+        votes: 156
+      }
+    ];
+
+    // Load dari localStorage atau simpan initial
+    function getCandidates() {
+      const stored = localStorage.getItem('osis_candidates_data');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch(e) {}
+      }
+      localStorage.setItem('osis_candidates_data', JSON.stringify(INITIAL_CANDIDATES));
+      return INITIAL_CANDIDATES;
+    }
+
+    function saveCandidatesList(list) {
+      localStorage.setItem('osis_candidates_data', JSON.stringify(list));
+      renderCandidateCards();
+      renderQuickTally();
+    }
+
+    let votersList = [
+      { nis: "2025001", name: "Ahmad Fauzi", className: "XII IPA 1", pw: "siswa123", voted: true },
+      { nis: "2025002", name: "Dewi Lestari", className: "XII IPA 1", pw: "siswa123", voted: true },
+      { nis: "2025003", name: "Rizky Hidayat", className: "XII IPA 2", pw: "siswa123", voted: true },
+      { nis: "2025004", name: "Nur Aini", className: "XII IPA 2", pw: "siswa123", voted: true },
+      { nis: "2025005", name: "Fajar Ramadhan", className: "XII IPA 2", pw: "siswa123", voted: true },
+      { nis: "2025006", name: "Putri Ayu Lestari", className: "XII IPA 3", pw: "siswa123", voted: true },
+      { nis: "2025007", name: "Dimas Anggara", className: "XII IPA 3", pw: "siswa123", voted: true },
+      { nis: "2025008", name: "Rina Melati", className: "XII IPA 3", pw: "siswa123", voted: true },
+      { nis: "2025009", name: "Hendra Wijaya", className: "XII IPS 1", pw: "siswa123", voted: true },
+      { nis: "2025010", name: "Salsabila Zahra", className: "XII IPS 1", pw: "siswa123", voted: false },
+      { nis: "2025011", name: "Ikbal Firmansyah", className: "XII IPS 1", pw: "siswa123", voted: false },
+      { nis: "2025012", name: "Laila Mardhiah", className: "XII IPS 2", pw: "siswa123", voted: false }
+    ];
+
+    function unlockAdmin() {
+      const pass = document.getElementById('adminPassInput').value.trim();
+      if (pass === "admin123") {
+        document.getElementById('adminLockScreen').style.display = "none";
+        document.getElementById('adminDashboard').style.display = "block";
+        renderVoterTable(votersList);
+        renderCandidateCards();
+        renderQuickTally();
+      } else {
+        document.getElementById('lockError').style.display = "block";
+      }
+    }
+
+    function lockAdmin() {
+      document.getElementById('adminPassInput').value = "";
+      document.getElementById('lockError').style.display = "none";
+      document.getElementById('adminLockScreen').style.display = "flex";
+      document.getElementById('adminDashboard').style.display = "none";
+    }
+
+    function switchAdminTab(tabKey, el) {
+      document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+
+      el.classList.add('active');
+      document.getElementById(`sec-${tabKey}`).classList.add('active');
+    }
+
+    // CRUD PASLON JAVASCRIPT
+    function renderCandidateCards() {
+      const list = getCandidates();
+      const container = document.getElementById('candidateCardsList');
+      document.getElementById('statCandCount').innerText = list.length < 10 ? `0${list.length}` : list.length;
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px; border: 1px dashed var(--border); border-radius: var(--radius); background: #fff;">
+            <p style="color: var(--muted); font-size: 13px;">Belum ada pasangan calon yang terdaftar.</p>
+            <button class="btn btn-black" onclick="openAddCandidateModal()" style="margin-top: 12px;">+ Tambah Paslon Pertama</button>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(c => {
+        const numPad = c.num < 10 ? `0${c.num}` : c.num;
+        const misiListHtml = (c.misi || []).map(m => `<li>${escapeHtml(m)}</li>`).join('');
+
+        return `
+          <div class="cand-manage-card" id="cand-item-${c.id}">
+            <div class="cand-manage-head">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <div class="cand-num-badge">${numPad}</div>
+                <div>
+                  <div style="font-weight: 800; font-size: 16px;">${escapeHtml(c.name)}</div>
+                  <div style="font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace; margin-top: 2px;">
+                    Kelas ${escapeHtml(c.className)} · Perolehan Suara: <strong>${c.votes || 0}</strong>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn" onclick="openEditCandidateModal(${c.id})">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                  </svg>
+                  Edit Visi &amp; Info
+                </button>
+                <button class="btn btn-danger" onclick="deleteCandidate(${c.id}, '${escapeJs(c.name)}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  Hapus
+                </button>
+              </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 12px;">
+              <div style="font-weight: 700; color: #1e293b; margin-bottom: 2px;">Motto: <em>"${escapeHtml(c.slogan || '-')}"</em></div>
+              <div style="color: var(--muted); margin-top: 4px;"><strong>Visi:</strong> ${escapeHtml(c.visi)}</div>
+              ${misiListHtml ? `<ul style="margin-left: 18px; margin-top: 6px; color: var(--muted);">${misiListHtml}</ul>` : ''}
+              <div style="margin-top: 6px; font-family: ui-monospace, monospace; font-size: 10px; color: #64748b;">
+                Cuplikan Media: ${escapeHtml(c.caption || 'Orasi Kampanye 15s')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderQuickTally() {
+      const list = getCandidates();
+      const container = document.getElementById('quickTallyBars');
+      const totalVotes = list.reduce((acc, c) => acc + (c.votes || 0), 0);
+      document.getElementById('statVoted').innerText = totalVotes;
+
+      if (list.length === 0) {
+        container.innerHTML = '<div style="font-size: 12px; color: var(--muted);">Belum ada paslon.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(c => {
+        const pct = totalVotes > 0 ? ((c.votes || 0) / totalVotes * 100).toFixed(1) : '0.0';
+        const numPad = c.num < 10 ? `0${c.num}` : c.num;
+        return `
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700;">
+              <span>${numPad}. ${escapeHtml(c.name)}</span>
+              <span>${c.votes || 0} suara (${pct}%)</span>
+            </div>
+            <div style="height: 8px; background: #f0f0f0; border-radius: 999px; margin-top: 6px; overflow: hidden;">
+              <div style="height: 100%; width: ${pct}%; background: var(--yellow);"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Buka Modal Tambah
+    function openAddCandidateModal() {
+      const list = getCandidates();
+      const nextNum = list.length > 0 ? Math.max(...list.map(c => c.num)) + 1 : 1;
+
+      document.getElementById('modalTitle').innerText = "Tambah Pasangan Calon Baru";
+      document.getElementById('candId').value = "";
+      document.getElementById('candNum').value = nextNum;
+      document.getElementById('candClass').value = "";
+      document.getElementById('candName').value = "";
+      document.getElementById('candSlogan').value = "";
+      document.getElementById('candVisi').value = "";
+      document.getElementById('candMisi').value = "";
+      document.getElementById('candCaption').value = "";
+
+      document.getElementById('candidateModal').classList.add('open');
+    }
+
+    // Buka Modal Edit
+    function openEditCandidateModal(id) {
+      const list = getCandidates();
+      const cand = list.find(c => c.id === id);
+      if (!cand) return;
+
+      document.getElementById('modalTitle').innerText = `Edit Pasangan Calon 0${cand.num}`;
+      document.getElementById('candId').value = cand.id;
+      document.getElementById('candNum').value = cand.num;
+      document.getElementById('candClass').value = cand.className || "";
+      document.getElementById('candName').value = cand.name || "";
+      document.getElementById('candSlogan').value = cand.slogan || "";
+      document.getElementById('candVisi').value = cand.visi || "";
+      document.getElementById('candMisi').value = (cand.misi || []).join('\n');
+      document.getElementById('candCaption').value = cand.caption || "";
+
+      document.getElementById('candidateModal').classList.add('open');
+    }
+
+    function closeCandidateModal() {
+      document.getElementById('candidateModal').classList.remove('open');
+    }
+
+    function saveCandidate(e) {
+      e.preventDefault();
+      const list = getCandidates();
+      const idVal = document.getElementById('candId').value;
+      const num = parseInt(document.getElementById('candNum').value, 10);
+      const className = document.getElementById('candClass').value.trim();
+      const name = document.getElementById('candName').value.trim();
+      const slogan = document.getElementById('candSlogan').value.trim();
+      const visi = document.getElementById('candVisi').value.trim();
+      const misiText = document.getElementById('candMisi').value.trim();
+      const caption = document.getElementById('candCaption').value.trim();
+
+      const misi = misiText.split('\n').map(m => m.trim()).filter(m => m.length > 0);
+
+      if (idVal) {
+        // Edit existing
+        const id = parseInt(idVal, 10);
+        const index = list.findIndex(c => c.id === id);
+        if (index !== -1) {
+          list[index] = {
+            ...list[index],
+            num,
+            className,
+            name,
+            slogan,
+            visi,
+            misi,
+            caption
+          };
+        }
+      } else {
+        // Tambah baru
+        const newId = Date.now();
+        list.push({
+          id: newId,
+          num,
+          className,
+          name,
+          slogan,
+          visi,
+          misi,
+          caption,
+          votes: 0
+        });
+      }
+
+      // Sort by num
+      list.sort((a, b) => a.num - b.num);
+      saveCandidatesList(list);
+      closeCandidateModal();
+      alert('Data Pasangan Calon berhasil disimpan!');
+    }
+
+    function deleteCandidate(id, name) {
+      if (confirm(`Yakin ingin menghapus paslon "${name}"? Tindakan ini akan menghapus paslon dari bilik suara.`)) {
+        let list = getCandidates();
+        list = list.filter(c => c.id !== id);
+        saveCandidatesList(list);
+      }
+    }
+
+    function restoreDefaultCandidates() {
+      if (confirm('Pulihkan daftar pasangan calon ke format bawaan awal 3 paslon?')) {
+        saveCandidatesList(INITIAL_CANDIDATES);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeJs(str) {
+      if (!str) return '';
+      return String(str).replace(/'/g, "\\'");
+    }
+
+    // DPT & CSV HANDLING
+    function renderVoterTable(list) {
+      const tbody = document.getElementById('voterTableBody');
+      tbody.innerHTML = "";
+
+      list.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-family: ui-monospace, monospace; font-weight: 700;">${v.nis}</td>
+          <td style="font-weight: 700;">${escapeHtml(v.name)}</td>
+          <td>${escapeHtml(v.className)}</td>
+          <td style="font-family: ui-monospace, monospace; color: var(--muted);">${escapeHtml(v.pw)}</td>
+          <td>
+            <span class="${v.voted ? 'badge-voted' : 'badge-unvoted'}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width: 12px; height: 12px;">
+                ${v.voted ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>'}
+              </svg>
+              ${v.voted ? 'Sudah Memilih' : 'Belum Memilih'}
+            </span>
+          </td>
+          <td>
+            <button class="btn" style="padding: 4px 8px; font-size: 10px;" onclick="resetVoter('${v.nis}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width: 11px; height: 11px;">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+              Reset Suara
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterVoterTable() {
+      const query = document.getElementById('searchVoter').value.toLowerCase();
+      const filtered = votersList.filter(v => v.nis.includes(query) || v.name.toLowerCase().includes(query));
+      renderVoterTable(filtered);
+    }
+
+    function resetVoter(nis) {
+      const voter = votersList.find(v => v.nis === nis);
+      if (voter && confirm(`Reset status suara untuk ${voter.name} (${voter.nis})?`)) {
+        voter.voted = false;
+        renderVoterTable(votersList);
+      }
+    }
+
+    function notifySetting(msg) {
+      alert(`Pembaruan Sistem: ${msg}`);
+    }
+
+    function handleCsvFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+
+        let addedCount = 0;
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(/[,;]/);
+          if (parts.length >= 4) {
+            const nis = parts[0].trim();
+            const name = parts[1].trim();
+            const className = parts[2].trim();
+            const pw = parts[3].trim();
+
+            if (nis && name) {
+              const existing = votersList.find(x => x.nis === nis);
+              if (existing) {
+                existing.name = name;
+                existing.className = className;
+                existing.pw = pw;
+              } else {
+                votersList.push({ nis, name, className, pw, voted: false });
+              }
+              addedCount++;
+            }
+          }
+        }
+
+        renderVoterTable(votersList);
+        document.getElementById('importedCount').innerText = addedCount;
+        document.getElementById('importSuccessAlert').style.display = "block";
+        document.getElementById('statDpt').innerText = votersList.length;
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bilik Suara Digital — E-Pilketos</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #0a0a0a;
+      --muted: #737373;
+      --border: #e5e5e5;
+      --border-dark: #171717;
+      /* Warna Kuning Elegan */
+      --yellow: #f59e0b;
+      --yellow-hover: #d97706;
+      --yellow-light: #fef3c7;
+      --yellow-border: #fcd34d;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 90px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header Nav Bar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .brand-sub {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      font-weight: 500;
+    }
+
+    /* LINE ICONS NAVIGATION */
+    .icon-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f5f5f5;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .icon-tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      color: #525252;
+      transition: all 0.18s ease;
+      position: relative;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .icon-tab svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .icon-tab:hover {
+      background: #ffffff;
+      color: #000000;
+      border-color: var(--border);
+      transform: translateY(-1px);
+    }
+    .icon-tab.active {
+      background: #ffffff;
+      color: #000000;
+      border-color: var(--border);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+    .icon-tab.cta-tab {
+      background: var(--yellow);
+      color: #000000;
+      border-color: var(--yellow-border);
+    }
+
+    .icon-tab[data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0a0a0a;
+      color: #ffffff;
+      font-size: 10px;
+      font-family: ui-monospace, monospace;
+      padding: 3px 7px;
+      border-radius: 5px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 50;
+    }
+    .icon-tab:hover[data-tooltip]::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(2px);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      font-family: inherit;
+    }
+    .btn-black, .btn-primary {
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+      font-weight: 800;
+      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+    }
+    .btn-black:hover, .btn-primary:hover {
+      background: var(--yellow-hover);
+      color: #000000;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(217, 119, 6, 0.3);
+    }
+    .btn-outline {
+      background: #fff;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      border-color: var(--yellow-hover);
+      background: #fffdf5;
+    }
+
+    /* Voter Card Profile */
+    .voter-card {
+      margin-top: 24px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .voter-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .voter-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-family: ui-monospace, monospace;
+      font-size: 16px;
+    }
+    .voter-name {
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .voter-meta {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+    }
+    .vote-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      border-radius: 6px;
+    }
+
+    /* Page Heading */
+    .bilik-head {
+      margin-top: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tag {
+      display: inline-block;
+      padding: 3px 8px;
+      background: var(--yellow-light);
+      border: 1px solid var(--yellow-border);
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #78350f;
+    }
+    .bilik-title {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      margin-top: 6px;
+    }
+    .bilik-desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Ballot Grid (1 Kolom Vertikal Rapi) */
+    .ballot-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 24px;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .ballot-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .ballot-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+    }
+    .ballot-card.selected {
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 2px var(--yellow-border), 0 10px 25px rgba(245, 158, 11, 0.1);
+    }
+
+    /* Card Top */
+    .ballot-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ballot-num {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: ui-monospace, monospace;
+      font-size: 20px;
+      font-weight: 900;
+    }
+    .check-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      border: 1.5px solid #d4d4d4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 900;
+      color: transparent;
+      transition: all 0.15s ease;
+    }
+    .ballot-card.selected .check-circle {
+      background: var(--yellow);
+      border-color: var(--yellow-border);
+      color: #000000;
+    }
+
+    /* Container Video/GIF di Kartu Suara */
+    .ballot-media {
+      margin-top: 14px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #171717;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .media-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      font-family: ui-monospace, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+    }
+    .media-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--yellow);
+      display: inline-block;
+    }
+    .media-placeholder-inner {
+      text-align: center;
+      color: #fafafa;
+      padding: 10px;
+    }
+
+    .ballot-info {
+      margin-top: 14px;
+      flex-grow: 1;
+    }
+    .ballot-name {
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .ballot-class {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .ballot-slogan {
+      font-size: 12px;
+      font-style: italic;
+      color: #525252;
+      margin-top: 6px;
+    }
+
+    .ballot-action {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+    }
+    .ballot-card.selected .ballot-action {
+      font-weight: 800;
+      color: #78350f;
+    }
+
+    /* Sticky Bottom Bar */
+    .sticky-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 0 16px;
+    }
+    .bar-inner {
+      max-width: 760px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-dark);
+      border-radius: 14px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+    }
+    .selection-text {
+      font-size: 13px;
+    }
+    .selection-placeholder {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* Modal Konfirmasi */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 420px;
+      width: 100%;
+      padding: 26px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.14);
+    }
+    .modal h3 {
+      font-size: 20px;
+      font-weight: 800;
+      margin: 8px 0 4px;
+    }
+    .modal p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .chosen-card {
+      margin-top: 14px;
+      background: #fffdf5;
+      border: 1px solid var(--yellow-border);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .chosen-num {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: ui-monospace, monospace;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .alert-box {
+      margin-top: 14px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #92400e;
+      line-height: 1.45;
+    }
+
+    /* Sukses State */
+    .success-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 110;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .success-overlay.open {
+      display: flex;
+    }
+    .success-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 460px;
+      width: 100%;
+      padding: 40px 30px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 900;
+      margin: 0 auto;
+    }
+    .success-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke-width: 2.5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER DENGAN TAB ATAS LINE ICONS -->
+  <header>
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand">
+        <img src="logo-osis.jpg" alt="Logo OSIS" class="brand-logo" />
+        <div>
+          <span>E-Pilketos</span>
+          <span class="brand-sub">Bilik Suara Digital</span>
+        </div>
+      </a>
+
+      <!-- TAB ATAS LINE ICONS -->
+      <nav class="icon-nav">
+        <!-- 1. Line Icon: Home -->
+        <a href="index.html" class="icon-tab" data-tooltip="Beranda">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+        </a>
+
+        <!-- 2. Line Icon: Users / Paslon -->
+        <a href="index.html#kandidat" class="icon-tab" data-tooltip="Daftar Paslon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </a>
+
+        <!-- 3. Line Icon: Bar Chart / Quick Count -->
+        <a href="quick-count.html" class="icon-tab" data-tooltip="Quick Count Live">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </a>
+
+        <!-- 4. Line Icon: Check / Vote (Sedang Aktif) -->
+        <a href="bilik-suara.html" class="icon-tab cta-tab active" data-tooltip="Bilik Suara Aktif">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </a>
+
+        <!-- 5. Line Icon: Settings / Admin -->
+        <a href="admin.html" class="icon-tab" data-tooltip="Panel Admin">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- PROFIL PEMILIH (AKTIF) -->
+    <div class="voter-card">
+      <div class="voter-profile">
+        <div class="voter-avatar">S</div>
+        <div>
+          <div class="voter-name" id="voterName">Salsabila Zahra</div>
+          <div class="voter-meta">NIS: 2025010 · KELAS: XII IPA 1</div>
+        </div>
+      </div>
+      <div class="vote-status-badge">
+        <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#16a34a;"></span>
+        1 Hak Suara Sah Aktif
+      </div>
+    </div>
+
+    <!-- BILIK HEADING -->
+    <div class="bilik-head">
+      <span class="tag">Surat Suara Elektronik</span>
+      <h1 class="bilik-title">Pilih Pasangan Calon Ketua &amp; Wakil OSIS</h1>
+      <p class="bilik-desc">
+        Klik pada salah satu kotak pasangan calon di bawah, tonton cuplikan kampanye jika diperlukan, lalu kunci suaramu.
+      </p>
+    </div>
+
+    <!-- BALLOT GRID (KOTAK PASLON) -->
+    <div class="ballot-grid" id="ballotGrid">
+      <!-- Loaded dynamically via osis_candidates_data -->
+    </div>
+  </main>
+
+  <!-- STICKY BOTTOM CONFIRMATION BAR -->
+  <div class="sticky-bar">
+    <div class="bar-inner">
+      <div id="selectionSummary">
+        <span class="selection-placeholder">Belum ada pasangan calon yang dipilih</span>
+      </div>
+      <button class="btn btn-black" id="btnConfirmVote" disabled onclick="openConfirmModal()">
+        Konfirmasi Suara →
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL KONFIRMASI COBLOS -->
+  <div class="modal-overlay" id="confirmModal" onclick="closeConfirmModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <span class="tag">Pernyataan Final</span>
+      <h3>Kirimkan Surat Suara?</h3>
+      <p>Kamu akan memberikan 1 suara sah kepada:</p>
+
+      <div class="chosen-card">
+        <div class="chosen-num" id="modalChosenNum">01</div>
+        <div>
+          <div style="font-weight: 800; font-size: 15px;" id="modalChosenName">Andi Pratama</div>
+          <div style="font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace;" id="modalChosenClass">Kelas XII IPA 1</div>
+        </div>
+      </div>
+
+      <div class="alert-box">
+        ⚠️ <strong>PENTING:</strong> Setelah tombol ditekan, suara akan langsung dicatat secara terenkripsi dan <strong>tidak dapat diubah</strong> kembali.
+      </div>
+
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <button class="btn btn-outline" style="flex: 1;" onclick="closeConfirmModal()">Batal</button>
+        <button class="btn btn-black" style="flex: 1.4;" onclick="submitVote()">Ya, Coblos Sekarang ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAY SUKSES -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-card">
+      <div class="success-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h2 style="font-size: 24px; font-weight: 900; margin-top: 18px;">Suara Berhasil Disimpan</h2>
+      <p style="font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.6;">
+        Terima kasih telah berpartisipasi dalam pemilihan ketua &amp; wakil ketua OSIS SMA Negeri 3 Rembang. Hak suaramu telah tercatat di basis data terenkripsi.
+      </p>
+
+      <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 10px;">
+        <a href="quick-count.html" class="btn btn-black">
+          Pantau Quick Count Live ↗
+        </a>
+        <a href="index.html" class="btn btn-outline">
+          Kembali ke Beranda
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const INITIAL_CANDIDATES = [
+      {
+        id: 1,
+        num: 1,
+        name: "Andi Pratama",
+        className: "XII IPA 1",
+        slogan: "Bersama Wujudkan OSIS yang Lebih Baik",
+        caption: "CUPLIKAN ORASI 01",
+        votes: 372
+      },
+      {
+        id: 2,
+        num: 2,
+        name: "Siti Rahmawati",
+        className: "XII IPA 2",
+        slogan: "Kreatif, Kolaboratif, Berkarakter",
+        caption: "CUPLIKAN ORASI 02",
+        votes: 296
+      },
+      {
+        id: 3,
+        num: 3,
+        name: "Budi Santoso",
+        className: "XII IPS 1",
+        slogan: "Suaramu, Wujudkan!",
+        caption: "CUPLIKAN ORASI 03",
+        votes: 156
+      }
+    ];
+
+    function getCandidates() {
+      const stored = localStorage.getItem('osis_candidates_data');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch(e) {}
+      }
+      return INITIAL_CANDIDATES;
+    }
+
+    let candidatesList = [];
+    let selectedNum = null;
+    let selectedName = "";
+    let selectedClass = "";
+
+    function renderBallotGrid() {
+      candidatesList = getCandidates();
+      const container = document.getElementById('ballotGrid');
+      if (!container) return;
+
+      if (candidatesList.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; border: 1px dashed var(--border); border-radius: var(--radius);"><p style="color: var(--muted);">Belum ada pasangan calon yang terdaftar di bilik suara.</p></div>';
+        return;
+      }
+
+      container.innerHTML = candidatesList.map(c => {
+        const numPad = c.num < 10 ? `0${c.num}` : c.num;
+        return `
+          <div class="ballot-card" id="card-${c.num}" onclick="chooseCandidate(${c.num}, '${escapeJs(c.name)}', '${escapeJs(c.className)}')">
+            <div class="ballot-top">
+              <div class="ballot-num">${numPad}</div>
+              <div class="check-circle" id="check-${c.num}">✓</div>
+            </div>
+
+            <div class="ballot-media">
+              <div class="media-badge">
+                <span class="media-dot"></span>
+                <span>GIF / VIDEO ${numPad}</span>
+              </div>
+              <div class="media-placeholder-inner">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="opacity: 0.8; margin-bottom: 4px;">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <div style="font-family: ui-monospace, monospace; font-size: 11px; font-weight: 700;">
+                  ${escapeHtml(c.caption || ('CUPLIKAN ORASI ' + numPad))}
+                </div>
+                <div style="font-size: 10px; opacity: 0.6;">0:15 / LOOP</div>
+              </div>
+            </div>
+
+            <div class="ballot-info">
+              <h2 class="ballot-name">${escapeHtml(c.name)}</h2>
+              <div class="ballot-class">Kelas ${escapeHtml(c.className)}</div>
+              <div class="ballot-slogan">"${escapeHtml(c.slogan || 'Maju Bersama OSIS')}"</div>
+            </div>
+
+            <div class="ballot-action">
+              <span>Nomor Urut ${numPad}</span>
+              <span class="action-label" id="label-${c.num}">Klik untuk Memilih</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function chooseCandidate(num, name, className) {
+      selectedNum = num;
+      selectedName = name;
+      selectedClass = className;
+
+      candidatesList.forEach(c => {
+        const card = document.getElementById(`card-${c.num}`);
+        const label = document.getElementById(`label-${c.num}`);
+        if (card && label) {
+          if (c.num === num) {
+            card.classList.add('selected');
+            label.innerText = 'Pilihan Terpilih ✓';
+          } else {
+            card.classList.remove('selected');
+            label.innerText = 'Klik untuk Memilih';
+          }
+        }
+      });
+
+      const summary = document.getElementById('selectionSummary');
+      const numPad = num < 10 ? `0${num}` : num;
+      summary.innerHTML = `
+        <div class="selection-text">
+          <span style="font-family: ui-monospace, monospace; color: var(--muted); font-size: 11px;">PILIHANMU:</span>
+          <strong>${name}</strong> (Nomor ${numPad})
+        </div>
+      `;
+
+      const btn = document.getElementById('btnConfirmVote');
+      if (btn) btn.removeAttribute('disabled');
+    }
+
+    function openConfirmModal() {
+      if (!selectedNum) return;
+      const numPad = selectedNum < 10 ? `0${selectedNum}` : selectedNum;
+      document.getElementById('modalChosenNum').innerText = numPad;
+      document.getElementById('modalChosenName').innerText = selectedName;
+      document.getElementById('modalChosenClass').innerText = selectedClass;
+      document.getElementById('confirmModal').classList.add('open');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('open');
+    }
+
+    function submitVote() {
+      // Tambah suara ke localStorage jika ada
+      const list = getCandidates();
+      const cand = list.find(c => c.num === selectedNum);
+      if (cand) {
+        cand.votes = (cand.votes || 0) + 1;
+        localStorage.setItem('osis_candidates_data', JSON.stringify(list));
+      }
+
+      closeConfirmModal();
+      document.getElementById('successOverlay').classList.add('open');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function escapeJs(str) {
+      if (!str) return '';
+      return String(str).replace(/'/g, "\'");
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderBallotGrid();
+
+      const savedVoter = sessionStorage.getItem("osis_voter");
+      if (savedVoter) {
+        try {
+          const v = JSON.parse(savedVoter);
+          document.getElementById('voterName').innerText = v.name;
+          document.querySelector('.voter-meta').innerText = `NIS: ${v.nis} · KELAS: ${v.className}`;
+          document.querySelector('.voter-avatar').innerText = v.name.charAt(0).toUpperCase();
+        } catch (e) {}
+      }
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const paslonParam = parseInt(urlParams.get('paslon'), 10);
+      if (paslonParam) {
+        const found = candidatesList.find(c => c.num === paslonParam);
+        if (found) {
+          chooseCandidate(found.num, found.name, found.className);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

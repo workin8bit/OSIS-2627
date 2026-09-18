@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Pilketos — Pemilihan Ketua & Wakil Ketua OSIS</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #0a0a0a;
+      --muted: #737373;
+      --border: #e5e5e5;
+      --border-dark: #171717;
+      /* Warna Kuning Elegan */
+      --yellow: #f59e0b;
+      --yellow-hover: #d97706;
+      --yellow-light: #fef3c7;
+      --yellow-border: #fcd34d;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header Nav Bar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 15px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .brand-sub {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: block;
+      font-weight: 500;
+    }
+
+    /* LINE ICONS NAVIGATION */
+    .icon-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f5f5f5;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .icon-tab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      color: #525252;
+      transition: all 0.18s ease;
+      position: relative;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+    .icon-tab svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .icon-tab:hover {
+      background: #ffffff;
+      color: #000000;
+      border-color: var(--border);
+      transform: translateY(-1px);
+    }
+    .icon-tab.active {
+      background: #ffffff;
+      color: #000000;
+      border-color: var(--border);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+    .icon-tab.cta-tab {
+      background: var(--yellow);
+      color: #000000;
+      border-color: var(--yellow-border);
+    }
+    .icon-tab.cta-tab:hover {
+      background: var(--yellow-hover);
+      color: #000000;
+      box-shadow: 0 3px 8px rgba(217, 119, 6, 0.3);
+    }
+
+    .icon-tab[data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0a0a0a;
+      color: #ffffff;
+      font-size: 10px;
+      font-family: ui-monospace, monospace;
+      padding: 3px 7px;
+      border-radius: 5px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      z-index: 50;
+    }
+    .icon-tab:hover[data-tooltip]::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(2px);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      font-family: inherit;
+    }
+    .btn-black, .btn-primary {
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+    }
+    .btn-black:hover, .btn-primary:hover {
+      background: var(--yellow-hover);
+      color: #000000;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(217, 119, 6, 0.3);
+    }
+    .btn-outline {
+      background: #fff;
+      border-color: var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      border-color: var(--yellow-hover);
+      background: #fffdf5;
+    }
+
+    /* Meta Bar */
+    .meta-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .live-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+      margin-right: 6px;
+    }
+
+    /* ======================================================== */
+    /* PANDUAN LANGKAH COLLAPSIBLE (DEFAULT CLOSED/COLLAPSE)     */
+    /* ======================================================== */
+    .steps-accordion {
+      margin-top: 24px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      transition: border-color 0.2s ease;
+    }
+    .steps-accordion.open {
+      border-color: var(--yellow);
+    }
+    .steps-header {
+      padding: 16px 20px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid transparent;
+      transition: background 0.15s ease;
+    }
+    .steps-header:hover {
+      background: #fffdf5;
+    }
+    .steps-accordion.open .steps-header {
+      border-bottom-color: var(--yellow-border);
+      background: #fefce8;
+    }
+    .steps-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .steps-header-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--yellow-light);
+      color: #78350f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--yellow-border);
+    }
+    .steps-header-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 1.8;
+    }
+    .steps-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      background: #fafafa;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      color: #000000;
+      transition: all 0.15s ease;
+    }
+    .steps-toggle-btn:hover {
+      background: #ffffff;
+      border-color: var(--yellow-border);
+    }
+    .chevron-icon {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+    }
+    .steps-accordion.open .chevron-icon {
+      transform: rotate(180deg);
+    }
+
+    .steps-body {
+      display: none;
+      padding: 24px 20px;
+      background: #ffffff;
+    }
+    .steps-accordion.open .steps-body {
+      display: block;
+    }
+
+    /* Grid Langkah-Langkah (Line Icon Cards) */
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+    }
+    .flow-card {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+    }
+    .flow-card:hover {
+      border-color: var(--yellow-border);
+      background: #fffdf5;
+      transform: translateY(-2px);
+    }
+    .flow-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .flow-num {
+      font-family: ui-monospace, monospace;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--yellow-hover);
+    }
+    .flow-icon-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: #ffffff;
+      border: 1px solid var(--yellow-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #78350f;
+    }
+    .flow-icon-circle svg {
+      width: 19px;
+      height: 19px;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .flow-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #000000;
+      letter-spacing: -0.01em;
+    }
+    .flow-desc {
+      font-size: 12px;
+      color: #525252;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+    .flow-action-tag {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: #78350f;
+    }
+    .flow-btn-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--yellow);
+      color: #000;
+      font-weight: 800;
+      border: 1px solid var(--yellow-border);
+    }
+    .flow-btn-pill svg {
+      width: 12px;
+      height: 12px;
+      stroke-width: 2.2;
+    }
+
+    /* ======================================================== */
+    /* HERO & SHOWCASE PASLON                                   */
+    /* ======================================================== */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 36px;
+      padding: 30px 0 36px;
+    }
+    @media (min-width: 900px) {
+      .hero-grid {
+        grid-template-columns: 4.2fr 7.8fr;
+        align-items: start;
+      }
+      .sticky-col {
+        position: sticky;
+        top: 96px;
+      }
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      background: var(--yellow-light);
+      border: 1px solid var(--yellow-border);
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #78350f;
+    }
+    .hero-title {
+      font-size: 38px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin: 14px 0 10px;
+    }
+    .hero-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .quick-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 18px 0;
+      margin: 20px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      font-family: ui-monospace, monospace;
+    }
+    .metric-val {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text);
+    }
+    .metric-lbl {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* Candidate Cards with Media Container */
+    .candidate-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 18px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .candidate-card:hover {
+      border-color: #cbd5e1;
+    }
+    .candidate-card.active {
+      border-color: var(--yellow);
+      box-shadow: 0 0 0 2px var(--yellow-border);
+    }
+
+    /* Top info row */
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .num-box {
+      width: 52px;
+      height: 52px;
+      background: var(--yellow);
+      color: #000000;
+      border: 1px solid var(--yellow-border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: ui-monospace, monospace;
+      font-size: 22px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .cand-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .cand-name-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .cand-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .cand-class {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      padding: 2px 6px;
+      background: #f5f5f5;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+    }
+    .cand-slogan {
+      font-size: 12px;
+      font-style: italic;
+      color: #525252;
+      margin-top: 4px;
+    }
+
+    /* Container Video/GIF */
+    .media-container {
+      margin-top: 16px;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #111111;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .media-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #171717 0%, #262626 100%);
+      color: #fafafa;
+      text-align: center;
+      padding: 20px;
+    }
+    .media-placeholder svg {
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .media-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      z-index: 2;
+    }
+    .media-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--yellow);
+      display: inline-block;
+    }
+    .media-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 14px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+      color: #fff;
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .cand-detail {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+      font-size: 12px;
+      color: #404040;
+    }
+    .detail-heading {
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .misi-list {
+      margin-top: 8px;
+      padding-left: 16px;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      background: #fff;
+      padding: 24px 0;
+      margin-top: 40px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .footer-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER DENGAN TAB ATAS LINE ICONS -->
+  <header>
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand">
+        <img src="logo-osis.jpg" alt="Logo OSIS" class="brand-logo" />
+        <div>
+          <span>E-Pilketos</span>
+          <span class="brand-sub">SMA Negeri 3 Rembang</span>
+        </div>
+      </a>
+
+      <!-- TAB ATAS TEMA LINE ICONS -->
+      <nav class="icon-nav">
+        <!-- 1. Line Icon: Home -->
+        <a href="index.html" class="icon-tab active" data-tooltip="Beranda">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+        </a>
+
+        <!-- 2. Line Icon: Users / Paslon -->
+        <a href="#kandidat" class="icon-tab" data-tooltip="Daftar Paslon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </a>
+
+        <!-- 3. Line Icon: Bar Chart / Quick Count -->
+        <a href="quick-count.html" class="icon-tab" data-tooltip="Quick Count Live">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </a>
+
+        <!-- 4. Line Icon: Check / Vote (CTA Kuning) -->
+        <a href="login.html" class="icon-tab cta-tab" data-tooltip="Masuk Bilik Suara">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </a>
+
+        <!-- 5. Line Icon: Settings / Admin -->
+        <a href="admin.html" class="icon-tab" data-tooltip="Panel Admin">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- META BAR -->
+    <div class="meta-bar">
+      <div>
+        <span class="live-dot"></span>
+        <span>STATUS: PEMILIHAN BERLANGSUNG</span> · T.A. 2026/2027
+      </div>
+      <div>
+        PRINSIP: LUBER JURDIL · 1 SISWA = 1 SUARA
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- COLLAPSIBLE PANDUAN PENGAMBILAN SUARA (DEFAULT COLLAPSE) -->
+    <!-- ======================================================== -->
+    <section class="steps-accordion" id="stepsAccordion">
+      <div class="steps-header" onclick="toggleStepsAccordion()">
+        <div class="steps-header-left">
+          <div class="steps-header-icon">
+            <!-- Line Icon Book Open -->
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+          </div>
+          <div>
+            <div style="font-weight: 900; font-size: 15px; color: #000000;">
+              Panduan Lengkap Cara Memberikan Hak Suara (E-Voting)
+            </div>
+            <div style="font-size: 12px; color: #525252; margin-top: 1px;">
+              Klik untuk melihat 4 langkah alur pemilihan dari login hingga konfirmasi
+            </div>
+          </div>
+        </div>
+
+        <div class="steps-toggle-btn">
+          <span id="accordionBtnText">Buka Panduan Langkah</span>
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="steps-body">
+        <div class="flow-grid">
+          <!-- Langkah 1: Line Icon Key / Login -->
+          <div class="flow-card">
+            <div class="flow-top">
+              <span class="flow-num">01</span>
+              <div class="flow-icon-circle">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5L13 10m-1.5 1.5L10 13l-4 4-4 4 1-5 4-4 4-4"></path>
+                  <circle cx="16.5" cy="7.5" r="4.5"></circle>
+                </svg>
+              </div>
+            </div>
+            <h3 class="flow-title">Klik Ikon Bilik Suara &amp; Login</h3>
+            <p class="flow-desc">
+              Klik ikon centang garis <span class="flow-btn-pill"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span> di menu atas atau tombol <strong>"Masuk Bilik Suara"</strong>. Masukkan <strong>NIS</strong> dan kata sandi siswa resmi.
+            </p>
+            <div class="flow-action-tag">
+              <span>👉 Tindakan: Otentikasi Akun</span>
+            </div>
+          </div>
+
+          <!-- Langkah 2: Line Icon Film / Video Preview -->
+          <div class="flow-card">
+            <div class="flow-top">
+              <span class="flow-num">02</span>
+              <div class="flow-icon-circle">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+                  <line x1="7" y1="2" x2="7" y2="22"></line>
+                  <line x1="17" y1="2" x2="17" y2="22"></line>
+                  <line x1="2" y1="12" x2="22" y2="12"></line>
+                  <line x1="2" y1="7" x2="7" y2="7"></line>
+                  <line x1="2" y1="17" x2="7" y2="17"></line>
+                  <line x1="17" y1="17" x2="22" y2="17"></line>
+                  <line x1="17" y1="7" x2="22" y2="7"></line>
+                </svg>
+              </div>
+            </div>
+            <h3 class="flow-title">Kaji Visi &amp; Tonton Video GIF</h3>
+            <p class="flow-desc">
+              Bandingkan profil tiap nomor urut di surat suara. Perhatikan cuplikan orasi 15 detik dan rencana program kerja calon ketua &amp; wakil OSIS.
+            </p>
+            <div class="flow-action-tag">
+              <span>👉 Tindakan: Analisis Paslon</span>
+            </div>
+          </div>
+
+          <!-- Langkah 3: Line Icon Mouse Pointer / Tap -->
+          <div class="flow-card">
+            <div class="flow-top">
+              <span class="flow-num">03</span>
+              <div class="flow-icon-circle">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path>
+                  <path d="M13 13l6 6"></path>
+                </svg>
+              </div>
+            </div>
+            <h3 class="flow-title">Klik Kotak Paslon Pilihanmu</h3>
+            <p class="flow-desc">
+              Klik pada salah satu kartu kandidat (<strong>01, 02, atau 03</strong>). Kotak akan disorot warna kuning emas dengan tanda centang aktif.
+            </p>
+            <div class="flow-action-tag">
+              <span>👉 Tindakan: Coblos Kotak</span>
+            </div>
+          </div>
+
+          <!-- Langkah 4: Line Icon Shield Check -->
+          <div class="flow-card">
+            <div class="flow-top">
+              <span class="flow-num">04</span>
+              <div class="flow-icon-circle">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+              </div>
+            </div>
+            <h3 class="flow-title">Kunci Pilihan &amp; Pantau Hasil</h3>
+            <p class="flow-desc">
+              Tekan tombol konfirmasi di bawah. Suara terkunci permanen di database. Klik ikon grafik garis <span class="flow-btn-pill"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span> untuk memantau Quick Count live.
+            </p>
+            <div class="flow-action-tag">
+              <span>👉 Tindakan: Konfirmasi Final</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; font-size: 11px; font-family: ui-monospace, monospace; color: var(--muted);">
+          <span>🔒 Asas Luber Jurdil: Pilihan tidak dapat diubah kembali setelah dikonfirmasi.</span>
+          <a href="login.html" class="btn btn-black" style="padding: 6px 14px; font-size: 11px;">
+            Mulai Pilih Sekarang →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- HERO & CANDIDATES SHOWCASE (DI BAWAH PANDUAN LANGKAH)     -->
+    <!-- ======================================================== -->
+    <section class="hero-grid" id="kandidat">
+      <!-- Left Column: Sticky Title & CTA -->
+      <div class="sticky-col">
+        <span class="tag">Kandidat Calon Ketua &amp; Wakil OSIS</span>
+        <h1 class="hero-title">Pemilihan Ketua &amp; Wakil OSIS</h1>
+        <p class="hero-desc">
+          Tonton video profil / cuplikan GIF kampanye, pelajari visi misi setiap pasangan calon, lalu tentukan pilihanmu di bilik digital.
+        </p>
+
+        <div class="quick-metrics">
+          <div>
+            <div class="metric-val">03</div>
+            <div class="metric-lbl">Total Paslon</div>
+          </div>
+          <div>
+            <div class="metric-val">100%</div>
+            <div class="metric-lbl">Digital &amp; RLS</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="login.html" class="btn btn-black">Masuk Bilik Suara →</a>
+          <a href="quick-count.html" class="btn btn-outline">Lihat Quick Count</a>
+        </div>
+        <p style="font-size: 11px; font-family: ui-monospace, monospace; color: var(--muted); margin-top: 14px;">
+          * Memerlukan NIS dan kata sandi dari panitia OSIS.
+        </p>
+      </div>
+
+      <!-- Right Column: Paslon Cards with Video / GIF Container -->
+      <div>
+        <!-- Paslon 01 -->
+        <div class="candidate-card active" onclick="selectPaslon(this, 1)">
+          <div class="card-head">
+            <div class="num-box">01</div>
+            <div class="cand-info">
+              <div class="cand-name-row">
+                <h2 class="cand-name">Andi Pratama</h2>
+                <span class="cand-class">XII IPA 1</span>
+              </div>
+              <div class="cand-slogan">“Bersama Wujudkan OSIS yang Lebih Baik”</div>
+            </div>
+          </div>
+
+          <!-- CONTAINER VIDEO / GIF PASLON 01 -->
+          <div class="media-container">
+            <div class="media-badge">
+              <span class="media-badge-dot"></span>
+              <span>VIDEO / GIF KAMPANYE</span>
+            </div>
+            
+            <div class="media-placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.8; margin-bottom: 8px;">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <div style="font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.05em;">
+                CONTAINER GIF / VIDEO KANDIDAT 01
+              </div>
+              <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">
+                Tampilan preview orasi 15s / animasi kampanye paslon 01
+              </div>
+            </div>
+
+            <div class="media-caption">
+              <span>ORASI SINGKAT: VISI DIGITALISASI OSIS</span>
+              <span>0:15 / LOOP</span>
+            </div>
+          </div>
+
+          <div class="cand-detail">
+            <div class="detail-heading">Visi:</div>
+            <p>Terwujudnya OSIS yang inovatif dan inklusif sebagai wadah aktualisasi diri seluruh siswa SMA Negeri 3 Rembang.</p>
+            <div class="detail-heading" style="margin-top: 10px;">Misi Prioritas:</div>
+            <ul class="misi-list">
+              <li>Membuka ruang kreativitas melalui festival seni, budaya, dan teknologi.</li>
+              <li>Digitalisasi pengumuman dan administrasi pengurus OSIS.</li>
+              <li>Menampung aspirasi siswa melalui kotak saran digital terbuka.</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 14px; text-align: right;">
+            <a href="bilik-suara.html?paslon=1" class="btn btn-outline" style="font-size: 11px; padding: 6px 14px;" onclick="event.stopPropagation()">
+              Pilih Nomor 01 di Bilik Suara →
+            </a>
+          </div>
+        </div>
+
+        <!-- Paslon 02 -->
+        <div class="candidate-card" onclick="selectPaslon(this, 2)">
+          <div class="card-head">
+            <div class="num-box">02</div>
+            <div class="cand-info">
+              <div class="cand-name-row">
+                <h2 class="cand-name">Siti Rahmawati</h2>
+                <span class="cand-class">XII IPA 2</span>
+              </div>
+              <div class="cand-slogan">“Kreatif, Kolaboratif, Berkarakter”</div>
+            </div>
+          </div>
+
+          <!-- CONTAINER VIDEO / GIF PASLON 02 -->
+          <div class="media-container">
+            <div class="media-badge">
+              <span class="media-badge-dot"></span>
+              <span>VIDEO / GIF KAMPANYE</span>
+            </div>
+
+            <div class="media-placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.8; margin-bottom: 8px;">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <div style="font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.05em;">
+                CONTAINER GIF / VIDEO KANDIDAT 02
+              </div>
+              <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">
+                Tampilan preview orasi 15s / animasi kampanye paslon 02
+              </div>
+            </div>
+
+            <div class="media-caption">
+              <span>ORASI SINGKAT: BUDDY SYSTEM &amp; KEHARMONISAN SISWA</span>
+              <span>0:15 / LOOP</span>
+            </div>
+          </div>
+
+          <div class="cand-detail">
+            <div class="detail-heading">Visi:</div>
+            <p>OSIS menjadi rumah kedua yang membina karakter, mengasah potensi, dan mempererat kebersamaan seluruh warga sekolah.</p>
+            <div class="detail-heading" style="margin-top: 10px;">Misi Prioritas:</div>
+            <ul class="misi-list">
+              <li>Program mentoring antarangkatan dan penguatan buddy system siswa baru.</li>
+              <li>Penguatan kegiatan keagamaan dan pembiasaan akhlak terpuji.</li>
+              <li>Lomba intra-kelas berkala untuk menjaga kekompakan angkatan.</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 14px; text-align: right;">
+            <a href="bilik-suara.html?paslon=2" class="btn btn-outline" style="font-size: 11px; padding: 6px 14px;" onclick="event.stopPropagation()">
+              Pilih Nomor 02 di Bilik Suara →
+            </a>
+          </div>
+        </div>
+
+        <!-- Paslon 03 -->
+        <div class="candidate-card" onclick="selectPaslon(this, 3)">
+          <div class="card-head">
+            <div class="num-box">03</div>
+            <div class="cand-info">
+              <div class="cand-name-row">
+                <h2 class="cand-name">Budi Santoso</h2>
+                <span class="cand-class">XII IPS 1</span>
+              </div>
+              <div class="cand-slogan">“Suaramu, Wujudkan!”</div>
+            </div>
+          </div>
+
+          <!-- CONTAINER VIDEO / GIF PASLON 03 -->
+          <div class="media-container">
+            <div class="media-badge">
+              <span class="media-badge-dot"></span>
+              <span>VIDEO / GIF KAMPANYE</span>
+            </div>
+
+            <div class="media-placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.8; margin-bottom: 8px;">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <div style="font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.05em;">
+                CONTAINER GIF / VIDEO KANDIDAT 03
+              </div>
+              <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">
+                Tampilan preview orasi 15s / animasi kampanye paslon 03
+              </div>
+            </div>
+
+            <div class="media-caption">
+              <span>ORASI SINGKAT: TRANSPARANSI &amp; FASILITAS SISWA</span>
+              <span>0:15 / LOOP</span>
+            </div>
+          </div>
+
+          <div class="cand-detail">
+            <div class="detail-heading">Visi:</div>
+            <p>Setiap aspirasi siswa menjadi nyata melalui program kerja OSIS yang transparan dan berbasis kebutuhan siswa.</p>
+            <div class="detail-heading" style="margin-top: 10px;">Misi Prioritas:</div>
+            <ul class="misi-list">
+              <li>Survei kebutuhan siswa awal semester sebagai dasar program kerja.</li>
+              <li>Transparansi anggaran kas dan publikasi laporan kegiatan berkala.</li>
+              <li>Revitalisasi fasilitas santai, taman baca, dan perlengkapan olahraga.</li>
+            </ul>
+          </div>
+
+          <div style="margin-top: 14px; text-align: right;">
+            <a href="bilik-suara.html?paslon=3" class="btn btn-outline" style="font-size: 11px; padding: 6px 14px;" onclick="event.stopPropagation()">
+              Pilih Nomor 03 di Bilik Suara →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-wrap">
+      <div>
+        <strong>E-Pilketos</strong> · Sistem Pemungutan Suara Daring Siswa
+      </div>
+      <div>
+        Didukung Keamanan Database Supabase · Bebas, Rahasia &amp; Akuntabel
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const INITIAL_CANDIDATES = [
+      {
+        id: 1,
+        num: 1,
+        name: "Andi Pratama",
+        className: "XII IPA 1",
+        slogan: "Bersama Wujudkan OSIS yang Lebih Baik",
+        visi: "Terwujudnya OSIS yang inovatif dan inklusif sebagai wadah aktualisasi diri seluruh siswa SMA Negeri 3 Rembang.",
+        misi: [
+          "Membuka ruang kreativitas melalui festival seni, budaya, dan teknologi.",
+          "Digitalisasi pengumuman dan administrasi pengurus OSIS.",
+          "Menampung aspirasi siswa melalui kotak saran digital terbuka."
+        ],
+        caption: "ORASI SINGKAT: VISI DIGITALISASI OSIS",
+        votes: 372
+      },
+      {
+        id: 2,
+        num: 2,
+        name: "Siti Rahmawati",
+        className: "XII IPA 2",
+        slogan: "Kreatif, Kolaboratif, Berkarakter",
+        visi: "OSIS menjadi rumah kedua yang membina karakter, mengasah potensi, dan mempererat kebersamaan seluruh warga sekolah.",
+        misi: [
+          "Program mentoring antarangkatan dan penguatan buddy system siswa baru.",
+          "Penguatan kegiatan keagamaan dan pembiasaan akhlak terpuji.",
+          "Lomba intra-kelas berkala untuk menjaga kekompakan angkatan."
+        ],
+        caption: "ORASI SINGKAT: BUDDY SYSTEM & KEHARMONISAN SISWA",
+        votes: 296
+      },
+      {
+        id: 3,
+        num: 3,
+        name: "Budi Santoso",
+        className: "XII IPS 1",
+        slogan: "Suaramu, Wujudkan!",
+        visi: "Setiap aspirasi siswa menjadi nyata melalui program kerja OSIS yang transparan dan berbasis kebutuhan siswa.",
+        misi: [
+          "Survei kebutuhan siswa awal semester sebagai dasar program kerja.",
+          "Transparansi anggaran kas dan publikasi laporan kegiatan berkala.",
+          "Revitalisasi fasilitas santai, taman baca, dan perlengkapan olahraga."
+        ],
+        caption: "ORASI SINGKAT: TRANSPARANSI & FASILITAS SISWA",
+        votes: 156
+      }
+    ];
+
+    function getCandidates() {
+      const stored = localStorage.getItem('osis_candidates_data');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch(e) {}
+      }
+      return INITIAL_CANDIDATES;
+    }
+
+    function renderCandidatesGrid() {
+      const list = getCandidates();
+      const container = document.getElementById('candidatesGrid');
+      if (!container) return;
+
+      if (list.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; border: 1px dashed var(--border); border-radius: var(--radius);"><p style="color: var(--muted);">Belum ada pasangan calon yang terdaftar.</p></div>';
+        return;
+      }
+
+      container.innerHTML = list.map((c, idx) => {
+        const numPad = c.num < 10 ? `0${c.num}` : c.num;
+        const misiListHtml = (c.misi || []).map(m => `<li>${escapeHtml(m)}</li>`).join('');
+        const activeClass = idx === 0 ? 'active' : '';
+
+        return `
+          <div class="candidate-card ${activeClass}" onclick="selectPaslon(this, ${c.num})">
+            <div class="card-head">
+              <div class="num-box">${numPad}</div>
+              <div class="cand-info">
+                <div class="cand-name-row">
+                  <h2 class="cand-name">${escapeHtml(c.name)}</h2>
+                  <span class="cand-class">${escapeHtml(c.className)}</span>
+                </div>
+                <div class="cand-slogan">“${escapeHtml(c.slogan || 'Maju Bersama OSIS')}”</div>
+              </div>
+            </div>
+
+            <div class="media-container">
+              <div class="media-badge">
+                <span class="media-badge-dot"></span>
+                <span>VIDEO / GIF KAMPANYE</span>
+              </div>
+              
+              <div class="media-placeholder">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="opacity: 0.8; margin-bottom: 8px;">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <div style="font-family: ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.05em;">
+                  ${escapeHtml(c.caption || ('CUPLIKAN ORASI ' + numPad))}
+                </div>
+                <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">
+                  Tampilan preview orasi 15s / animasi kampanye paslon ${numPad}
+                </div>
+              </div>
+
+              <div class="media-caption">
+                <span>${escapeHtml(c.caption || ('ORASI SINGKAT PASLON ' + numPad))}</span>
+                <span>0:15 / LOOP</span>
+              </div>
+            </div>
+
+            <div class="cand-detail">
+              <div class="detail-heading">Visi:</div>
+              <p>${escapeHtml(c.visi)}</p>
+              <div class="detail-heading" style="margin-top: 10px;">Misi Prioritas:</div>
+              <ul class="misi-list">
+                ${misiListHtml}
+              </ul>
+            </div>
+
+            <div style="margin-top: 14px; text-align: right;">
+              <a href="bilik-suara.html?paslon=${c.num}" class="btn btn-outline" style="font-size: 11px; padding: 6px 14px;" onclick="event.stopPropagation()">
+                Pilih Nomor ${numPad} di Bilik Suara →
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleGuide() {
+      const content = document.getElementById('guideContent');
+      const arrow = document.getElementById('guideArrow');
+      const badge = document.getElementById('guideBadge');
+      
+      const isOpen = content.classList.contains('open');
+      if (isOpen) {
+        content.classList.remove('open');
+        arrow.classList.remove('open');
+        badge.innerText = 'Klik untuk Buka (4 Langkah)';
+      } else {
+        content.classList.add('open');
+        arrow.classList.add('open');
+        badge.innerText = 'Sembunyikan Panduan';
+      }
+    }
+
+    function selectPaslon(cardEl, num) {
+      document.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('active'));
+      cardEl.classList.add('active');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCandidatesGrid();
+    });
+  </script>
+</body>
+</html>

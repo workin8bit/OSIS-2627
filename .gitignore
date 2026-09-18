@@ -1,0 +1,6 @@
+node_modules/
+.next/
+.arena/
+.cache/
+update_bilik_script.py
+update_index_script.py
