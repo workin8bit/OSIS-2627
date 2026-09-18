@@ -11,7 +11,7 @@ create table if not exists public.settings (
   id int primary key default 1 check (id = 1),
   school_name text not null default 'SMA Negeri 3 Rembang',
   election_name text not null default 'Pemilihan Ketua & Wakil OSIS',
-  academic_year text not null default '2025/2026',
+  academic_year text not null default '2026/2027',
   is_open boolean not null default true,
   show_results boolean not null default true,
   admin_password text not null default 'admin123',
@@ -19,7 +19,7 @@ create table if not exists public.settings (
 );
 
 insert into public.settings (id, school_name, election_name, academic_year, is_open, show_results, admin_password)
-values (1, 'SMA Negeri 3 Rembang', 'Pemilihan Ketua & Wakil OSIS', '2025/2026', true, true, 'admin123')
+values (1, 'SMA Negeri 3 Rembang', 'Pemilihan Ketua & Wakil OSIS', '2026/2027', true, true, 'admin123')
 on conflict (id) do nothing;
 
 -- 3. Tabel Candidates (Pasangan Calon)

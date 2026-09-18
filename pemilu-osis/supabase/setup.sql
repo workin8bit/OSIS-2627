@@ -19,7 +19,7 @@ create table if not exists public.settings (
   id                  int primary key default 1 check (id = 1),
   school_name         text not null default 'SMA Negeri 1 Rembangan',
   election_name       text not null default 'Pemilihan Ketua OSIS',
-  academic_year       text not null default '2025/2026',
+  academic_year       text not null default '2026/2027',
   start_at            timestamptz,
   end_at              timestamptz,
   is_open             boolean not null default false,

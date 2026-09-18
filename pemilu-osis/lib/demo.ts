@@ -89,7 +89,7 @@ function seed(): DemoDB {
     settings: {
       school_name: "SMA Negeri 1 Rembangan",
       election_name: "Pemilihan Ketua OSIS",
-      academic_year: "2025/2026",
+      academic_year: "2026/2027",
       start_at: null,
       end_at: null,
       is_open: true,
