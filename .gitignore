@@ -8,6 +8,11 @@ next-env.d.ts
 .DS_Store
 .vercel/
 
+# Tooling agent lokal (bukan bagian dari aplikasi)
+.agents/
+.claude/
+skills-lock.json
+
 # --- Rahasia: jangan pernah masuk repo ---
 .env
 .env.*
