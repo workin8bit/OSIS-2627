@@ -245,6 +245,7 @@ export default function VotePage() {
               key={c.id}
               role="radio"
               aria-checked={isSel}
+              aria-label={`Paslon nomor ${c.number}`}
               aria-disabled={notOpen || undefined}
               tabIndex={notOpen ? -1 : 0}
               onClick={() => !notOpen && setSelected(c.id)}
@@ -255,7 +256,7 @@ export default function VotePage() {
                   setSelected(c.id);
                 }
               }}
-              className={`press group cursor-pointer rounded-2xl border p-6 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark ${
+              className={`press group cursor-pointer rounded-2xl border p-4 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark sm:p-5 ${
                 isSel
                   ? "border-brand-dark bg-brand-wash ring-2 ring-brand shadow-brand"
                   : "border-brand/25 bg-white hover:border-brand hover:bg-brand-wash/50"
@@ -294,33 +295,12 @@ export default function VotePage() {
                 </span>
               </div>
 
-              <div className="mt-4">
-                <div className="font-bold text-neutral-950 text-lg">{c.name}</div>
-                <div className="font-mono text-xs text-neutral-500">
-                  {c.class_name}
-                </div>
-                {c.wakil_name && (
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className="text-[11px] font-semibold text-neutral-500">
-                      Wakil:
-                    </span>
-                    <span className="text-neutral-700">{c.wakil_name}</span>
-                    {c.wakil_class_name && (
-                      <span className="rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[11px] text-neutral-500">
-                        {c.wakil_class_name}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {c.slogan && (
-                <p className="mt-3 text-xs italic text-neutral-600 line-clamp-2">
-                  “{c.slogan}”
-                </p>
-              )}
-
-              <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between font-mono text-[11px]">
+              {/* Kartu sengaja hanya menampilkan foto dan nomor urut. Nama,
+                  kelas, dan slogan tidak ditampilkan supaya pilihan tidak
+                  dipengaruhi bacaan teks. Nama yang terbaca pembaca layar
+                  diambil dari aria-label, dan nama lengkap tetap muncul di
+                  dialog konfirmasi sebagai pengaman salah klik. */}
+              <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-3 font-mono text-[11px]">
                 <span className="text-neutral-500">Nomor {c.number}</span>
                 <span className={isSel ? "font-bold text-brand-deep" : "text-neutral-500"}>
                   {isSel ? "Terpilih" : "Klik untuk memilih"}
