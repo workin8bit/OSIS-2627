@@ -54,20 +54,23 @@ export default function HomePage() {
   const year = status?.academic_year || "2026/2027";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200/80 pb-5">
+    <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-8 sm:pb-24">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-medium tracking-normal text-neutral-500">
+          <span
+            aria-hidden
+            className={`h-1.5 w-1.5 rounded-full ${isLive ? "animate-pulse bg-emerald-500" : "bg-neutral-300"}`}
+          />
+          <span className="text-[13px] text-neutral-500">
             {schoolName} &middot; Periode {year}
           </span>
         </div>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-medium ${
               isLive
                 ? "bg-brand text-brand-ink"
-                : "border border-neutral-300 bg-neutral-100 text-neutral-700"
+                : "border border-neutral-300 bg-white text-neutral-700"
             }`}
           >
             {!status && (
@@ -79,22 +82,83 @@ export default function HomePage() {
             {stateLabel}
           </span>
           {detail && (
-            <span className="text-neutral-500 font-mono text-[11px] hidden sm:inline">
-              &middot; {detail}
+            <span className="hidden text-[12px] text-neutral-500 sm:inline">
+              {detail}
             </span>
           )}
         </div>
       </div>
 
-      <section className="mt-6 overflow-hidden rounded-2xl border border-brand/40 bg-brand-wash shadow-sm">
+
+      <section className="mt-10 grid gap-8 lg:grid-cols-12 lg:items-start sm:mt-14">
+        <div className="lg:col-span-5 lg:sticky lg:top-24">
+          <div className="text-[13px] font-medium text-brand-deep">
+            Kandidat Calon Ketua & Wakil OSIS
+          </div>
+          <h1 className="mt-3 text-[32px] font-semibold leading-[1.08] tracking-tight text-neutral-950 sm:text-[40px] lg:text-[44px]">
+            {electionName}
+          </h1>
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-neutral-600 sm:text-base">
+            Kenali rekam jejak, visi, dan gagasan nyata setiap pasangan calon sebelum memberikan hak suaramu di bilik digital.
+          </p>
+
+          <div className="mt-7 grid grid-cols-2 gap-6 border-y border-neutral-200/80 py-4">
+            <div>
+              <div className="text-[12px] text-neutral-500">Total Paslon</div>
+              <div className="mt-1 text-xl font-semibold tracking-tight text-neutral-950 tabular-nums">
+                {candidates.length}
+              </div>
+            </div>
+            <div>
+              <div className="text-[12px] text-neutral-500">Hak Suara</div>
+              <div className="mt-1 text-xl font-semibold tracking-tight text-neutral-950">
+                1 = 1 Suara
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
+            <Link
+              href="/vote"
+              className="press group flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold tracking-normal text-brand-ink transition-all hover:bg-brand-hover hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
+            >
+              <span>Masuk Bilik Suara</span>
+              <span className="transition-transform group-hover:translate-x-0.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </span>
+            </Link>
+            <Link
+              href="/results"
+              className="press flex items-center justify-center rounded-full border border-neutral-300 bg-white px-5 py-3.5 text-sm font-semibold tracking-normal text-neutral-800 transition-colors hover:border-brand-dark hover:bg-brand-wash"
+            >
+              Live Quick Count
+            </Link>
+          </div>
+        </div>
+
+        <div className="space-y-4 lg:col-span-7">
+
+        <section className="surface overflow-hidden">
         <button
           type="button"
           onClick={() => setGuideOpen((g) => !g)}
           aria-expanded={guideOpen}
-          className="press flex w-full items-center justify-between px-5 py-4 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-dark"
+          className="press flex w-full items-center justify-between gap-4 px-5 py-4 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-dark"
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-brand-ink shadow-brand">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -103,7 +167,8 @@ export default function HomePage() {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-5 w-5"
+                className="h-4.5 w-4.5"
+                aria-hidden
               >
                 <path d="M8 3H5a2 2 0 0 0-2 2v3" />
                 <path d="M21 3h-3a2 2 0 0 0-2 2v3" />
@@ -114,10 +179,8 @@ export default function HomePage() {
               </svg>
             </span>
             <div>
-              <div className="font-medium text-[11px] tracking-normal text-neutral-500">
-                Panduan
-              </div>
-              <h2 className="text-base font-bold tracking-tight text-neutral-950">
+              <div className="text-[12px] text-neutral-500">Panduan</div>
+              <h2 className="text-[15px] font-semibold tracking-tight text-neutral-950">
                 Langkah-langkah Pengambilan Suara
               </h2>
             </div>
@@ -141,7 +204,7 @@ export default function HomePage() {
           </span>
         </button>
         {guideOpen && (
-          <div className="border-t border-brand/30 px-5 py-5">
+          <div className="border-t border-neutral-200/80 px-5 py-5">
             <ol className="space-y-4">
               <li className="flex gap-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-brand-ink">
@@ -231,70 +294,6 @@ export default function HomePage() {
           </div>
         )}
       </section>
-
-      <section className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start">
-        <div className="lg:col-span-5 lg:sticky lg:top-24">
-          <div className="inline-block rounded-md border border-neutral-200 bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold tracking-normal text-neutral-700">
-            Kandidat Calon Ketua & Wakil OSIS
-          </div>
-          <h1 className="mt-4 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl lg:text-[42px] lg:leading-[1.1]">
-            {electionName}
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-neutral-600 sm:text-base">
-            Kenali rekam jejak, visi, dan gagasan nyata setiap pasangan calon sebelum memberikan hak suaramu di bilik digital.
-          </p>
-
-          <div className="mt-6 grid grid-cols-2 gap-3 border-y border-neutral-200/80 py-4 font-mono">
-            <div>
-              <div className="text-[11px] tracking-normal text-neutral-500">
-                Total Paslon
-              </div>
-              <div className="mt-0.5 text-lg font-bold tracking-tight text-neutral-950">
-                {candidates.length}
-              </div>
-            </div>
-            <div>
-              <div className="text-[11px] tracking-normal text-neutral-500">
-                Hak Suara
-              </div>
-              <div className="mt-0.5 text-lg font-bold tracking-tight text-neutral-950">
-                1 Siswa = 1 Suara
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-            <Link
-              href="/vote"
-              className="press group flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold tracking-normal text-brand-ink transition-all hover:bg-brand-hover hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
-            >
-              <span>Masuk Bilik Suara</span>
-              <span className="transition-transform group-hover:translate-x-0.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </span>
-            </Link>
-            <Link
-              href="/results"
-              className="press flex items-center justify-center rounded-full border border-neutral-300 bg-white px-5 py-3.5 text-sm font-semibold tracking-normal text-neutral-800 transition-colors hover:border-brand-dark hover:bg-brand-wash"
-            >
-              Live Quick Count
-            </Link>
-          </div>
-        </div>
-
-        <div className="space-y-4 lg:col-span-7">
           <div className="font-medium flex items-center justify-between text-xs tracking-normal text-neutral-500">
             <span>Daftar Nomor Urut ({candidates.length})</span>
             <span className="hidden sm:inline">Profil lengkap setiap paslon</span>
