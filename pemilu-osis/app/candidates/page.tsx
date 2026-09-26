@@ -16,10 +16,22 @@ export default function CandidatesPage() {
       .then((cs) => {
         const list = cs.filter((c) => c.is_active);
         setCandidates(list);
-        if (list.length > 0) setActiveTab(list[0].id);
+        // Deep-link dari beranda: /candidates?paslon=<id>
+        const wanted = new URLSearchParams(window.location.search).get("paslon");
+        const match = list.find((c) => c.id === wanted);
+        if (match) setActiveTab(match.id);
+        else if (list.length > 0) setActiveTab(list[0].id);
       })
       .catch(() => {});
   }, []);
+
+  // Jaga URL tetap sinkron dengan tab aktif supaya tautan bisa dibagikan.
+  const selectTab = (id: string) => {
+    setActiveTab(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set("paslon", id);
+    window.history.replaceState(null, "", url);
+  };
 
   const active = candidates.find((c) => c.id === activeTab) ?? candidates[0];
 
@@ -49,7 +61,7 @@ export default function CandidatesPage() {
             <button
               key={c.id}
               type="button"
-              onClick={() => setActiveTab(c.id)}
+              onClick={() => selectTab(c.id)}
               aria-pressed={isCurrent}
               className={`press flex items-center gap-3 rounded-full border px-4 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark ${
                 isCurrent
