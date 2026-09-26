@@ -1,71 +1,81 @@
 -- ============================================================================
--- Migration: aktifkan Row Level Security
+-- Migration: harden RLS untuk tables election
 --
--- TEMUAN (2026-09-26): RLS belum aktif di tabel mana pun. Dengan anon key
--- yang tertanam di bundle klien, PostgREST mengizinkan:
---   - SELECT  settings  -> hashes admin_password_hash TERBACA PUBLIK
---   - UPDATE  settings  -> admin_password_hash bisa ditimpa
---   - UPDATE  votes     -> suara bisa diubah/dihapus tanpa jejak
---   - SELECT  voters    -> NISN + password_hash
+-- KOREKSI CATATAN (2026-09-26):
+-- Versi awal file ini mengira RLS belum aktif dan mengira PostgREST
+-- mengizinkan UPDATE/DELETE anon lewat direct-table. Keduanya SALAH:
+--   - RLS sudah aktif lebih dulu (sudah true sebelum migrasi ini).
+--   - Respons "204 No Content" pada PATCH /rest/v1/settings bukan bukti
+--     akses diizinkan. Dengan RLS, baris yang tidak terlihat policy
+--     diperlakukan sebagai 0 baris tersentuh, sehingga PostgREST
+--     membalas 204, bukan error. Akses sebenarnya sudah DITOLAK.
 --
--- Semua akses aplikasi (termasuk operasi admin) memakai RPC Postgres, dan
--- ke-31 fungsi tersebut SECURITY DEFINER, sehingga tetap berfungsi penuh
--- setelah policy ini dipasang.
+-- TEMUAN YANG SEBENARNYA (satu-satunya kebocoran nyata):
+--   policy "read_settings" on public.settings
+--     -> PERMISSIVE, roles={public}, cmd=SELECT, qual='true'
+--     -> membocorkan admin_username + admin_password_hash ke peran apa pun
+--        yang memegang anon key (anon key tertanam di bundle klien).
 --
--- CARA MENJALANKAN:
---   Supabase Dashboard -> SQL Editor -> tempel file ini -> Run
--- atau
---   psql "$DATABASE_URL" -f supabase/migrations/000000000014_enable_rls.sql
+-- Yang perlu diperbaiki: hapus policy itu, BUKAN menyalakan RLS.
+-- Seluruh akses aplikasi (termasuk operasi admin) memakai RPC Postgres,
+-- dan semuanya SECURITY DEFINER sehingga tetap berfungsi penuh.
 --
--- Setelah dijalankan, aplikasi TIDAK perlu diubah apa pun.
+-- STATUS: sudah dijalankan manual di production 2026-09-26 via
+--         Supabase Management API, hasil diverifikasi (lihat bawah).
+--         File ini sengaja dibuat idempoten agar aman dijalankan ulang.
 -- ============================================================================
 
 begin;
 
--- 1. Nyalakan RLS untuk setiap tabel yangicists application's
+-- 1. Pastikan RLS aktif (idempoten; biasanya sudah true).
 alter table public.candidates enable row level security;
 alter table public.voters     enable row level security;
 alter table public.votes      enable row level security;
 alter table public.settings   enable row level security;
 
--- 2. Pastikan tidak ada policy lama yang membuka akses.
---    DENY-by-default: RLS aktif tanpa policy = semua akses ditolak untuk anon.
-drop policy if exists anon_read_candidates on public.candidates;
-drop policy if exists anon_read_settings  on public.settings;
+-- 2. Tutup kebocoran nyata: jangan pernah expose settings ke publik,
+--    karena tabel ini memuat admin_password_hash.
+--    read_candidates sengaja dipertahankan: data kandidat memang publik.
+drop policy if exists read_settings  on public.settings;
+drop policy if exists anon_read_settings on public.settings;
+drop policy if exists anon_all_settings  on public.settings;
+
+-- 3. Bersihkan sisa policy legacy yang tidak lagi dipakai.
+--    Tabel voters/votes tidak punya policy sama sekali -> DENY-by-default.
 drop policy if exists anon_read_voters     on public.voters;
 drop policy if exists anon_all_votes      on public.votes;
-drop policy if exists anon_all_settings   on public.settings;
 drop policy if exists anon_all_voters     on public.voters;
+drop policy if exists anon_read_candidates on public.candidates;
 drop policy if exists anon_all_candidates on public.candidates;
 
--- 3. Bucket penyimpanan: hanya admin yang boleh menulis.
---    (政策 read untuk publik dipertahankan agar foto kandidat tetap tampil.)
-do $$
-begin
-  if exists (select 1 from pg_tables where schemaname = 'storage' and tablename = 'objects') then
-    execute $p$drop policy if exists "Public can read candidate photos" on storage.objects$p$;
-    execute $p$create policy "Public can read candidate photos"
-      on storage.objects for select
-      using (bucket_id = 'candidates')$p$;
-  end if;
-end $$;
+-- CATATAN storage.objects:
+-- RLS aktif tetapi bucket TIDAK ADA (SELECT * FROM storage.buckets -> 0 baris),
+-- jadi foto kandidat memakai URL eksternal, bukan Supabase Storage.
+-- Tidak ada policy storage yang perlu disentuh di sini. Menambah policy
+-- untuk bucket 'candidates' akan menjadi policy yang tidak pernah cocok.
 
 commit;
 
 -- ============================================================================
--- VERIFIKASI (jalankan setelah Run, semua harus TRUE):
+-- VERIFIKASI (semua sudah dijalankan & lolos pada 2026-09-26):
 --
---   select relname, relrowsecurity
---   from pg_class
---   where relname in ('candidates','voters','votes','settings');
---   -- semua relrowsecurity = true
+-- 1. RLS aktif di keempat tabel -> semua relrowsecurity = true
 --
---   select count(*) as policies_seharusnya_nol
---   from pg_policies
---   where schemaname = 'public';
---   -- harus 0
+-- 2. Hanya policy yang tersisa di schema public:
+--      select tablename, policyname, cmd from pg_policies
+--      where schemaname = 'public';
+--      -- hasil: candidates | read_candidates | SELECT   (saja)
 --
--- Uji dari browser: buka devtools -> Network, reload.
--- Query ke /rest/v1/settings harus 401/403, sedangkan halaman tetap normal
--- karena semua data diambil lewat RPC.
+-- 3. settings tidak lagi bocor (0 baris, kolom tidak terekspos):
+--      curl "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/settings?select=*" \
+--        -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+--        -H "Authorization: Bearer $NEXT_PUBLIC_SUPABASE_ANON_KEY"
+--      -- sebelum: 200 + admin_password_hash
+--      -- sesudah: 200 + 0 baris
+--
+-- 4. Aplikasi tetap normal (semua SECURITY DEFINER, bypass RLS):
+--      get_status  -> 200
+--      get_results -> 200
+--      get_tally   -> 200
+--      candidates  -> 200 (read_candidates masih berlaku)
 -- ============================================================================
