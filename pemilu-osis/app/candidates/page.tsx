@@ -84,58 +84,57 @@ export default function CandidatesPage() {
 
       {active && (
         <article className="surface fade-up mt-6 overflow-hidden shadow-xs">
-          {/* Identitas paslon: nomor urut, nama, kelas, dan wakil dibaca
-              sebagai satu blok. Slogan ditolak ke kanan pada layar lebar
-              supaya tidak memutus baris nama. */}
-          <div className="flex flex-col gap-5 border-b border-neutral-100 p-6 sm:p-8 md:flex-row md:items-start md:justify-between">
-            <div className="flex min-w-0 items-start gap-4 sm:gap-5">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-neutral-950 font-mono text-2xl font-black text-white sm:h-16 sm:w-16 sm:text-3xl">
-                {String(active.number).padStart(2, "0")}
-              </span>
-              <div className="min-w-0">
-                <div className="text-[11px] font-medium tracking-normal text-neutral-500">
-                  Calon Ketua OSIS &middot; Nomor Urut {active.number}
-                </div>
-                <h2 className="mt-1 text-2xl font-black tracking-tight text-neutral-950 sm:text-3xl">
-                  {active.name}
-                </h2>
+          {/* Identitas paslon memakai layout yang sama persis dengan kartu
+              di beranda: badge nomor di kiri, nama dengan chip kelas di
+              kanan, baris wakil, lalu slogan di bawahnya. */}
+          <div className="border-b border-neutral-100 p-6 sm:p-8">
+            <div className="flex items-start gap-4 sm:gap-5">
+              <div className="flex flex-col items-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand font-mono text-xl font-black text-brand-ink shadow-brand sm:h-14 sm:w-14 sm:text-2xl">
+                  {String(active.number).padStart(2, "0")}
+                </span>
+                <span className="mt-1 text-[11px] font-medium tracking-normal text-neutral-500">
+                  Urut
+                </span>
+              </div>
 
-                <dl className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px]">
-                  <div className="flex items-center gap-1.5">
-                    <dt className="text-neutral-500">Ketua</dt>
-                    <dd className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 font-mono text-neutral-700">
-                      {active.class_name}
-                    </dd>
-                  </div>
+              <div className="min-w-0 flex-1">
+                <div className="grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-2">
+                  <h2 className="min-w-0 text-xl font-bold tracking-tight text-neutral-950 sm:text-2xl">
+                    {active.name}
+                  </h2>
+                  <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[13px] font-medium text-neutral-600">
+                    {active.class_name}
+                  </span>
 
                   {active.wakil_name && (
-                    <div className="flex min-w-0 items-center gap-1.5">
-                      <span aria-hidden className="h-4 w-px bg-neutral-200" />
-                      <dt className="text-neutral-500">Wakil</dt>
-                      <dd className="min-w-0 truncate font-semibold text-neutral-800">
-                        {active.wakil_name}
-                      </dd>
+                    <>
+                      <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-[15px] leading-snug sm:text-base">
+                        <span className="text-sm font-semibold text-neutral-500">
+                          Wakil:
+                        </span>
+                        <span className="min-w-0 font-semibold text-neutral-800">
+                          {active.wakil_name}
+                        </span>
+                      </div>
                       {active.wakil_class_name && (
-                        <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 font-mono text-neutral-600">
+                        <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[13px] text-neutral-500">
                           {active.wakil_class_name}
                         </span>
                       )}
-                    </div>
+                    </>
                   )}
-                </dl>
+                </div>
+
+                {active.slogan && (
+                  <p className="mt-1 text-xs italic text-neutral-600 sm:text-sm">
+                    <span className="font-medium">
+                      &ldquo;{active.slogan}&rdquo;
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
-
-            {active.slogan && (
-              <blockquote className="max-w-sm rounded-xl border-l-4 border-brand bg-brand-wash/70 px-4 py-3 md:shrink-0">
-                <div className="text-[11px] font-medium tracking-normal text-neutral-500">
-                  Slogan
-                </div>
-                <p className="mt-1 text-sm font-semibold italic leading-relaxed text-neutral-900">
-                  &ldquo;{active.slogan}&rdquo;
-                </p>
-              </blockquote>
-            )}
           </div>
 
           <div className="p-6 sm:p-8">
