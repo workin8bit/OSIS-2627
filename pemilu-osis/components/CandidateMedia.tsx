@@ -96,9 +96,45 @@ export function CandidateMedia({
   const url = photoOnly
     ? candidate.photo_url || ""
     : candidate.video_url || candidate.photo_url || "";
-  const height = compact ? "h-40 sm:h-48" : "h-64 sm:h-80";
 
   if (!url) {
+    // Pada mode compact media jadi thumbnail di samping teks, jadi
+    // placeholder harus berukuran sama - bukan blok aspect-video.
+    if (compact) {
+      return (
+        <div className="flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-neutral-300 bg-neutral-50">
+          {photoOnly ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-7 w-7 text-neutral-400"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-7 w-7 text-neutral-400"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          )}
+        </div>
+      );
+    }
     return (
       <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50">
         <div className="text-center">
@@ -179,7 +215,7 @@ export function CandidateMedia({
       <img
         src={url}
         alt={candidate.name}
-        className={`w-full object-cover ${height}`}
+        className={`w-full object-cover ${compact ? "aspect-[3/4]" : "h-64 sm:h-80"}`}
       />
     </div>
   );

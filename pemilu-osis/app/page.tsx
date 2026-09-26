@@ -367,28 +367,30 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <CandidateMedia candidate={c} compact photoOnly />
+                  {/* Foto kecil di kiri, visi di sebelahnya. Misi tetap
+                      lebar penuh di bawah supaya card tidak memanjang. */}
+                  <div className="mt-4 flex gap-4 border-t border-neutral-100 pt-4">
+                    <div className="w-20 shrink-0 sm:w-24">
+                      <CandidateMedia candidate={c} compact photoOnly />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold text-neutral-950">
+                        Visi
+                      </div>
+                      <div className="mt-1 whitespace-pre-line text-left text-[13px] leading-relaxed text-neutral-700 sm:text-sm">
+                        {c.vision || "\u2014"}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-left text-[13px] leading-relaxed text-neutral-700 sm:justify sm:text-justify sm:text-sm">
-                      <div>
-                        <div className="text-xs font-semibold text-neutral-950">
-                          Visi
-                        </div>
-                        <div className="mt-1 whitespace-pre-line">
-                          {c.vision || "\u2014"}
-                        </div>
+                  {c.mission && (
+                    <div className="mt-3 space-y-2 border-t border-neutral-100 pt-3">
+                      <div className="text-xs font-semibold text-neutral-950">
+                        Misi Prioritas
                       </div>
-                    {c.mission && (
-                      <div className="border-t border-neutral-100 pt-3">
-                        <div className="text-xs font-semibold text-neutral-950">
-                          Misi Prioritas
-                        </div>
-                        <MissionList text={c.mission} compact />
-                      </div>
-                    )}
-                  </div>
+                      <MissionList text={c.mission} compact />
+                    </div>
+                  )}
 
                   <div className="mt-4 flex justify-end border-t border-neutral-100 pt-4">
                     <Link
