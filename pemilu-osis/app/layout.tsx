@@ -25,7 +25,7 @@ export default function RootLayout({
               <span className="font-semibold tracking-tight text-neutral-900">
                 E-Pilketos
               </span>
-              <span>— Platform Pemilihan Suara Daring</span>
+              <span>— Platform Pemilihan Ketua OSIS</span>
             </div>
             <div className="text-neutral-500 text-center sm:text-right">
               OSIS SMA Negeri 3 Rembang &middot; Tri Hita Karana

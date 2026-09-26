@@ -151,6 +151,16 @@ p {
   animation: fade-up 0.45s var(--ease-apple) both;
 }
 
+/* --- Bottom navigation (mobile) -----------------------------------------
+   The bottom nav is position:fixed, so the document needs matching bottom
+   padding or the last card ends up underneath it. Applied on body instead of
+   per page so no route can be missed. */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+  }
+}
+
 /* --- Surfaces ---------------------------------------------------------- */
 /* Card: hairline + layered soft shadow instead of a hard border. */
 .surface {

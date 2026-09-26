@@ -74,7 +74,7 @@ export default function HomePage() {
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex flex-col items-start gap-1.5">
           <span className="inline-flex w-fit items-center rounded-lg border border-brand/40 bg-brand-wash px-2.5 py-1 text-[13px] font-semibold text-neutral-950">
-            Sistem Pemungutan Suara Pemilihan Ketua OSIS
+            Platform Pemilihan Ketua OSIS
           </span>
           <span className="text-[13px] text-neutral-500">
             {schoolLabel} &middot; Periode {year}
