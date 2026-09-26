@@ -15,7 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
-      <body className="min-h-screen flex flex-col bg-[#fafafa] text-neutral-900 selection:bg-neutral-900 selection:text-white">
+      <body className="min-h-screen flex flex-col text-neutral-900 selection:bg-neutral-900 selection:text-white">
         <Header />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-neutral-200/80 bg-white py-8 text-neutral-500">
