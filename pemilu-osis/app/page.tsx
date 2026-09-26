@@ -54,7 +54,7 @@ export default function HomePage() {
   const year = status?.academic_year || "2026/2027";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-8 sm:pb-24">
+    <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-8 sm:pb-20">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <span
@@ -90,7 +90,7 @@ export default function HomePage() {
       </div>
 
 
-      <section className="mt-10 grid gap-8 lg:grid-cols-12 lg:items-start sm:mt-14">
+      <section className="mt-8 grid gap-8 sm:mt-10 lg:grid-cols-12 lg:items-start lg:gap-10">
         <div className="lg:col-span-5 lg:sticky lg:top-24">
           <div className="text-[13px] font-medium text-brand-deep">
             Kandidat Calon Ketua & Wakil OSIS
@@ -102,7 +102,7 @@ export default function HomePage() {
             Kenali rekam jejak, visi, dan gagasan nyata setiap pasangan calon sebelum memberikan hak suaramu di bilik digital.
           </p>
 
-          <div className="mt-7 grid grid-cols-2 gap-6 border-y border-neutral-200/80 py-4">
+          <div className="mt-6 grid grid-cols-2 gap-6 border-y border-neutral-200/80 py-4">
             <div>
               <div className="text-[12px] text-neutral-500">Total Paslon</div>
               <div className="mt-1 text-xl font-semibold tracking-tight text-neutral-950 tabular-nums">
@@ -385,7 +385,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mt-16 sm:mt-20 border-t border-brand/30 pt-12">
+      <section className="mt-12 border-t border-neutral-200 pt-8 sm:mt-16 sm:pt-10">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <div className="font-medium text-[11px] tracking-normal text-brand-deep">
@@ -420,7 +420,7 @@ export default function HomePage() {
           ].map((item) => (
             <div
               key={item.step}
-              className="rounded-2xl border border-brand/40 bg-brand-wash p-6 transition-all hover:border-brand-dark hover:shadow-brand"
+              className="rounded-2xl border border-neutral-200 bg-white p-6 transition-colors hover:border-brand/50"
             >
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand font-mono text-lg font-black text-brand-ink shadow-brand">
                 {item.step}
@@ -436,22 +436,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mt-12 rounded-2xl border border-neutral-900 bg-brand p-6 sm:p-8 text-brand-ink">
+      <section className="mt-12 rounded-2xl bg-neutral-950 p-6 sm:mt-16 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="max-w-xl">
-            <span className="font-medium text-[11px] tracking-normal text-neutral-800">
+            <span className="font-medium text-[11px] tracking-normal text-brand">
               Jaminan Sistem
             </span>
-            <h3 className="mt-1 text-lg sm:text-xl font-bold tracking-tight text-brand-ink">
+            <h3 className="mt-1 text-lg sm:text-xl font-bold tracking-tight text-white">
               Langsung, Umum, Bebas, Rahasia, Jujur &amp; Adil
             </h3>
-            <p className="mt-2 text-xs sm:text-sm text-neutral-800 leading-relaxed">
+            <p className="mt-2 text-xs sm:text-sm text-neutral-300 leading-relaxed">
               Pilihan suara dienkripsi dan diikat dengan proteksi Row-Level Security (RLS). Tidak ada pengurus atau guru yang dapat mengaitkan nama siswa dengan nomor paslon yang dicoblos.
             </p>
           </div>
           <Link
             href="/vote"
-            className="press inline-flex shrink-0 items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold tracking-normal text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
+            className="press inline-flex shrink-0 items-center justify-center rounded-full bg-brand px-5 py-3 text-sm font-semibold tracking-normal text-brand-ink transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             Mulai Pilih Sekarang
           </Link>

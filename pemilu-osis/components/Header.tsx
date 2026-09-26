@@ -82,7 +82,7 @@ export default function Header() {
             href="/vote"
             title="Masuk Bilik Suara"
             aria-label="Masuk Bilik Suara"
-            className={`${base} bg-brand text-brand-ink hover:bg-brand-hover`}
+            className={`${base} border border-brand/45 bg-white text-brand-deep hover:border-brand hover:bg-brand-wash`}
           >
             <VoteIcon className="h-5 w-5" />
           </Link>
