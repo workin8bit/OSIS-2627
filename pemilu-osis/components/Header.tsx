@@ -36,15 +36,9 @@ export default function Header() {
             height={44}
             className="h-11 w-11 flex-shrink-0 rounded-xl border border-neutral-200 bg-neutral-50 object-contain p-1 transition-transform group-hover:scale-95"
           />
-          <span className="hidden min-w-0 leading-tight sm:block">
-            <span className="block text-base font-bold tracking-tight text-neutral-900 sm:text-[17px]">
+          <span className="hidden leading-tight sm:block">
+            <span className="block text-lg font-bold tracking-tight text-neutral-900 sm:text-xl">
               E-Pilketos
-            </span>
-            <span
-              title="Sistem Pemungutan Suara Pemilihan Ketua OSIS"
-              className="mt-0.5 block truncate text-[11px] font-medium tracking-normal text-neutral-500 lg:text-xs"
-            >
-              Sistem Pemungutan Suara Pemilihan Ketua OSIS
             </span>
           </span>
           <span className="sr-only sm:hidden">E-Pilketos</span>

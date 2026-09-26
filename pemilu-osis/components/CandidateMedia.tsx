@@ -28,7 +28,7 @@ export function MissionList({
 }) {
   if (!text) return null;
   const lines = text.split(/\r?\n/);
-  const body = compact ? "text-[13px] sm:text-[14px]" : "text-sm";
+  const body = compact ? "text-[13px] sm:text-[14px] sm:text-justify" : "text-sm";
 
   return (
     <ul className={`mt-1 space-y-1.5 leading-relaxed text-neutral-700 ${body}`}>

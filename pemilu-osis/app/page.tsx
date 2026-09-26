@@ -72,7 +72,10 @@ export default function HomePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-8 sm:pb-20">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-start gap-1.5">
+          <span className="inline-flex w-fit items-center rounded-lg border border-brand/40 bg-brand-wash px-2.5 py-1 text-[13px] font-semibold text-neutral-950">
+            Sistem Pemungutan Suara Pemilihan Ketua OSIS
+          </span>
           <span className="text-[13px] text-neutral-500">
             {schoolLabel} &middot; Periode {year}
           </span>
@@ -374,10 +377,10 @@ export default function HomePage() {
                       <CandidateMedia candidate={c} compact photoOnly />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-semibold text-neutral-950">
+                      <div className="text-[13px] font-bold text-neutral-950">
                         Visi
                       </div>
-                      <div className="mt-1 whitespace-pre-line text-left text-[13px] leading-relaxed text-neutral-700 sm:text-sm">
+                      <div className="mt-1 whitespace-pre-line text-left text-[13px] leading-relaxed text-neutral-700 sm:text-justify sm:text-sm">
                         {c.vision || "\u2014"}
                       </div>
                     </div>
@@ -385,7 +388,7 @@ export default function HomePage() {
 
                   {c.mission && (
                     <div className="mt-3 space-y-2 border-t border-neutral-100 pt-3">
-                      <div className="text-xs font-semibold text-neutral-950">
+                      <div className="text-[13px] font-bold text-neutral-950">
                         Misi Prioritas
                       </div>
                       <MissionList text={c.mission} compact />
