@@ -172,6 +172,21 @@ p {
   box-shadow: var(--shadow-lift);
 }
 
+/* .surface Sets border and box-shadow directly, and it is declared after
+   the Tailwind import, so utilities like `hover:border-brand/45` lose the
+   cascade and silently do nothing. This modifier owns those two properties
+   so card hover can actually change them. */
+.surface-accent {
+  transition:
+    border-color 0.2s var(--ease-apple),
+    box-shadow 0.2s var(--ease-apple);
+}
+
+.surface-accent:hover {
+  border-color: color-mix(in srgb, var(--color-brand) 45%, transparent);
+  box-shadow: var(--shadow-lift);
+}
+
 /* Brand glow: a warm, low-opacity halo instead of a muddy solid shadow */
 .shadow-brand {
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 22px -8px rgb(240 230 15 / 0.6);

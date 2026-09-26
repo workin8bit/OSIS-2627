@@ -317,7 +317,7 @@ export default function HomePage() {
             {candidates.map((c) => (
               <article
                 key={c.id}
-                className="surface p-5 transition-shadow hover:shadow-md sm:p-6"
+                className="surface surface-accent p-5 sm:p-6"
               >
                   <div className="flex items-start gap-4 sm:gap-5">
                     <div className="flex flex-col items-center">
@@ -368,7 +368,7 @@ export default function HomePage() {
                   </div>
 
                   <div className="mt-4">
-                    <CandidateMedia candidate={c} compact />
+                    <CandidateMedia candidate={c} compact photoOnly />
                   </div>
 
                   <div className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-left text-[13px] leading-relaxed text-neutral-700 sm:justify sm:text-justify sm:text-sm">

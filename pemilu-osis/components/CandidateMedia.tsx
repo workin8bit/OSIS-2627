@@ -82,38 +82,64 @@ export function MissionList({
 export function CandidateMedia({
   candidate,
   compact = false,
+  photoOnly = false,
 }: {
   candidate: Candidate;
   compact?: boolean;
+  /**
+   * Abaikan video dan pakai foto saja. Dipakai di beranda supaya kartu
+   * ringkas tidak memuat iframe; video tetap bisa dilihat di halaman
+   * Paslon yang memanggil tanpa properti ini.
+   */
+  photoOnly?: boolean;
 }) {
-  const url = candidate.video_url || candidate.photo_url || "";
+  const url = photoOnly
+    ? candidate.photo_url || ""
+    : candidate.video_url || candidate.photo_url || "";
   const height = compact ? "h-40 sm:h-48" : "h-64 sm:h-80";
 
   if (!url) {
     return (
       <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50">
         <div className="text-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="mx-auto h-10 w-10 text-neutral-500"
-          >
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
+          {photoOnly ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mx-auto h-10 w-10 text-neutral-500"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mx-auto h-10 w-10 text-neutral-500"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          )}
           <span className="font-medium mt-2 block text-[11px] tracking-normal text-neutral-500">
-            Media Kampanye
+            {photoOnly ? "Foto Paslon" : "Media Kampanye"}
           </span>
         </div>
       </div>
     );
   }
 
-  if (candidate.video_url && (isYouTube(url) || isVimeo(url))) {
+  if (!photoOnly && candidate.video_url && (isYouTube(url) || isVimeo(url))) {
     return (
       <div className="overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-950">
         <div className="relative aspect-video">
@@ -129,7 +155,7 @@ export function CandidateMedia({
     );
   }
 
-  if (candidate.video_url && isDirectMedia(url)) {
+  if (!photoOnly && candidate.video_url && isDirectMedia(url)) {
     return (
       <div
         className="overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-950"

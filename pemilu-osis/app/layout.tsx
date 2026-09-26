@@ -28,8 +28,7 @@ export default function RootLayout({
               <span>— Platform Pemilihan Suara Daring</span>
             </div>
             <div className="text-neutral-500 text-center sm:text-right">
-              <div>Prinsip Luber Jurdil &middot; OSIS SMAN 3 REMBANG 26/27</div>
-              <div>Tri Hita Karana</div>
+              OSIS SMA Negeri 3 Rembang &middot; Tri Hita Karana
             </div>
           </div>
         </footer>
