@@ -335,19 +335,8 @@ export default function VotePage() {
                   </span>
                 </div>
                 {chosen.wakil_name && (
-                  <div className="mt-0.5 flex min-w-0 flex-wrap items-baseline gap-x-2 text-[11px]">
-                    <span className="font-mono text-neutral-500">Wakil: </span>
-                    <span className="min-w-0 font-semibold text-neutral-800">
-                      {chosen.wakil_name}
-                      {chosen.wakil_class_name && (
-                        <span
-                          aria-label={`kelas ${chosen.wakil_class_name}`}
-                          className="ml-1.5 font-mono text-neutral-500"
-                        >
-                          {chosen.wakil_class_name}
-                        </span>
-                      )}
-                    </span>
+                  <div className="mt-0.5 min-w-0 font-bold text-neutral-950">
+                    {chosen.wakil_name}
                   </div>
                 )}
               </div>
@@ -364,7 +353,7 @@ export default function VotePage() {
             className="press w-full rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-ink shadow-brand transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark disabled:opacity-40 sm:w-auto"
           >
             <span className="flex items-center justify-center gap-1.5">
-              Kunci &amp; Coblos Suara
+              Kunci &amp; Gunakan Hak Suara
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
