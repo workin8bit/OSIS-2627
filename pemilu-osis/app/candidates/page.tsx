@@ -34,6 +34,10 @@ export default function CandidatesPage() {
   };
 
   const active = candidates.find((c) => c.id === activeTab) ?? candidates[0];
+  // Foto sudah tampil di kartu identitas, jadi blok media besar di bawah
+  // hanya perlu ada kalau paslon punya video. Tanpa syarat ini, paslon
+  // tanpa video akan menampilkan fotonya dua kali di satu kartu.
+  const hasVideo = Boolean(active?.video_url);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
@@ -85,17 +89,12 @@ export default function CandidatesPage() {
       {active && (
         <article className="surface fade-up mt-6 overflow-hidden shadow-xs">
           {/* Identitas paslon memakai layout yang sama persis dengan kartu
-              di beranda: badge nomor di kiri, nama dengan chip kelas di
-              kanan, baris wakil, lalu slogan di bawahnya. */}
+              di beranda, hanya saja kolom kiri memakai foto paslon, bukan
+              badge nomor urut. */}
           <div className="border-b border-neutral-100 p-6 sm:p-8">
             <div className="flex items-start gap-4 sm:gap-5">
-              <div className="flex flex-col items-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand font-mono text-xl font-black text-brand-ink shadow-brand sm:h-14 sm:w-14 sm:text-2xl">
-                  {String(active.number).padStart(2, "0")}
-                </span>
-                <span className="mt-1 text-[11px] font-medium tracking-normal text-neutral-500">
-                  Urut
-                </span>
+              <div className="w-20 shrink-0 sm:w-24">
+                <CandidateMedia candidate={active} compact photoOnly />
               </div>
 
               <div className="min-w-0 flex-1">
@@ -138,16 +137,20 @@ export default function CandidatesPage() {
           </div>
 
           <div className="p-6 sm:p-8">
-            <CandidateMedia candidate={active} />
+            {hasVideo && <CandidateMedia candidate={active} />}
 
             {/* Visi dan misi dalam satu container dengan dua baris terpisah.
                 Penomoran "01 / 02" dihapus karena tidak menambah informasi. */}
-            <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50/60">
+            <div
+              className={`overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50/60 ${
+                hasVideo ? "mt-6" : ""
+              }`}
+            >
               <div className="p-5 sm:p-6">
                 <h3 className="text-[12px] font-bold tracking-[0.08em] text-neutral-900 uppercase">
                   Visi Strategis
                 </h3>
-                <p className="mt-2.5 text-[15px] leading-relaxed whitespace-pre-line text-neutral-700">
+                <p className="mt-2.5 text-[15px] leading-relaxed whitespace-pre-line text-neutral-700 text-left sm:text-justify">
                   {active.vision || "Belum ada visi tercantum."}
                 </p>
               </div>
@@ -159,10 +162,10 @@ export default function CandidatesPage() {
                 {active.mission ? (
                   <MissionList
                     text={active.mission}
-                    className="mt-2.5 text-[15px] leading-relaxed"
+                    className="mt-2.5 text-[15px] leading-relaxed text-left sm:text-justify"
                   />
                 ) : (
-                  <p className="mt-2.5 text-[15px] leading-relaxed text-neutral-700">
+                  <p className="mt-2.5 text-[15px] leading-relaxed text-neutral-700 text-left sm:text-justify">
                     Belum ada rincian misi tercantum.
                   </p>
                 )}
@@ -172,7 +175,8 @@ export default function CandidatesPage() {
 
           <div className="flex flex-col items-center justify-between gap-4 border-t border-neutral-100 px-6 py-5 sm:flex-row sm:px-8">
             <span className="text-xs text-neutral-500">
-              Yakin dengan kandidat ini? Gunakan hak suaramu di bilik.
+              Yakin dengan kandidat ini? Gunakan hak suaramu di bilik suara
+              digital.
             </span>
             <Link
               href="/vote"
