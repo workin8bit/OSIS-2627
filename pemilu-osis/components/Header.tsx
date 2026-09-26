@@ -24,24 +24,27 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200/80 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+      <div className="mx-auto flex min-h-[68px] max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link
           href="/"
-          className="group flex shrink-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
+          className="group flex min-w-0 items-center gap-3 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
         >
           <img
             src="/logo-osis.jpg"
             alt=""
-            width={36}
-            height={36}
-            className="h-9 w-9 flex-shrink-0 rounded-lg border border-neutral-200 bg-neutral-50 object-contain p-1 transition-transform group-hover:scale-95"
+            width={44}
+            height={44}
+            className="h-11 w-11 flex-shrink-0 rounded-xl border border-neutral-200 bg-neutral-50 object-contain p-1 transition-transform group-hover:scale-95"
           />
-          <span className="hidden leading-tight sm:block">
-            <span className="block text-sm font-bold tracking-tight text-neutral-900">
+          <span className="hidden min-w-0 leading-tight sm:block">
+            <span className="block text-base font-bold tracking-tight text-neutral-900 sm:text-[17px]">
               E-Pilketos
             </span>
-            <span className="block text-[11px] font-medium tracking-normal text-neutral-500">
-              Sistem Suara Siswa
+            <span
+              title="Sistem Pemungutan Suara Pemilihan Ketua OSIS"
+              className="mt-0.5 block truncate text-[11px] font-medium tracking-normal text-neutral-500 lg:text-xs"
+            >
+              Sistem Pemungutan Suara Pemilihan Ketua OSIS
             </span>
           </span>
           <span className="sr-only sm:hidden">E-Pilketos</span>
