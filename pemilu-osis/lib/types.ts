@@ -27,6 +27,8 @@ export interface VoterInfo {
   name: string;
   class_name: string;
   has_voted: boolean;
+  /** "siswa" atau "guru". opsional selama check_voter belum mengembalikan role. */
+  role?: string;
 }
 
 export interface VoterSession {
@@ -34,6 +36,8 @@ export interface VoterSession {
   name: string;
   class_name: string;
   has_voted: boolean;
+  /** Disalin dari VoterInfo.role; menentukan label NISN atau NIP. */
+  role?: string;
 }
 
 export interface VoterRow {

@@ -31,6 +31,9 @@ export default function LoginPage() {
         name: info.name,
         class_name: info.class_name,
         has_voted: info.has_voted,
+        // Disimpan supaya bilik suara bisa menulis NIP untuk guru dan
+        // NISN untuk siswa. Kalau role belum ada, dianggap siswa.
+        role: info.role,
       };
       localStorage.setItem(SESSION_KEY, JSON.stringify(session));
       sessionStorage.setItem("osis_pw", password);

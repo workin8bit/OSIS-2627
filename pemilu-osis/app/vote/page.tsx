@@ -74,7 +74,7 @@ export default function VotePage() {
         .checkVoter(s.NISN, pw)
         .then((info) => {
           if (info) {
-            const next = { ...s, has_voted: info.has_voted };
+            const next = { ...s, has_voted: info.has_voted, role: info.role ?? s.role };
             setSession(next);
             localStorage.setItem(SESSION_KEY, JSON.stringify(next));
           }
@@ -99,6 +99,9 @@ export default function VotePage() {
   const voted = votedNow || session.has_voted;
   const notOpen = status ? !status.is_open : false;
   const chosen = candidates.find((c) => c.id === selected) ?? null;
+  // Guru memakai NIP, siswa memakai NISN. Field yang menyimpan identitas
+  // sama, hanya labelnya yang berbeda.
+  const labelId = session.role === "guru" ? "NIP" : "NISN";
 
   const submit = async () => {
     if (!selected) return;
@@ -192,7 +195,7 @@ export default function VotePage() {
           <div>
             <div className="font-bold text-neutral-900 text-sm">{session.name}</div>
             <div className="font-mono text-xs text-neutral-500">
-              {session.class_name} · NISN {session.NISN}
+              {session.class_name} · {labelId} {session.NISN}
             </div>
           </div>
         </div>
@@ -331,14 +334,13 @@ export default function VotePage() {
                 <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
                   <span className="font-mono text-neutral-500">Pilihan: </span>
                   <span className="min-w-0 font-bold text-neutral-950">
-                    {chosen.name} (No. {chosen.number})
+                    No. {chosen.number}
                   </span>
                 </div>
-                {chosen.wakil_name && (
-                  <div className="mt-0.5 min-w-0 font-bold text-neutral-950">
-                    {chosen.wakil_name}
-                  </div>
-                )}
+                <div className="mt-0.5 min-w-0 font-bold text-neutral-950">
+                  {chosen.name}
+                  {chosen.wakil_name && ` & ${chosen.wakil_name}`}
+                </div>
               </div>
             ) : (
               <span className="font-mono text-xs text-neutral-500">
