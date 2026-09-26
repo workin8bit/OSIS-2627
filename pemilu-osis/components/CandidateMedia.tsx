@@ -105,7 +105,7 @@ export function CandidateMedia({
           >
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
-          <span className="font-medium mt-2 block text-[10px] tracking-normal text-neutral-500">
+          <span className="font-medium mt-2 block text-[11px] tracking-normal text-neutral-500">
             Media Kampanye
           </span>
         </div>

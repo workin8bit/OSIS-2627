@@ -40,7 +40,7 @@ export default function Header() {
             <span className="block text-sm font-bold tracking-tight text-neutral-900">
               E-Pilketos
             </span>
-            <span className="block text-[10px] font-medium tracking-normal text-neutral-500">
+            <span className="block text-[11px] font-medium tracking-normal text-neutral-500">
               Sistem Suara Siswa
             </span>
           </span>

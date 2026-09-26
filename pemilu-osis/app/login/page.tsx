@@ -48,7 +48,7 @@ export default function LoginPage() {
         <div className="surface border-t-4 border-t-brand p-7 sm:p-8">
           <div className="flex items-center justify-between border-b border-neutral-100 pb-5">
             <div>
-              <span className="font-medium text-[10px] tracking-normal text-neutral-500">
+              <span className="font-medium text-[11px] tracking-normal text-neutral-500">
                 Akses Pemilih
               </span>
               <h1 className="text-xl font-black tracking-tight text-neutral-950">

@@ -4,26 +4,24 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/backend";
 import { countdownParts, fmtDateTime } from "@/lib/format";
-import type { Candidate, Status, Tally } from "@/lib/types";
+import type { Candidate, Status } from "@/lib/types";
 import { CandidateMedia, MissionList } from "@/components/CandidateMedia";
 
 export default function HomePage() {
   const [guideOpen, setGuideOpen] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [tally, setTally] = useState<Tally | null>(null);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    api.getStatus().then((s) => { console.log("getStatus:", s); setStatus(s); }).catch((e) => console.error("getStatus error:", e));
+    api
+      .getStatus()
+      .then(setStatus)
+      .catch(() => {});
     api
       .listCandidates()
-      .then((cs) => {
-        console.log("listCandidates:", cs);
-        setCandidates(cs.filter((c) => c.is_active));
-      })
-      .catch((e) => console.error("listCandidates error:", e));
-    api.getTally().then((t) => { console.log("getTally:", t); setTally(t); }).catch((e) => console.error("getTally error:", e));
+      .then((cs) => setCandidates(cs.filter((c) => c.is_active)))
+      .catch(() => {});
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
@@ -66,12 +64,18 @@ export default function HomePage() {
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-semibold ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
               isLive
                 ? "bg-brand text-brand-ink"
                 : "border border-neutral-300 bg-neutral-100 text-neutral-700"
             }`}
           >
+            {!status && (
+              <span
+                aria-hidden
+                className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-neutral-400 border-t-transparent"
+              />
+            )}
             {stateLabel}
           </span>
           {detail && (
@@ -110,7 +114,7 @@ export default function HomePage() {
               </svg>
             </span>
             <div>
-              <div className="font-medium text-[10px] tracking-normal text-neutral-500">
+              <div className="font-medium text-[11px] tracking-normal text-neutral-500">
                 Panduan
               </div>
               <h2 className="text-base font-bold tracking-tight text-neutral-950">
@@ -250,7 +254,7 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <div className="text-[10px] tracking-normal text-neutral-500">
+              <div className="text-[11px] tracking-normal text-neutral-500">
                 Hak Suara
               </div>
               <div className="mt-0.5 text-lg font-bold tracking-tight text-neutral-950">
@@ -307,7 +311,7 @@ export default function HomePage() {
                     <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand font-mono text-xl font-black text-brand-ink shadow-brand sm:h-14 sm:w-14 sm:text-2xl">
                       {String(c.number).padStart(2, "0")}
                     </span>
-                      <span className="font-medium mt-1 text-[9px] tracking-normal text-neutral-500">
+                      <span className="font-medium mt-1 text-[11px] tracking-normal text-neutral-500">
                         Urut
                       </span>
                     </div>
@@ -324,14 +328,14 @@ export default function HomePage() {
 
                       {c.wakil_name && (
                         <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-600">
-                          <span className="text-[10px] font-semibold text-neutral-500">
+                          <span className="text-[11px] font-semibold text-neutral-500">
                             Wakil:
                           </span>
                           <span className="font-semibold text-neutral-800">
                             {c.wakil_name}
                           </span>
                           {c.wakil_class_name && (
-                            <span className="rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500">
+                            <span className="rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[11px] text-neutral-500">
                               {c.wakil_class_name}
                             </span>
                           )}
@@ -354,7 +358,7 @@ export default function HomePage() {
 
                   <div className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-xs leading-relaxed text-neutral-700">
                       <div>
-                        <span className="text-[10px] font-semibold text-neutral-950">
+                        <span className="text-[11px] font-semibold text-neutral-950">
                           Visi:{" "}
                         </span>
                         <span className="whitespace-pre-line">
@@ -363,7 +367,7 @@ export default function HomePage() {
                       </div>
                     {c.mission && (
                       <div className="border-t border-neutral-100 pt-3">
-                        <span className="text-[10px] font-semibold text-neutral-950">
+                        <span className="text-[11px] font-semibold text-neutral-950">
                           Misi Prioritas:
                         </span>
                         <MissionList text={c.mission} compact />
@@ -436,7 +440,7 @@ export default function HomePage() {
       <section className="mt-12 rounded-2xl border border-neutral-900 bg-brand p-6 sm:p-8 text-brand-ink">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="max-w-xl">
-            <span className="font-medium text-[10px] tracking-normal text-neutral-800">
+            <span className="font-medium text-[11px] tracking-normal text-neutral-800">
               Jaminan Sistem
             </span>
             <h3 className="mt-1 text-lg sm:text-xl font-bold tracking-tight text-brand-ink">

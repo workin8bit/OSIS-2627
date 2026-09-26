@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { type FC, useCallback, useEffect, useMemo, useState } from "react";
+import { type FC, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { api, isDemoMode } from "@/lib/backend";
 import { fmtDateTime, fromLocalInput, pct, toLocalInput } from "@/lib/format";
 import {
@@ -26,19 +26,7 @@ import {
   SettingsIcon,
   AlertTriangleIcon,
   LockIcon,
-  PlusIcon,
-  EditIcon,
-  TrashIcon,
-  RefreshCwIcon,
-  SearchIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MoreHorizontalIcon,
-  EyeIcon,
-  EyeOffIcon,
-  SaveIcon,
   XIcon,
-  CheckIcon,
   AlertCircleIcon,
 } from "@/components/Icons";
 
@@ -415,7 +403,7 @@ function DashboardTab({ username, key_ }: { username: string; key_: string }) {
                   <div className="text-lg font-black leading-none text-neutral-950 tabular-nums">
                     {votes}
                   </div>
-                  <div className="mt-0.5 font-mono text-[10px] text-brand-deep">
+                  <div className="mt-0.5 font-mono text-[11px] text-brand-deep">
                     {pct(votes, totalVotes)}%
                   </div>
                 </div>
@@ -984,23 +972,30 @@ function VotersTab({
         </div>
 
         {/* Drop zone / pilih file */}
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragging(false);
-            void handleFile(e.dataTransfer.files?.[0]);
-          }}
-          className={`mt-4 rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
+        <label
+          htmlFor="voter-file"
+          className={`relative mt-4 block cursor-pointer rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
             dragging
               ? "border-brand-dark bg-brand-wash"
               : "border-neutral-300 bg-neutral-50/60"
           }`}
         >
+          {/* Drag-and-drop tidak punya padanan keyboard; jalur keyboard dan
+              screen reader memakai input file di bawah lewat label ini. */}
+          <div
+            aria-hidden
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              void handleFile(e.dataTransfer.files?.[0]);
+            }}
+            className="absolute inset-0"
+          />
           <input
             id="voter-file"
             type="file"
@@ -1013,12 +1008,9 @@ function VotersTab({
           />
           <p className="text-sm font-semibold text-neutral-700">
             Tarik file ke sini, atau{" "}
-            <label
-              htmlFor="voter-file"
-              className="cursor-pointer font-bold text-brand-deep underline underline-offset-4 hover:text-neutral-900"
-            >
+            <span className="font-bold text-brand-deep underline underline-offset-4">
               pilih file
-            </label>
+            </span>
           </p>
           <p className="mt-1 text-xs text-neutral-500">
             Format: <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono">.csv</code>,{" "}
@@ -1076,11 +1068,11 @@ function VotersTab({
               )}
             </div>
           )}
-        </div>
+        </label>
 
         <div className="my-4 flex items-center gap-3">
           <span className="h-px flex-1 bg-neutral-200" />
-          <span className="font-medium text-[10px] tracking-normal text-neutral-500">
+          <span className="font-medium text-[11px] tracking-normal text-neutral-500">
             atau tempel manual
           </span>
           <span className="h-px flex-1 bg-neutral-200" />
@@ -1425,18 +1417,26 @@ function SettingsTab({
             Kosongkan field untuk tanpa batas waktu.
           </p>
 
-          <label className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl bg-neutral-50 px-4 py-3">
             <span className="text-sm font-semibold text-neutral-700">
               Buka voting (siswa bisa memilih)
             </span>
-            <Switch on={isOpen} onChange={setIsOpen} />
-          </label>
-          <label className="flex items-center justify-between rounded-xl bg-neutral-50 px-4 py-3">
+            <Switch
+              label="Buka voting (siswa bisa memilih)"
+              on={isOpen}
+              onChange={setIsOpen}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-4 rounded-xl bg-neutral-50 px-4 py-3">
             <span className="text-sm font-semibold text-neutral-700">
               Tampilkan hasil publik
             </span>
-            <Switch on={showResults} onChange={setShowResults} />
-          </label>
+            <Switch
+              label="Tampilkan hasil publik"
+              on={showResults}
+              onChange={setShowResults}
+            />
+          </div>
 
           {formError && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-800">
@@ -1503,15 +1503,18 @@ function SettingsTab({
 function Switch({
   on,
   onChange,
+  label,
 }: {
   on: boolean;
   onChange: (v: boolean) => void;
+  label: string;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={on}
+      aria-label={label}
       onClick={() => onChange(!on)}
       className={`press relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark ${
         on ? "bg-emerald-500" : "bg-neutral-300"
@@ -1616,20 +1619,43 @@ function Modal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  const headingId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    panelRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-neutral-900/50 p-4 backdrop-blur-sm sm:items-center"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center">
+      <button
+        type="button"
+        aria-label="Tutup"
+        onClick={onClose}
+        className="absolute inset-0 cursor-default bg-neutral-900/50 backdrop-blur-sm"
+      />
       <div
-        className="fade-up my-4 w-full max-w-2xl rounded-3xl bg-white p-7 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={headingId}
+        tabIndex={-1}
+        className="fade-up relative my-4 w-full max-w-2xl rounded-3xl bg-white p-7 shadow-2xl focus:outline-none"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold text-neutral-900">{title}</h2>
+          <h2 id={headingId} className="text-xl font-extrabold text-neutral-900">
+            {title}
+          </h2>
           <button
+            type="button"
+            aria-label="Tutup"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-600"
+            className="press flex h-8 w-8 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
           >
             <XIcon className="h-4 w-4" />
           </button>

@@ -13,6 +13,10 @@ next-env.d.ts
 .claude/
 skills-lock.json
 
+# Versi lama aplikasi dipindah keluar agar tidak ikut ter-deploy
+legacy/
+.screenshots/
+
 # --- Rahasia: jangan pernah masuk repo ---
 .env
 .env.*

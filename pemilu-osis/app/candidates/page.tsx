@@ -92,7 +92,7 @@ export default function CandidatesPage() {
 
             {active.slogan && (
               <div className="max-w-md rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                <span className="font-medium text-[10px] tracking-normal text-neutral-500">
+                <span className="font-medium text-[11px] tracking-normal text-neutral-500">
                   Slogan Perjuangan
                 </span>
                 <p className="mt-1 text-sm font-semibold italic text-neutral-800">
@@ -103,7 +103,7 @@ export default function CandidatesPage() {
 
             {active.wakil_name && (
               <div className="max-w-md rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                <span className="font-medium text-[10px] tracking-normal text-neutral-500">
+                <span className="font-medium text-[11px] tracking-normal text-neutral-500">
                   Calon Wakil Ketua OSIS
                 </span>
                 <div className="mt-2 flex items-center gap-3">
@@ -115,7 +115,7 @@ export default function CandidatesPage() {
                       {active.wakil_name}
                     </p>
                     {active.wakil_class_name && (
-                      <span className="font-mono text-[10px] text-neutral-500">
+                      <span className="font-mono text-[11px] text-neutral-500">
                         Kelas: {active.wakil_class_name}
                       </span>
                     )}
@@ -169,11 +169,16 @@ export default function CandidatesPage() {
         </div>
       )}
 
-      {candidates.length === 0 && (
-        <div className="mt-8 rounded-2xl border border-dashed border-neutral-300 p-12 text-center font-mono text-xs text-neutral-500">
-          Belum ada kandidat aktif.
-        </div>
-      )}
+        {candidates.length === 0 && (
+          <div className="mt-8 rounded-2xl border border-dashed border-neutral-300 bg-white p-12 text-center">
+            <p className="text-base font-semibold text-neutral-800">
+              Belum ada kandidat aktif
+            </p>
+            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-neutral-600">
+              Halaman ini akan terisi begitu panitia menambahkan pasangan calon.
+            </p>
+          </div>
+        )}
     </div>
   );
 }

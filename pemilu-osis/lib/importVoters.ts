@@ -131,11 +131,6 @@ export function parseDelimited(input: string, delimiter?: string): string[][] {
 /* Pembaca .xlsx (OOXML) tanpa dependency                                     */
 /* -------------------------------------------------------------------------- */
 
-interface ZipEntry {
-  name: string;
-  data: Uint8Array;
-}
-
 function u16(d: Uint8Array, o: number) {
   return d[o] | (d[o + 1] << 8);
 }
@@ -234,7 +229,7 @@ async function pickFirstSheet(
   if (!sheets.length) return null;
 
   const first = sheets[0];
-  let rid = first.getAttribute("r:id") || first.getAttributeNS(
+  const rid = first.getAttribute("r:id") || first.getAttributeNS(
     "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
     "id",
   );
@@ -404,7 +399,7 @@ export function buildVoters(matrix: string[][]): ImportResult {
 
     // NIS / NIP: kolom pertama dianggap identitas utama.
     let nisn = get("NISN");
-    let nip = get("NIP");
+    const nip = get("NIP");
     let role = (get("role") || "siswa").toLowerCase();
 
     if (role === "guru" || role === "guru/pegawai" || role === "teacher") {

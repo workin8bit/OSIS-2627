@@ -83,19 +83,21 @@ export default function VotePage() {
     setReady(true);
   }, [router]);
 
-  if (!ready) return null;
-  if (!session) return null;
-
-  const voted = votedNow || session.has_voted;
-  const notOpen = status ? !status.is_open : false;
-  const chosen = candidates.find((c) => c.id === selected) ?? null;
-
+  // Redirect setelah memilih: harus didaftarkan sebelum return awal,
+  // jika tidak hook hanya berjalan setelah render pertama selesai.
   useEffect(() => {
     if (votedNow) {
       const t = setTimeout(() => router.replace("/"), 5000);
       return () => clearTimeout(t);
     }
   }, [votedNow, router]);
+
+  if (!ready) return null;
+  if (!session) return null;
+
+  const voted = votedNow || session.has_voted;
+  const notOpen = status ? !status.is_open : false;
+  const chosen = candidates.find((c) => c.id === selected) ?? null;
 
   const submit = async () => {
     if (!selected) return;
@@ -170,7 +172,7 @@ export default function VotePage() {
               Beranda
             </Link>
           </div>
-          <p className="mt-4 text-[10px] text-neutral-500">
+          <p className="mt-4 text-[11px] text-neutral-500">
             Kamu akan dialihkan otomatis ke beranda dalam 5 detik...
           </p>
         </div>
@@ -266,7 +268,7 @@ export default function VotePage() {
                       alt={c.name}
                       className="h-full w-full object-cover grayscale contrast-125 transition-all duration-300 group-hover:grayscale-0"
                     />
-                    <span className="absolute bottom-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-md bg-brand font-mono text-[10px] font-black text-brand-ink shadow">
+                    <span className="absolute bottom-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-md bg-brand font-mono text-[11px] font-black text-brand-ink shadow">
                       {c.number}
                     </span>
                   </div>
@@ -311,12 +313,12 @@ export default function VotePage() {
                 </div>
                 {c.wakil_name && (
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className="text-[10px] font-semibold text-neutral-500">
+                    <span className="text-[11px] font-semibold text-neutral-500">
                       Wakil:
                     </span>
                     <span className="text-neutral-700">{c.wakil_name}</span>
                     {c.wakil_class_name && (
-                      <span className="rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500">
+                      <span className="rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[11px] text-neutral-500">
                         {c.wakil_class_name}
                       </span>
                     )}
@@ -396,21 +398,20 @@ export default function VotePage() {
 
       {/* Confirmation Modal */}
       {confirmOpen && chosen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 p-4 backdrop-blur-xs"
-          onClick={() => !submitting && setConfirmOpen(false)}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Batal dan tutup konfirmasi"
+            onClick={() => !submitting && setConfirmOpen(false)}
+            className="absolute inset-0 cursor-default bg-neutral-950/40 backdrop-blur-xs"
+          />
           <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-title"
             aria-describedby="confirm-desc"
             ref={confirmRef}
-            onKeyDown={(e) => {
-              if (e.key === "Escape" && !submitting) setConfirmOpen(false);
-            }}
-            className="surface fade-up w-full max-w-sm p-7 shadow-xl focus:outline-none"
-            onClick={(e) => e.stopPropagation()}
+            className="surface fade-up relative w-full max-w-sm p-7 shadow-xl focus:outline-none"
           >
             <div className="text-[13px] font-medium text-neutral-500">
               Konfirmasi Pilihan Final
