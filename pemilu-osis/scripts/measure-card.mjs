@@ -34,11 +34,17 @@ for (const width of [320, 390, 768, 1440]) {
       (s) => s.textContent.trim() === "Wakil:"
     );
     const wakilName = wakilLabel?.nextElementSibling;
+    const h2 = card.querySelector("h2");
+
+    // Badge kelas harus sejajar vertikal di kolom yang sama.
+    const kR = kelas?.getBoundingClientRect();
+    const wR = wakilClass?.getBoundingClientRect();
+    const h2R = h2?.getBoundingClientRect();
+    const wNameR = wakilName?.getBoundingClientRect();
 
     return {
       cardRight: Math.round(cr.right),
       linkRight: lr ? Math.round(lr.right) : null,
-      linkLeft: lr ? Math.round(lr.left) : null,
       justify,
       kelasSize: kelas ? getComputedStyle(kelas).fontSize : null,
       kelasText: kelas?.textContent?.trim(),
@@ -47,8 +53,18 @@ for (const width of [320, 390, 768, 1440]) {
       wakilSize: wakilName ? getComputedStyle(wakilName).fontSize : null,
       wakilText: wakilName?.textContent?.trim(),
       labelSize: wakilLabel ? getComputedStyle(wakilLabel).fontSize : null,
+      // Jarak vertikal antara nama paslon dan baris wakil
+      nameToWakil: h2R && wNameR ? Math.round(wNameR.top - (h2R.top + h2R.height)) : null,
+      // Kolom badge: tepi kiri harus sama agar rata bawah
+      kelasLeft: kR ? Math.round(kR.left) : null,
+      wClassLeft: wR ? Math.round(wR.left) : null,
+      kelasRight: kR ? Math.round(kR.right) : null,
+      wClassRight: wR ? Math.round(wR.right) : null,
+      kelasBelowName: h2R && kR ? Math.round(kR.top - (h2R.top + h2R.height)) : null,
+      wClassBelowWName: wNameR && wR ? Math.round(wR.top - (wNameR.top + wNameR.height)) : null,
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       cardOverflow: card.scrollWidth - card.clientWidth,
+      h2Overflow: h2 ? h2.scrollWidth - h2.clientWidth : null,
     };
   });
 
@@ -58,11 +74,14 @@ for (const width of [320, 390, 768, 1440]) {
     continue;
   }
   const rightAligned = r.linkRight !== null && Math.abs(r.linkRight - r.cardRight) < 26;
+  const aligned =
+    r.kelasLeft !== null && r.wClassLeft !== null && Math.abs(r.kelasLeft - r.wClassLeft) < 2;
   console.log(
-    `  ${String(width).padStart(4)}px  link kanan=${rightAligned ? "YA" : "TIDAK"} (${r.justify})  ` +
-      `kelas=${r.kelasSize}(${r.kelasText})  wakil=${r.wakilSize}(${r.wakilText}) ` +
-      `ykelas=${r.wakilClassSize}(${r.wakilClassText}) label=${r.labelSize}  ` +
-      `ovf=${r.overflow} cardOvf=${r.cardOverflow}`
+    `  ${String(width).padStart(4)}px  linkKanan=${rightAligned ? "YA" : "TIDAK"}  ` +
+      `kelasSejajar=${aligned ? "YA" : "TIDAK"} (${r.kelasLeft}/${r.wClassLeft})  ` +
+      `kelas=${r.kelasSize}  wakil=${r.wakilSize}  ykelas=${r.wakilClassSize} label=${r.labelSize}\n` +
+      `         jarak nama->wakil=${r.nameToWakil}px  ` +
+      `ovf=${r.overflow} cardOvf=${r.cardOverflow} h2Ovf=${r.h2Overflow}`
   );
   await page.close();
 }

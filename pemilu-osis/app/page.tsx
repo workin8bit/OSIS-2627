@@ -316,30 +316,32 @@ export default function HomePage() {
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline justify-between gap-1">
-                        <h2 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-950">
+                      <div className="grid grid-cols-[1fr_auto] items-start gap-x-3 gap-y-2">
+                        <h2 className="min-w-0 text-lg sm:text-xl font-bold tracking-tight text-neutral-950">
                           {c.name}
                         </h2>
                         <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[13px] font-medium text-neutral-600">
                           {c.class_name}
                         </span>
-                      </div>
 
-                      {c.wakil_name && (
-                        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-neutral-600">
-                          <span className="text-xs font-semibold text-neutral-500">
-                            Wakil:
-                          </span>
-                          <span className="font-semibold text-neutral-800">
-                            {c.wakil_name}
-                          </span>
-                          {c.wakil_class_name && (
-                            <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[13px] text-neutral-500">
-                              {c.wakil_class_name}
-                            </span>
-                          )}
-                        </div>
-                      )}
+                        {c.wakil_name && (
+                          <>
+                            <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 text-[15px] leading-snug sm:text-base">
+                              <span className="text-sm font-semibold text-neutral-500">
+                                Wakil:
+                              </span>
+                              <span className="min-w-0 font-semibold text-neutral-800">
+                                {c.wakil_name}
+                              </span>
+                            </div>
+                            {c.wakil_class_name && (
+                              <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[13px] text-neutral-500">
+                                {c.wakil_class_name}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
 
                       {c.slogan && (
                         <p className="mt-1 text-xs italic text-neutral-600 sm:text-sm">
