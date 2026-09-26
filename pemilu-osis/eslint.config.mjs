@@ -11,6 +11,9 @@ const config = [
   {
     ignores: [
       ".next/**",
+      // Output `npm run build:verify`; flat config tidak membaca .gitignore,
+      // jadi harus diabaikan eksplisit agar tidak ikut di-lint.
+      ".next-build/**",
       "node_modules/**",
       "out/**",
       ".agents/**",
