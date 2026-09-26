@@ -48,8 +48,10 @@ export default function CandidatesPage() {
           return (
             <button
               key={c.id}
+              type="button"
               onClick={() => setActiveTab(c.id)}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left transition-all ${
+              aria-pressed={isCurrent}
+              className={`press flex items-center gap-3 rounded-full border px-4 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark ${
                 isCurrent
                   ? "border-brand-dark bg-brand text-brand-ink shadow-brand"
                   : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400"

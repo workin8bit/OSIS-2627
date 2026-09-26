@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/backend";
 import type { Candidate, Status, VoterSession } from "@/lib/types";
 
@@ -19,6 +19,39 @@ export default function VotePage() {
   const [error, setError] = useState("");
   const [votedNow, setVotedNow] = useState(false);
   const [ready, setReady] = useState(false);
+  const confirmRef = useRef<HTMLDivElement>(null);
+
+  // Move focus into the dialog and keep Tab inside it while it is open.
+  useEffect(() => {
+    if (!confirmOpen) return;
+    confirmRef.current?.focus();
+    const node = confirmRef.current;
+    if (!node) return;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !submitting) {
+        setConfirmOpen(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const focusables = node.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [confirmOpen, submitting]);
 
   useEffect(() => {
     const raw = localStorage.getItem(SESSION_KEY);
@@ -197,18 +230,33 @@ export default function VotePage() {
       </div>
 
       {/* Ballot Cards Grid */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        role="radiogroup"
+        aria-label="Daftar pasangan calon"
+        className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
         {candidates.map((c) => {
           const isSel = selected === c.id;
           return (
             <div
               key={c.id}
+              role="radio"
+              aria-checked={isSel}
+              aria-disabled={notOpen || undefined}
+              tabIndex={notOpen ? -1 : 0}
               onClick={() => !notOpen && setSelected(c.id)}
-              className={`group cursor-pointer rounded-2xl border p-6 transition-all ${
+              onKeyDown={(e) => {
+                if (notOpen) return;
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelected(c.id);
+                }
+              }}
+              className={`press group cursor-pointer rounded-2xl border p-6 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark ${
                 isSel
                   ? "border-brand-dark bg-brand-wash ring-2 ring-brand shadow-brand"
                   : "border-brand/25 bg-white hover:border-brand hover:bg-brand-wash/50"
-              }`}
+              } ${notOpen ? "pointer-events-none opacity-60" : ""}`}
             >
               <div className="flex items-start justify-between">
                 {c.photo_url ? (
@@ -233,26 +281,27 @@ export default function VotePage() {
                     {String(c.number).padStart(2, "0")}
                   </span>
                 )}
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-md font-mono text-xs font-bold border transition-all ${
-                      isSel
-                        ? "border-brand bg-brand text-brand-ink"
-                        : "border-brand/40 text-transparent"
-                    }`}
+                <span
+                  aria-hidden
+                  className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold transition-all ${
+                    isSel
+                      ? "border-brand bg-brand text-brand-ink"
+                      : "border-brand/40 text-transparent"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-3 w-3"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-3 w-3"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  </span>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </span>
               </div>
 
               <div className="mt-4">
@@ -293,7 +342,10 @@ export default function VotePage() {
       </div>
 
       {error && (
-        <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-mono font-medium text-rose-800">
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-[13px] font-medium text-rose-800"
+        >
           {error}
         </div>
       )}
@@ -319,7 +371,7 @@ export default function VotePage() {
           <button
             disabled={!chosen || notOpen}
             onClick={() => setConfirmOpen(true)}
-            className="rounded-xl bg-brand px-5 py-2.5 text-xs font-semibold tracking-normal text-brand-ink shadow-brand transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark disabled:opacity-40"
+            className="press rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-ink shadow-brand transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark disabled:opacity-40"
           >
             <span className="flex items-center justify-center gap-1.5">
               Kunci &amp; Coblos Suara
@@ -332,6 +384,7 @@ export default function VotePage() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="h-4 w-4"
+                aria-hidden
               >
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
@@ -348,16 +401,27 @@ export default function VotePage() {
           onClick={() => !submitting && setConfirmOpen(false)}
         >
           <div
-            className="surface fade-up w-full max-w-sm p-7 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-title"
+            aria-describedby="confirm-desc"
+            ref={confirmRef}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && !submitting) setConfirmOpen(false);
+            }}
+            className="surface fade-up w-full max-w-sm p-7 shadow-xl focus:outline-none"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="font-medium text-[10px] tracking-normal text-neutral-500">
+            <div className="text-[13px] font-medium text-neutral-500">
               Konfirmasi Pilihan Final
             </div>
-            <h2 className="mt-1 text-xl font-black tracking-tight text-neutral-950">
+            <h2
+              id="confirm-title"
+              className="mt-1 text-xl font-black tracking-tight text-neutral-950"
+            >
               Kirimkan Surat Suara?
             </h2>
-            <p className="mt-2 text-xs text-neutral-500">
+            <p id="confirm-desc" className="mt-2 text-[13px] leading-relaxed text-neutral-600">
               Kamu akan memberikan 1 suara sah kepada:
             </p>
 
@@ -377,16 +441,19 @@ export default function VotePage() {
 
             <div className="mt-6 flex gap-2">
               <button
+                type="button"
                 disabled={submitting}
                 onClick={() => setConfirmOpen(false)}
-                className="flex-1 rounded-xl border border-neutral-300 py-2.5 text-xs font-semibold tracking-normal text-neutral-700 hover:border-neutral-900 disabled:opacity-50"
+                className="press flex-1 rounded-full border border-neutral-300 py-2.5 text-sm font-semibold text-neutral-700 hover:border-neutral-900 hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark disabled:opacity-50"
               >
                 Batal
               </button>
               <button
+                type="button"
                 disabled={submitting}
+                aria-busy={submitting}
                 onClick={submit}
-                className="flex-1 rounded-full bg-brand py-2.5 text-sm font-semibold tracking-normal text-brand-ink shadow-brand hover:bg-brand-hover disabled:opacity-50"
+                className="press flex-1 rounded-full bg-brand py-2.5 text-sm font-semibold text-brand-ink shadow-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark disabled:opacity-50"
               >
                 {submitting ? "Mengunci..." : "Ya, Coblos"}
               </button>

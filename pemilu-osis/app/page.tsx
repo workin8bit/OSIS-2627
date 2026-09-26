@@ -84,8 +84,10 @@ export default function HomePage() {
 
       <section className="mt-6 overflow-hidden rounded-2xl border border-brand/40 bg-brand-wash shadow-sm">
         <button
+          type="button"
           onClick={() => setGuideOpen((g) => !g)}
-          className="flex w-full items-center justify-between px-5 py-4 text-left"
+          aria-expanded={guideOpen}
+          className="press flex w-full items-center justify-between px-5 py-4 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-dark"
         >
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-brand-ink shadow-brand">

@@ -204,7 +204,7 @@ export default function AdminPage() {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${
+                className={`press rounded-full px-4 py-2.5 text-sm font-bold transition-colors ${
                   tab === t.id
                     ? "bg-brand text-brand-ink shadow-brand"
                     : "bg-white text-neutral-600 ring-1 ring-neutral-200 hover:bg-neutral-100"
@@ -554,7 +554,7 @@ function CandidatesTab({
             setFormError("");
             setEditing({ ...EMPTY_CAND, number: list.length + 1 });
           }}
-          className="rounded-xl bg-brand px-4 py-2.5 text-sm font-bold text-brand-ink shadow-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
+          className="rounded-full bg-brand px-4 py-2.5 text-sm font-bold text-brand-ink shadow-brand hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
         >
           + Tambah Kandidat
         </button>
@@ -616,7 +616,7 @@ function CandidatesTab({
                         is_active: c.is_active,
                       });
                     }}
-                    className="rounded-lg px-3 py-1.5 text-xs font-bold text-brand-deep hover:bg-brand-wash"
+                    className="rounded-lg px-3 py-1.5 text-sm font-bold text-brand-deep hover:bg-brand-wash"
                   >
                     Edit
                   </button>
@@ -977,7 +977,7 @@ function VotersTab({
           </div>
           <button
             onClick={downloadTemplate}
-            className="press shrink-0 rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-bold text-neutral-700 transition-colors hover:border-brand-dark hover:bg-brand-wash"
+            className="press shrink-0 rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-bold text-neutral-700 transition-colors hover:border-brand-dark hover:bg-brand-wash"
           >
             Unduh Template CSV
           </button>
@@ -1197,7 +1197,7 @@ function VotersTab({
                     {v.has_voted && (
                       <button
                         onClick={() => resetVote(v)}
-                        className="rounded-lg px-2.5 py-1 text-xs font-bold text-brand-deep hover:bg-brand-wash"
+                        className="rounded-lg px-2.5 py-1 text-sm font-bold text-brand-deep hover:bg-brand-wash"
                       >
                         Reset
                       </button>
@@ -1245,7 +1245,7 @@ function VotersTab({
                   <button
                     key={n}
                     onClick={() => setCurrentPage(n)}
-                    className={`rounded-lg px-3 py-1 text-xs font-bold ${
+                    className={`rounded-lg px-3 py-1 text-sm font-bold ${
                       currentPage === n
                         ? "bg-brand text-brand-ink"
                         : "border border-neutral-300 text-neutral-600 hover:bg-neutral-100"
@@ -1513,7 +1513,7 @@ function Switch({
       role="switch"
       aria-checked={on}
       onClick={() => onChange(!on)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+      className={`press relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark ${
         on ? "bg-emerald-500" : "bg-neutral-300"
       }`}
     >
