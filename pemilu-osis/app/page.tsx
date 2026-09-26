@@ -6,6 +6,12 @@ import { api } from "@/lib/backend";
 import { countdownParts, fmtDateTime } from "@/lib/format";
 import type { Candidate, Status } from "@/lib/types";
 import { CandidateMedia, MissionList } from "@/components/CandidateMedia";
+import {
+  CheckIcon,
+  ClockIcon,
+  LockIcon,
+  LockOpenIcon,
+} from "@/components/Icons";
 
 export default function HomePage() {
   const [guideOpen, setGuideOpen] = useState(false);
@@ -29,22 +35,27 @@ export default function HomePage() {
   let stateLabel = "Memuat...";
   let isLive = false;
   let detail = "";
+  let StateIcon: (p: { className?: string }) => React.ReactElement | null = ClockIcon;
   if (status) {
     const start = status.start_at ? new Date(status.start_at).getTime() : null;
     const end = status.end_at ? new Date(status.end_at).getTime() : null;
     if (!status.is_open) {
       stateLabel = "Bilik Ditutup";
+      StateIcon = LockIcon;
       detail = "Menunggu arahan panitia.";
     } else if (start && now < start) {
       stateLabel = "Segera Dimulai";
+      StateIcon = ClockIcon;
       const c = countdownParts(status.start_at, now);
       detail = c ? `Mulai dalam ${c.text}` : "";
     } else if (end && now > end) {
       stateLabel = "Selesai";
+      StateIcon = CheckIcon;
       detail = `Ditutup ${fmtDateTime(status.end_at)}.`;
     } else {
       stateLabel = "Pemilihan Dibuka";
       isLive = true;
+      StateIcon = LockOpenIcon;
       detail = end ? `Ditutup ${fmtDateTime(status.end_at)}` : "Suara diterima langsung.";
     }
   }
@@ -57,10 +68,6 @@ export default function HomePage() {
     <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-8 sm:pb-20">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
-          <span
-            aria-hidden
-            className={`h-1.5 w-1.5 rounded-full ${isLive ? "animate-pulse bg-emerald-500" : "bg-neutral-300"}`}
-          />
           <span className="text-[13px] text-neutral-500">
             {schoolName} &middot; Periode {year}
           </span>
@@ -73,11 +80,13 @@ export default function HomePage() {
                 : "border border-neutral-300 bg-white text-neutral-700"
             }`}
           >
-            {!status && (
+            {!status ? (
               <span
                 aria-hidden
                 className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-neutral-400 border-t-transparent"
               />
+            ) : (
+              <StateIcon className={`h-3.5 w-3.5 ${isLive ? "" : "opacity-80"}`} />
             )}
             {stateLabel}
           </span>
@@ -158,7 +167,7 @@ export default function HomePage() {
           className="press flex w-full items-center justify-between gap-4 px-5 py-4 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-dark"
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-neutral-700">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-ink">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -357,9 +366,9 @@ export default function HomePage() {
                     <CandidateMedia candidate={c} compact />
                   </div>
 
-                  <div className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-xs leading-relaxed text-neutral-700">
+                  <div className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-left text-[13px] leading-relaxed text-neutral-700 sm:justify sm:text-justify sm:text-sm">
                       <div>
-                        <span className="text-[11px] font-semibold text-neutral-950">
+                        <span className="text-xs font-semibold text-neutral-950">
                           Visi:{" "}
                         </span>
                         <span className="whitespace-pre-line">
@@ -368,7 +377,7 @@ export default function HomePage() {
                       </div>
                     {c.mission && (
                       <div className="border-t border-neutral-100 pt-3">
-                        <span className="text-[11px] font-semibold text-neutral-950">
+                        <span className="text-xs font-semibold text-neutral-950">
                           Misi Prioritas:
                         </span>
                         <MissionList text={c.mission} compact />
