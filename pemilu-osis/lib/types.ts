@@ -13,7 +13,10 @@ export interface Candidate {
   number: number;
   name: string;
   class_name: string;
+  wakil_name: string | null;
+  wakil_class_name: string | null;
   photo_url: string | null;
+  video_url: string | null;
   slogan: string | null;
   vision: string;
   mission: string;
@@ -27,17 +30,19 @@ export interface VoterInfo {
 }
 
 export interface VoterSession {
-  nis: string;
+  NISN: string;
   name: string;
   class_name: string;
   has_voted: boolean;
 }
 
 export interface VoterRow {
-  nis: string;
+  NISN: string;
   name: string;
   class_name: string;
   has_voted: boolean;
+  role: string;
+  NIP: string;
 }
 
 export interface ResultRow {
@@ -74,7 +79,10 @@ export interface CandidateInput {
   number: number;
   name: string;
   class_name: string;
+  wakil_name: string;
+  wakil_class_name: string;
   photo_url: string;
+  video_url: string;
   slogan: string;
   vision: string;
   mission: string;
@@ -82,8 +90,11 @@ export interface CandidateInput {
 }
 
 export interface NewVoter {
-  nis: string;
+  NISN: string;
   name: string;
   class_name: string;
   password: string;
+  role: string;
+  NIP: string;
 }
+

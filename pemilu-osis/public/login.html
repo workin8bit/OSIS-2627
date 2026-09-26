@@ -13,10 +13,10 @@
       --border: #e5e5e5;
       --border-dark: #171717;
       /* Warna Kuning Elegan */
-      --yellow: #f59e0b;
-      --yellow-hover: #d97706;
-      --yellow-light: #fef3c7;
-      --yellow-border: #fcd34d;
+      --yellow: #f0e60f;
+      --yellow-hover: #d6db0f;
+      --yellow-light: #fefce8;
+      --yellow-border: #e0e30f;
       --radius: 14px;
     }
 
@@ -185,13 +185,13 @@
       color: #000000;
       border: 1px solid var(--yellow-border);
       font-weight: 800;
-      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 1px 3px rgba(240, 230, 15, 0.2);
     }
     .btn-black:hover, .btn-primary:hover {
       background: var(--yellow-hover);
       color: #000000;
       transform: translateY(-1px);
-      box-shadow: 0 3px 8px rgba(217, 119, 6, 0.3);
+      box-shadow: 0 3px 8px rgba(214, 219, 15, 0.3);
     }
 
     /* Center Form Section */
@@ -265,7 +265,7 @@
     }
     .form-input:focus {
       border-color: var(--yellow);
-      box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+      box-shadow: 0 0 0 3px rgba(240, 230, 15, 0.18);
     }
 
     .error-msg {
@@ -427,7 +427,7 @@
           class="btn btn-black"
           style="width: 100%; padding: 13px; margin-top: 20px; font-size: 12px;"
         >
-          Verifikasi &amp; Masuk Bilik Suara →
+          Verifikasi &amp; Masuk Bilik Suara <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </button>
       </form>
 
@@ -491,7 +491,7 @@
           }));
           window.location.href = "bilik-suara.html";
         } else {
-          btn.innerText = "Verifikasi & Masuk Bilik Suara →";
+          btn.innerText = "Verifikasi & Masuk Bilik Suara <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>";
           btn.style.opacity = "1";
           err.style.display = "block";
         }

@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Avatar from "@/components/Avatar";
 import { api } from "@/lib/backend";
 import type { Candidate } from "@/lib/types";
+import { CandidateMedia, MissionList } from "@/components/CandidateMedia";
 
 export default function CandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -25,25 +25,23 @@ export default function CandidatesPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-neutral-200/80 pb-6">
         <div>
-          <div className="font-mono text-xs uppercase tracking-wider text-neutral-500">
-            Daftar Calon Pemimpin OSIS
+          <div className="font-medium text-xs tracking-normal text-neutral-500">
+            Daftar Calon Ketua & Wakil OSIS
           </div>
           <h1 className="mt-1 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">
-            Profil &amp; Visi Misi Paslon
+            Profil & Visi Misi Paslon
           </h1>
         </div>
         <Link
           href="/vote"
-          className="inline-flex items-center justify-center rounded-xl bg-neutral-950 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-neutral-800"
+          className="press inline-flex items-center justify-center rounded-full bg-brand px-5 py-2.5 text-sm font-semibold tracking-normal text-brand-ink shadow-brand transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
         >
-          Masuk Bilik Suara →
+          Masuk Bilik Suara &rarr;
         </Link>
       </div>
 
-      {/* Number Selector Tabs */}
       <div className="mt-8 flex flex-wrap gap-2">
         {candidates.map((c) => {
           const isCurrent = (activeTab || candidates[0]?.id) === c.id;
@@ -53,15 +51,13 @@ export default function CandidatesPage() {
               onClick={() => setActiveTab(c.id)}
               className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 text-left transition-all ${
                 isCurrent
-                  ? "border-neutral-900 bg-neutral-900 text-white shadow-xs"
-                  : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                  ? "border-brand-dark bg-brand text-brand-ink shadow-brand"
+                  : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400"
               }`}
             >
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-md font-mono text-xs font-bold ${
-                  isCurrent
-                    ? "bg-white text-neutral-900"
-                    : "bg-neutral-100 text-neutral-900"
+                  isCurrent ? "bg-brand-ink text-brand" : "bg-neutral-100 text-neutral-700"
                 }`}
               >
                 {c.number}
@@ -72,17 +68,16 @@ export default function CandidatesPage() {
         })}
       </div>
 
-      {/* Detailed Card */}
       {active && (
-        <div className="fade-up mt-6 rounded-2xl border border-neutral-200 bg-white p-6 sm:p-10 shadow-xs">
+        <div className="surface fade-up mt-6 p-6 sm:p-10 shadow-xs">
           <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between border-b border-neutral-100 pb-8">
             <div className="flex items-start gap-5">
               <span className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-neutral-950 font-mono text-3xl sm:text-4xl font-black text-white">
                 {String(active.number).padStart(2, "0")}
               </span>
               <div>
-                <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-500">
-                  Calon Ketua OSIS · Nomor Urut {active.number}
+                <span className="font-medium text-[11px] tracking-normal text-neutral-500">
+                  Calon Ketua OSIS &middot; Nomor Urut {active.number}
                 </span>
                 <h2 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-neutral-950">
                   {active.name}
@@ -95,21 +90,45 @@ export default function CandidatesPage() {
 
             {active.slogan && (
               <div className="max-w-md rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+                <span className="font-medium text-[10px] tracking-normal text-neutral-500">
                   Slogan Perjuangan
                 </span>
                 <p className="mt-1 text-sm font-semibold italic text-neutral-800">
-                  “{active.slogan}”
+                  &ldquo;{active.slogan}&rdquo;
                 </p>
+              </div>
+            )}
+
+            {active.wakil_name && (
+              <div className="max-w-md rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+                <span className="font-medium text-[10px] tracking-normal text-neutral-500">
+                  Calon Wakil Ketua OSIS
+                </span>
+                <div className="mt-2 flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand font-mono text-sm font-bold text-brand-ink">
+                    {String(active.number).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold text-neutral-900">
+                      {active.wakil_name}
+                    </p>
+                    {active.wakil_class_name && (
+                      <span className="font-mono text-[10px] text-neutral-500">
+                        Kelas: {active.wakil_class_name}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Visi & Misi Grids */}
+          <CandidateMedia candidate={active} />
+
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             <div className="rounded-xl border border-neutral-200 bg-neutral-50/60 p-6">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-black uppercase tracking-wider text-neutral-900">
+                <span className="text-xs font-semibold tracking-normal text-neutral-900">
                   01 / VISI STRATEGIS
                 </span>
               </div>
@@ -120,12 +139,16 @@ export default function CandidatesPage() {
 
             <div className="rounded-xl border border-neutral-200 bg-neutral-50/60 p-6">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-black uppercase tracking-wider text-neutral-900">
-                  02 / PROGRAM &amp; MISI
+                <span className="text-xs font-semibold tracking-normal text-neutral-900">
+                  02 / PROGRAM & MISI
                 </span>
               </div>
-              <div className="mt-3 text-sm leading-relaxed text-neutral-700 whitespace-pre-line font-normal">
-                {active.mission || "Belum ada rincian misi tercantum."}
+              <div className="mt-3 text-sm leading-relaxed text-neutral-700 font-normal">
+                {active.mission ? (
+                  <MissionList text={active.mission} />
+                ) : (
+                  "Belum ada rincian misi tercantum."
+                )}
               </div>
             </div>
           </div>
@@ -136,7 +159,7 @@ export default function CandidatesPage() {
             </span>
             <Link
               href="/vote"
-              className="w-full sm:w-auto rounded-xl bg-neutral-950 px-6 py-3 text-center text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-neutral-800"
+              className="press w-full sm:w-auto rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold tracking-normal text-brand-ink shadow-brand transition-all hover:bg-brand-hover"
             >
               Coblos Nomor {active.number} Sekarang
             </Link>

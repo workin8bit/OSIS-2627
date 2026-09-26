@@ -1,19 +1,14 @@
 -- ============================================================================
---  PEMILIHAN KETUA OSIS — SETUP SUPABASE
---  Jalankan SELURUH skrip ini di SQL Editor project Supabase (satu kali).
---
---  Ringkasan:
---   * Tabel : settings, candidates, voters, votes
---   * Keamanan: RLS aktif. Semua operasi sensitif (vote, admin) lewat
---     fungsi SECURITY DEFINER sehingga anon tidak bisa membaca/menulis
---     langsung ke tabel voters & votes.
---   * Default admin password : admin123  (WIBAHARUI — ganti setelah login
---     pertama di halaman /admin -> tab Pengaturan)
+--  PEMILIHAN KETUA OSIS — FIX ADMIN FUNCTIONS
+--  Migration to create all missing RPC functions.
+--  Run this in Supabase SQL Editor.
 -- ============================================================================
 
-create extension if not exists pgcrypto;
+-- NOTE: pgcrypto is already enabled on this Supabase project.
+-- If you get "function gen_salt does not exist", run this first:
+--   create extension if not exists pgcrypto;
 
--- ------------------------------ TABEL -------------------------------------
+-- ------------------------------ TABLES --------------------------------------
 
 create table if not exists public.settings (
   id                  int primary key default 1 check (id = 1),
@@ -25,24 +20,30 @@ create table if not exists public.settings (
   is_open             boolean not null default false,
   show_results        boolean not null default false,
   admin_username      text not null default 'admin@osissmaga.id',
-  admin_password_hash text not null default crypt('admin2627', gen_salt('bf')),
+  admin_password_hash text not null,
   updated_at          timestamptz not null default now()
 );
 
-insert into public.settings (id)
-select 1 where not exists (select 1 from public.settings);
+-- Seed default admin password.
+-- Pre-computed bcrypt hash of 'admin2627' (12 rounds).
+insert into public.settings (id, admin_password_hash)
+select 1, '$2b$12$VW85BjR/LZ9t2oajsv6x.O1BzrQA.EhoWBDKmoOWzbLe7O7BnWgna'
+where not exists (select 1 from public.settings where id = 1);
 
 create table if not exists public.candidates (
-  id         uuid primary key default gen_random_uuid(),
-  number     int not null unique,
-  name       text not null,
-  class_name text not null default '',
-  photo_url  text,
-  slogan     text,
-  vision     text not null default '',
-  mission    text not null default '',
-  is_active  boolean not null default true,
-  created_at timestamptz not null default now()
+  id              uuid primary key default gen_random_uuid(),
+  number          int not null unique,
+  name            text not null,
+  class_name      text not null default '',
+  wakil_name      text,
+  wakil_class_name text,
+  photo_url       text,
+  video_url       text,
+  slogan          text,
+  vision          text not null default '',
+  mission         text not null default '',
+  is_active       boolean not null default true,
+  created_at      timestamptz not null default now()
 );
 
 create table if not exists public.voters (
@@ -64,7 +65,7 @@ create table if not exists public.votes (
 
 create index if not exists idx_votes_candidate on public.votes(candidate_id);
 
--- --------------------------- FUNGSI PUBLIK ---------------------------------
+-- --------------------------- PUBLIC FUNCTIONS ---------------------------------
 
 -- Status umum pemilihan (aman dibaca semua orang, tanpa data sensitif)
 create or replace function public.get_status()
@@ -171,7 +172,7 @@ as $$
   where (select s.show_results from public.settings s where s.id = 1);
 $$;
 
--- --------------------------- FUNGSI ADMIN ----------------------------------
+-- --------------------------- ADMIN FUNCTIONS ----------------------------------
 
 create or replace function public.admin_check(p_username text, p_key text)
 returns boolean
@@ -286,17 +287,20 @@ $$;
 
 -- Tambah/ubah kandidat
 create or replace function public.admin_upsert_candidate(
-  p_username    text,
-  p_key         text,
-  p_id          uuid default null,
-  p_number      int,
-  p_name        text,
-  p_class_name  text default '',
-  p_photo_url   text default null,
-  p_slogan      text default null,
-  p_vision      text default '',
-  p_mission     text default '',
-  p_is_active   boolean default true
+  p_username       text,
+  p_key            text,
+  p_number         int default 0,
+  p_name           text default '',
+  p_class_name     text default '',
+  p_wakil_name     text default null,
+  p_wakil_class_name text default null,
+  p_photo_url      text default null,
+  p_video_url      text default null,
+  p_slogan         text default null,
+  p_vision         text default '',
+  p_mission        text default '',
+  p_is_active      boolean default true,
+  p_id             uuid default null
 )
 returns uuid
 language plpgsql security definer set search_path = public
@@ -307,20 +311,23 @@ begin
   if not public.admin_check(p_username, p_key) then raise exception 'Unauthorized'; end if;
   if p_id is null then
     insert into public.candidates
-      (number, name, class_name, photo_url, slogan, vision, mission, is_active)
+      (number, name, class_name, wakil_name, wakil_class_name, photo_url, video_url, slogan, vision, mission, is_active)
     values
-      (p_number, p_name, p_class_name, p_photo_url, p_slogan, p_vision, p_mission, p_is_active)
+      (p_number, p_name, p_class_name, p_wakil_name, p_wakil_class_name, p_photo_url, p_video_url, p_slogan, p_vision, p_mission, p_is_active)
     returning id into out_id;
   else
     update public.candidates set
-      number    = p_number,
-      name      = p_name,
-      class_name = p_class_name,
-      photo_url = coalesce(p_photo_url, photo_url),
-      slogan    = coalesce(p_slogan, slogan),
-      vision    = p_vision,
-      mission   = p_mission,
-      is_active = p_is_active
+      number           = p_number,
+      name             = p_name,
+      class_name       = p_class_name,
+      wakil_name       = coalesce(p_wakil_name, wakil_name),
+      wakil_class_name = coalesce(p_wakil_class_name, wakil_class_name),
+      photo_url        = coalesce(p_photo_url, photo_url),
+      video_url        = coalesce(p_video_url, video_url),
+      slogan           = coalesce(p_slogan, slogan),
+      vision           = p_vision,
+      mission          = p_mission,
+      is_active        = p_is_active
     where id = p_id;
     out_id := p_id;
   end if;
@@ -447,31 +454,26 @@ create policy "read_candidates" on public.candidates
 
 -- ------------------------------ SEED --------------------------------------
 
-insert into public.candidates (number, name, class_name, slogan, vision, mission)
+insert into public.candidates
+  (number, name, class_name, wakil_name, wakil_class_name, slogan, vision, mission)
 values
-(1, 'Andi Pratama', 'XII IPA 1', 'Bersama Wujudkan OSIS yang Lebih Baik',
- 'Terwujudnya OSIS yang inovatif dan inklusif sebagai wadah aktualisasi diri seluruh siswa SMA Negeri 3 Rembang.',
- E'- Membuka ruang kreativitas melalui festival seni, budaya, dan teknologi\n- Digitalisasi pengumuman dan administrasi OSIS\n- Menampung aspirasi siswa melalui kotak saran digital\n- Menjalin kerja sama dengan komunitas pelajar se-Rembang'),
-(2, 'Siti Rahmawati', 'XII IPA 2', 'Kreatif, Kolaboratif, Berkarakter',
- 'OSIS menjadi rumah kedua yang membina karakter, mengasah potensi, dan mempererat kebersamaan seluruh warga sekolah.',
- E'- Program mentoring antarangkatan dan buddy system\n- Penguatan kegiatan keagamaan dan pembiasaan akhlak\n- Lomba intra-kelas setiap semester untuk menyatukan kelas\n- Publikasi prestasi siswa di media sosial sekolah'),
-(3, 'Budi Santoso', 'XII IPS 1', 'Suaramu, Wujudkan!',
- 'Setiap aspirasi siswa menjadi nyata melalui program kerja OSIS yang transparan dan berbasis kebutuhan siswa.',
- E'- Survei kebutuhan siswa awal periode sebagai dasar progker\n- Transparansi anggaran dan laporan kegiatan bulanan\n- Revitalisasi fasilitas olahraga dan taman baca\n- Forum rutin siswa-pengurus untuk menampung kritik & saran')
-on conflict (number) do nothing;
-
--- ========================= OPSIONAL: DATA DEMO ============================
--- Buka komentar di bawah untuk membuat 10 pemilih demo (password: siswa123)
-/*
-insert into public.voters (nis, name, class_name, password_hash)
-select
-  '20250' || lpad(i::text, 2, '0'),
-  (array['Ahmad Fauzi','Dewi Lestari','Rizky Hidayat','Nur Aini','Fajar Ramadhan',
-         'Putri Ayu Lestari','Dimas Anggara','Rina Melati','Hendra Wijaya','Salsabila Zahra'])[i],
-  (array['XII IPA 1','XII IPA 2','XII IPA 3','XII IPS 1','XII IPS 2',
-         'XII IPA 1','XII IPA 2','XII IPA 3','XII IPS 1','XII IPS 2'])[i],
-  crypt('siswa123', gen_salt('bf'))
-from generate_series(1, 10) as i
-on conflict (nis) do nothing;
-*/
-
+  (1, 'Anindya Aya Kurniawan', 'XI.10', 'Rizky Pratama', 'XI.10',
+   'Bersama Wujudkan OSIS yang Lebih Baik',
+   'Terwujudnya OSIS yang inovatif dan inklusif sebagai wadah aktualisasi diri seluruh siswa SMA Negeri 3 Rembang.',
+   E'- Membuka ruang kreativitas melalui festival seni, budaya, dan teknologi\n- Digitalisasi pengumuman dan administrasi OSIS\n- Menampung aspirasi siswa melalui kotak saran digital\n- Menjalin kerja sama dengan komunitas pelajar se-Rembang'),
+  (2, 'Dinda Aulia Oktavani', 'XI.10', 'Siti Nuraini', 'XI.10',
+   'Kreatif, Kolaboratif, Berkarakter',
+   'OSIS menjadi rumah kedua yang membina karakter, mengasah potensi, dan mempererat kebersamaan seluruh warga sekolah.',
+   E'- Program mentoring antarangkatan dan buddy system\n- Penguatan kegiatan keagamaan dan pembiasaan akhlak\n- Lomba intra-kelas setiap semester untuk menyatukan kelas\n- Publikasi prestasi siswa di media sosial sekolah'),
+  (3, 'Muhammad Anzil Arriski', 'XI.10', 'Budi Santoso', 'XI.10',
+   'Suaramu, Wujudkan!',
+   'Setiap aspirasi siswa menjadi nyata melalui program kerja OSIS yang transparan dan berbasis kebutuhan siswa.',
+   E'- Survei kebutuhan siswa awal periode sebagai dasar progker\n- Transparansi anggaran dan laporan kegiatan bulanan\n- Revitalisasi fasilitas olahraga dan taman baca\n- Forum rutin siswa-pengurus untuk menampung kritik & saran')
+on conflict (number) do update set
+  name = excluded.name,
+  class_name = excluded.class_name,
+  wakil_name = excluded.wakil_name,
+  wakil_class_name = excluded.wakil_class_name,
+  slogan = excluded.slogan,
+  vision = excluded.vision,
+  mission = excluded.mission;

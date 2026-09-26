@@ -1,8 +1,33 @@
-node_modules
-.next
-out
+node_modules/
+.next/
+out/
 .env
 .env.local
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+.vercel/
+
+# Rahasia: jangan pernah masuk repo
+*.txt.key
+sr_key.txt
+supabase_token.txt
+supabase_sbp_token.txt
+*_token.txt
+*_key.txt
+service_role*.json
+
+# Metadata koneksi lokal Supabase CLI
+supabase/.temp/
+
+# Scratch & artefak debug
+*.tar.gz
+*.log
+test_check.txt
+check_server.cjs
+cdp_sql_editor.js
+cdp_supabase.js
+run_fix.js
+test_admin_v2.js
+fix.js
+fix1.py

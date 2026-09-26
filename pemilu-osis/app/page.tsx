@@ -2,29 +2,28 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Avatar from "@/components/Avatar";
 import { api } from "@/lib/backend";
 import { countdownParts, fmtDateTime } from "@/lib/format";
 import type { Candidate, Status, Tally } from "@/lib/types";
+import { CandidateMedia, MissionList } from "@/components/CandidateMedia";
 
 export default function HomePage() {
+  const [guideOpen, setGuideOpen] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [tally, setTally] = useState<Tally | null>(null);
   const [now, setNow] = useState(Date.now());
-  const [selectedPaslon, setSelectedPaslon] = useState<Candidate | null>(null);
 
   useEffect(() => {
-    api.getStatus().then(setStatus).catch(() => {});
+    api.getStatus().then((s) => { console.log("getStatus:", s); setStatus(s); }).catch((e) => console.error("getStatus error:", e));
     api
       .listCandidates()
       .then((cs) => {
-        const active = cs.filter((c) => c.is_active);
-        setCandidates(active);
-        if (active.length > 0) setSelectedPaslon(active[0]);
+        console.log("listCandidates:", cs);
+        setCandidates(cs.filter((c) => c.is_active));
       })
-      .catch(() => {});
-    api.getTally().then(setTally).catch(() => {});
+      .catch((e) => console.error("listCandidates error:", e));
+    api.getTally().then((t) => { console.log("getTally:", t); setTally(t); }).catch((e) => console.error("getTally error:", e));
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
@@ -52,25 +51,24 @@ export default function HomePage() {
     }
   }
 
-  const schoolName = status?.school_name || "SMA Negeri 1 Rembangan";
+  const schoolName = status?.school_name || "SMA Negeri 3 Rembang";
   const electionName = status?.election_name || "Pemilihan Ketua & Wakil OSIS";
   const year = status?.academic_year || "2026/2027";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      {/* TOP META BAR */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200/80 pb-5">
         <div className="flex items-center gap-2">
           <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-mono font-medium uppercase tracking-wider text-neutral-500">
-            {schoolName} · Periode {year}
+          <span className="text-xs font-medium tracking-normal text-neutral-500">
+            {schoolName} &middot; Periode {year}
           </span>
         </div>
         <div className="flex items-center gap-2 text-xs">
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 font-mono text-[11px] font-semibold ${
               isLive
-                ? "bg-neutral-900 text-white"
+                ? "bg-brand text-brand-ink"
                 : "border border-neutral-300 bg-neutral-100 text-neutral-700"
             }`}
           >
@@ -78,18 +76,160 @@ export default function HomePage() {
           </span>
           {detail && (
             <span className="text-neutral-500 font-mono text-[11px] hidden sm:inline">
-              · {detail}
+              &middot; {detail}
             </span>
           )}
         </div>
       </div>
 
-      {/* HERO SECTION — CANDIDATE-FIRST SHOWCASE */}
+      <section className="mt-6 overflow-hidden rounded-2xl border border-brand/40 bg-brand-wash shadow-sm">
+        <button
+          onClick={() => setGuideOpen((g) => !g)}
+          className="flex w-full items-center justify-between px-5 py-4 text-left"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-brand-ink shadow-brand">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+              >
+                <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                <path d="M21 3h-3a2 2 0 0 0-2 2v3" />
+                <path d="M3 11v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6" />
+                <path d="M8 8h8" />
+                <path d="M8 12h8" />
+                <path d="M8 16h5" />
+              </svg>
+            </span>
+            <div>
+              <div className="font-medium text-[10px] tracking-normal text-neutral-500">
+                Panduan
+              </div>
+              <h2 className="text-base font-bold tracking-tight text-neutral-950">
+                Langkah-langkah Pengambilan Suara
+              </h2>
+            </div>
+          </div>
+          <span
+            className={`text-neutral-500 transition-transform ${guideOpen ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </span>
+        </button>
+        {guideOpen && (
+          <div className="border-t border-brand/30 px-5 py-5">
+            <ol className="space-y-4">
+              <li className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-brand-ink">
+                  1
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-neutral-950">
+                    Buka Bilik Suara
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    Klik tombol{" "}
+                    <span className="rounded border border-brand/40 bg-white px-1.5 py-0.5 font-mono text-neutral-700">
+                      Masuk Bilik Suara
+                    </span>{" "}
+                    di bawah heading. Anda akan diarahkan ke halaman login.
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-brand-ink">
+                  2
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-neutral-950">
+                    Masukkan NISN & Sandi
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    Gunakan NISN (hanya angka) dan sandi sementara yang sudah
+                    dibagikan oleh panitia kelas. Klik{" "}
+                    <span className="rounded border border-brand/40 bg-white px-1.5 py-0.5 font-mono text-neutral-700">
+                      Masuk
+                    </span>.
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-brand-ink">
+                  3
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-neutral-950">
+                    Pilih Nomor Urut
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    Kenali tiap nomor urut di halaman utama: nomor, nama, kelas,
+                    slogan, visi, dan misi sudah ditampilkan lengkap untuk setiap
+                    paslon. Bandingkan satu per satu sebelum memilih.
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-brand-ink">
+                  4
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-neutral-950">
+                    Konfirmasi & Kunci Suara
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    Setelah memilih, sistem meminta konfirmasi. Klik{" "}
+                    <span className="rounded border border-brand/40 bg-white px-1.5 py-0.5 font-mono text-neutral-700">
+                      Konfirmasi
+                    </span>. Suara terkunci secara permanen &mdash; 1 akun = 1
+                    suara, tidak dapat diubah.
+                  </p>
+                </div>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-brand-ink">
+                  5
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-neutral-950">
+                    Lihat Hasil (jika dibuka)
+                  </p>
+                  <p className="text-xs text-neutral-600">
+                    Setelah panitia membuka hasil, Anda dapat melihat live
+                    quick count di halaman{" "}
+                    <span className="rounded border border-brand/40 bg-white px-1.5 py-0.5 font-mono text-neutral-700">
+                      Hasil Suara
+                    </span>. Suara dienkripsi dan diikat RLS &mdash; tidak ada yang
+                    dapat mengaitkan nama siswa dengan pilihan Anda.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
+        )}
+      </section>
+
       <section className="mt-8 grid gap-8 lg:grid-cols-12 lg:items-start">
-        {/* Left Column: Heading & Action */}
         <div className="lg:col-span-5 lg:sticky lg:top-24">
-          <div className="inline-block rounded-md border border-neutral-200 bg-neutral-100 px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider text-neutral-700">
-            Kandidat Calon Pemimpin
+          <div className="inline-block rounded-md border border-neutral-200 bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold tracking-normal text-neutral-700">
+            Kandidat Calon Ketua & Wakil OSIS
           </div>
           <h1 className="mt-4 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl lg:text-[42px] lg:leading-[1.1]">
             {electionName}
@@ -98,80 +238,78 @@ export default function HomePage() {
             Kenali rekam jejak, visi, dan gagasan nyata setiap pasangan calon sebelum memberikan hak suaramu di bilik digital.
           </p>
 
-          {/* Quick Metrics */}
           <div className="mt-6 grid grid-cols-2 gap-3 border-y border-neutral-200/80 py-4 font-mono">
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-neutral-500">
+              <div className="text-[11px] tracking-normal text-neutral-500">
                 Total Paslon
               </div>
-              <div className="mt-0.5 text-2xl font-bold tracking-tight text-neutral-900">
-                0{candidates.length}
+              <div className="mt-0.5 text-lg font-bold tracking-tight text-neutral-950">
+                {candidates.length}
               </div>
             </div>
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-neutral-500">
+              <div className="text-[10px] tracking-normal text-neutral-500">
                 Hak Suara
               </div>
-              <div className="mt-0.5 text-2xl font-bold tracking-tight text-neutral-900">
-                1 Siswa = 1
+              <div className="mt-0.5 text-lg font-bold tracking-tight text-neutral-950">
+                1 Siswa = 1 Suara
               </div>
             </div>
           </div>
 
-          {/* CTAs */}
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
             <Link
               href="/vote"
-              className="group flex items-center justify-center gap-2 rounded-xl bg-neutral-950 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-neutral-800 hover:shadow-md"
+              className="press group flex items-center justify-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-semibold tracking-normal text-brand-ink transition-all hover:bg-brand-hover hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
             >
               <span>Masuk Bilik Suara</span>
-              <span className="transition-transform group-hover:translate-x-0.5">→</span>
+              <span className="transition-transform group-hover:translate-x-0.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </span>
             </Link>
             <Link
               href="/results"
-              className="flex items-center justify-center rounded-xl border border-neutral-300 bg-white px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-neutral-800 transition-colors hover:border-neutral-900"
+              className="press flex items-center justify-center rounded-full border border-neutral-300 bg-white px-5 py-3.5 text-sm font-semibold tracking-normal text-neutral-800 transition-colors hover:border-brand-dark hover:bg-brand-wash"
             >
               Live Quick Count
             </Link>
           </div>
-
-          <div className="mt-5 text-[11px] font-mono text-neutral-400">
-            * Memerlukan NIS &amp; sandi resmi panitia pemilihan OSIS.
-          </div>
         </div>
 
-        {/* Right Column: Candidate Showcase Cards */}
         <div className="space-y-4 lg:col-span-7">
-          <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider text-neutral-500">
+          <div className="font-medium flex items-center justify-between text-xs tracking-normal text-neutral-500">
             <span>Daftar Nomor Urut ({candidates.length})</span>
-            <span className="hidden sm:inline">Pilih kartu untuk sorot detail</span>
+            <span className="hidden sm:inline">Profil lengkap setiap paslon</span>
           </div>
 
-          <div className="space-y-3">
-            {candidates.map((c) => {
-              const isSelected = selectedPaslon?.id === c.id;
-              return (
-                <div
-                  key={c.id}
-                  onClick={() => setSelectedPaslon(c)}
-                  className={`cursor-pointer rounded-2xl border p-5 sm:p-6 transition-all ${
-                    isSelected
-                      ? "border-neutral-900 bg-white shadow-sm ring-1 ring-neutral-900"
-                      : "border-neutral-200 bg-white/70 hover:border-neutral-400 hover:bg-white"
-                  }`}
-                >
+          <div className="space-y-4">
+            {candidates.map((c) => (
+              <article
+                key={c.id}
+                className="surface p-5 transition-shadow hover:shadow-md sm:p-6"
+              >
                   <div className="flex items-start gap-4 sm:gap-5">
-                    {/* Number Badge */}
                     <div className="flex flex-col items-center">
-                      <span className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-neutral-950 font-mono text-xl sm:text-2xl font-black text-white">
-                        {String(c.number).padStart(2, "0")}
-                      </span>
-                      <span className="mt-1 font-mono text-[9px] uppercase tracking-wider text-neutral-400">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand font-mono text-xl font-black text-brand-ink shadow-brand sm:h-14 sm:w-14 sm:text-2xl">
+                      {String(c.number).padStart(2, "0")}
+                    </span>
+                      <span className="font-medium mt-1 text-[9px] tracking-normal text-neutral-500">
                         Urut
                       </span>
                     </div>
 
-                    {/* Candidate Info */}
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-baseline justify-between gap-1">
                         <h2 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-950">
@@ -182,49 +320,56 @@ export default function HomePage() {
                         </span>
                       </div>
 
-                      {c.slogan && (
-                        <p className="mt-1 text-xs sm:text-sm font-medium italic text-neutral-600">
-                          “{c.slogan}”
-                        </p>
+                      {c.wakil_name && (
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-600">
+                          <span className="text-[10px] font-semibold text-neutral-500">
+                            Wakil:
+                          </span>
+                          <span className="font-semibold text-neutral-800">
+                            {c.wakil_name}
+                          </span>
+                          {c.wakil_class_name && (
+                            <span className="rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[10px] text-neutral-500">
+                              {c.wakil_class_name}
+                            </span>
+                          )}
+                        </div>
                       )}
 
-                      {/* Vision / Mission snippet */}
-                      <div className="mt-3.5 space-y-2 border-t border-neutral-100 pt-3 text-xs text-neutral-600">
-                        <div>
-                          <span className="font-mono text-[10px] uppercase font-bold text-neutral-900">
-                            Visi:{" "}
+                      {c.slogan && (
+                        <p className="mt-1 text-xs italic text-neutral-600 sm:text-sm">
+                          <span className="font-medium">
+                            &ldquo;{c.slogan}&rdquo;
                           </span>
-                          <span className="line-clamp-2">{c.vision || "—"}</span>
-                        </div>
-                        {isSelected && c.mission && (
-                          <div className="fade-up mt-2 pt-2 border-t border-neutral-100">
-                            <span className="font-mono text-[10px] uppercase font-bold text-neutral-900">
-                              Misi Prioritas:
-                            </span>
-                            <p className="mt-1 whitespace-pre-line text-[11px] leading-relaxed text-neutral-600">
-                              {c.mission}
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  {/* Card footer CTA */}
-                  <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-3 text-[11px]">
-                    <span className="font-mono text-neutral-400">
-                      {isSelected ? "Sedang aktif" : "Klik untuk membuka misi"}
-                    </span>
-                    <Link
-                      href="/candidates"
-                      className="font-semibold text-neutral-900 underline underline-offset-4 hover:text-neutral-600"
-                    >
-                      Buka Profil Lengkap →
-                    </Link>
+                  <div className="mt-4">
+                    <CandidateMedia candidate={c} compact />
                   </div>
-                </div>
-              );
-            })}
+
+                  <div className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-xs leading-relaxed text-neutral-700">
+                      <div>
+                        <span className="text-[10px] font-semibold text-neutral-950">
+                          Visi:{" "}
+                        </span>
+                        <span className="whitespace-pre-line">
+                          {c.vision || "\u2014"}
+                        </span>
+                      </div>
+                    {c.mission && (
+                      <div className="border-t border-neutral-100 pt-3">
+                        <span className="text-[10px] font-semibold text-neutral-950">
+                          Misi Prioritas:
+                        </span>
+                        <MissionList text={c.mission} compact />
+                      </div>
+                    )}
+                  </div>
+              </article>
+            ))}
 
             {candidates.length === 0 && (
               <div className="rounded-2xl border border-dashed border-neutral-300 p-10 text-center font-mono text-xs text-neutral-500">
@@ -235,11 +380,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3-STEP FLOW: CLEAN & TYPOGRAPHIC */}
-      <section className="mt-16 sm:mt-20 border-t border-neutral-200/80 pt-12">
+      <section className="mt-16 sm:mt-20 border-t border-brand/30 pt-12">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
-            <div className="font-mono text-[11px] uppercase tracking-wider text-neutral-500">
+            <div className="font-medium text-[11px] tracking-normal text-brand-deep">
               Prosedur Resmi
             </div>
             <h2 className="mt-1 text-2xl font-bold tracking-tight text-neutral-950">
@@ -256,7 +400,7 @@ export default function HomePage() {
             {
               step: "01",
               title: "Otentikasi Identitas",
-              desc: "Gunakan NIS resmi dan kata sandi sementara yang sudah dibagikan oleh panitia kelas.",
+              desc: "Gunakan NISN resmi dan kata sandi sementara yang sudah dibagikan oleh panitia kelas.",
             },
             {
               step: "02",
@@ -271,15 +415,15 @@ export default function HomePage() {
           ].map((item) => (
             <div
               key={item.step}
-              className="rounded-2xl border border-neutral-200 bg-white p-6 transition-all hover:border-neutral-400"
+              className="rounded-2xl border border-brand/40 bg-brand-wash p-6 transition-all hover:border-brand-dark hover:shadow-brand"
             >
-              <div className="font-mono text-2xl font-black text-neutral-950">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand font-mono text-lg font-black text-brand-ink shadow-brand">
                 {item.step}
               </div>
-              <h3 className="mt-3 text-sm font-bold text-neutral-900">
+              <h3 className="mt-3 text-sm font-bold text-neutral-950">
                 {item.title}
               </h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-neutral-500">
+              <p className="mt-1.5 text-xs leading-relaxed text-neutral-700">
                 {item.desc}
               </p>
             </div>
@@ -287,23 +431,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* PRINCIPLES BANNER */}
-      <section className="mt-12 rounded-2xl border border-neutral-900 bg-neutral-950 p-6 sm:p-8 text-white">
+      <section className="mt-12 rounded-2xl border border-neutral-900 bg-brand p-6 sm:p-8 text-brand-ink">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="max-w-xl">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-neutral-400">
+            <span className="font-medium text-[10px] tracking-normal text-neutral-800">
               Jaminan Sistem
             </span>
-            <h3 className="mt-1 text-lg sm:text-xl font-bold tracking-tight">
+            <h3 className="mt-1 text-lg sm:text-xl font-bold tracking-tight text-brand-ink">
               Langsung, Umum, Bebas, Rahasia, Jujur &amp; Adil
             </h3>
-            <p className="mt-2 text-xs sm:text-sm text-neutral-400 leading-relaxed">
+            <p className="mt-2 text-xs sm:text-sm text-neutral-800 leading-relaxed">
               Pilihan suara dienkripsi dan diikat dengan proteksi Row-Level Security (RLS). Tidak ada pengurus atau guru yang dapat mengaitkan nama siswa dengan nomor paslon yang dicoblos.
             </p>
           </div>
           <Link
             href="/vote"
-            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-white px-5 py-3 text-xs font-bold uppercase tracking-wider text-neutral-950 transition-colors hover:bg-neutral-100"
+            className="press inline-flex shrink-0 items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold tracking-normal text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950"
           >
             Mulai Pilih Sekarang
           </Link>

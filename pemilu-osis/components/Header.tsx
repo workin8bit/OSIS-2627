@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  HomeIcon,
+  UsersIcon,
+  BarChartIcon,
+  VoteIcon,
+  AdminIcon,
+} from "@/components/Icons";
 
 const links = [
-  { href: "/", label: "Beranda" },
-  { href: "/candidates", label: "Paslon" },
-  { href: "/results", label: "Hasil Suara" },
+  { href: "/", label: "Beranda", icon: HomeIcon },
+  { href: "/candidates", label: "Paslon", icon: UsersIcon },
+  { href: "/results", label: "Hasil Suara", icon: BarChartIcon },
 ];
 
 export default function Header() {
@@ -17,56 +24,63 @@ export default function Header() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         {/* Brand */}
         <Link href="/" className="group flex items-center gap-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-900 text-xs font-black tracking-wider text-white transition-transform group-hover:scale-95">
-            OS
-          </span>
+          <img
+            src="/logo-osis.jpg"
+            alt="Logo OSIS"
+            className="h-9 w-9 flex-shrink-0 object-contain rounded-lg border border-neutral-200 bg-neutral-50 p-1 transition-transform group-hover:scale-95"
+          />
           <span className="leading-tight">
             <span className="block text-sm font-bold tracking-tight text-neutral-900">
               E-Pilketos
             </span>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-500">
+            <span className="font-medium block text-[10px] tracking-normal text-neutral-500">
               Sistem Suara Siswa
             </span>
           </span>
         </Link>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-1 sm:gap-2">
+        {/* Navigation — Icon-only Line Icons */}
+        <nav className="flex items-center gap-1 rounded-xl bg-neutral-100/80 p-1">
           {links.map((l) => {
             const active =
-              l.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(l.href);
+              l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+            const Icon = l.icon;
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold tracking-tight transition-colors ${
+                title={l.label}
+                aria-label={l.label}
+                aria-current={active ? "page" : undefined}
+                className={`press flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                   active
-                    ? "bg-neutral-900 text-white"
-                    : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950"
+                    ? "bg-neutral-900 text-white shadow-sm"
+                    : "text-neutral-500 hover:bg-white hover:text-neutral-900"
                 }`}
               >
-                {l.label}
+                <Icon className="h-5 w-5" />
               </Link>
             );
           })}
 
-          <div className="mx-1 h-4 w-px bg-neutral-200" />
+          <div className="mx-0.5 h-6 w-px bg-neutral-300" />
 
           <Link
             href="/vote"
-            className="rounded-lg border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-bold text-neutral-900 transition-all hover:border-neutral-900 hover:shadow-xs"
+            title="Masuk Bilik Suara"
+            aria-label="Masuk Bilik Suara"
+            className="press flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-brand-ink transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
           >
-            Masuk Bilik
+            <VoteIcon className="h-5 w-5" />
           </Link>
 
           <Link
             href="/admin"
-            className="rounded-lg bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-200 hover:text-neutral-950"
             title="Panel Penyelenggara"
+            aria-label="Panel Penyelenggara"
+            className="press flex h-9 w-9 items-center justify-center rounded-lg text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900"
           >
-            Admin
+            <AdminIcon className="h-5 w-5" />
           </Link>
         </nav>
       </div>

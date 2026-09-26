@@ -1,16 +1,62 @@
 @import "tailwindcss";
 
+@theme {
+  /* --- Brand: single hue (H≈57), monotonic lightness ------------------- */
+  --color-brand: 240 230 15; /* logo yellow #f0e60f */
+  --color-brand-hover: 210 201 11; /* #d2c90b same hue, deeper */
+  --color-brand-dark: 166 158 8; /* #a69e08 same hue, hover-active */
+  --color-brand-deep: 119 113 6; /* #777106 AA text/icon on light bg (5.1:1) */
+  --color-brand-ink: 23 23 23; /* #171717 text/icon ON brand fill (15:1) */
+  --color-brand-wash: 254 254 240; /* #fefef0 tinted surface */
+
+  --color-surface: 245 245 247; /* #f5f5f7 Apple page gray */
+  --color-surface-elevated: 255 255 255; /* white cards */
+  --color-border: 232 232 237; /* #e8e8ed hairline */
+  --color-border-dark: 29 29 31; /* #1d1d1f Apple ink */
+  --color-text: 29 29 31; /* #1d1d1f */
+  --color-text-muted: 110 110 115; /* #6e6e73 Apple secondary */
+  --color-text-subtle: 134 134 139; /* #86868b Apple tertiary */
+
+  /* yellow-* aliases kept in sync so stray usages stay legible */
+  --color-yellow-50: 254 254 240;
+  --color-yellow-100: 254 251 224;
+  --color-yellow-200: 250 246 183;
+  --color-yellow-300: 246 239 122;
+  --color-yellow-400: 243 233 20;
+  --color-yellow-500: 240 230 15;
+  --color-yellow-600: 210 201 11;
+  --color-yellow-700: 166 158 8;
+  --color-yellow-800: 119 113 6;
+  --color-yellow-900: 76 72 5;
+  --color-yellow-950: 48 45 3;
+
+  /* Apple-ish type stack: system face first so SF Pro is used natively. */
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Vary the radius: tighter on controls, softer on containers. */
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-panel: 1.5rem;
+
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.06);
+  --shadow-lift: 0 2px 6px rgb(0 0 0 / 0.05), 0 16px 40px rgb(0 0 0 / 0.1);
+}
+
 :root {
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --bg-page: #fafafa;
-  --text-main: #0a0a0a;
-  --text-muted: #737373;
-  --border-light: #e5e5e5;
-  --border-dark: #171717;
+  --font-sans: var(--font-display);
+  --bg-page: #f5f5f7;
+  --text-main: #1d1d1f;
+  --text-muted: #6e6e73;
+  --text-subtle: #86868b;
+  --border-light: #e8e8ed;
+  --border-dark: #1d1d1f;
+  --ease-apple: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -19,11 +65,57 @@ body {
   color: var(--text-main);
   letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings: tight optical tracking, generous leading. */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+}
+
+/* Balance headlines so they never leave a single orphan word. */
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 /* Monospace number alignment */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Motion ------------------------------------------------------------ */
+/* Press feedback: physical, subtle, GPU-friendly. */
+.press {
+  transition:
+    transform 0.2s var(--ease-apple),
+    background-color 0.2s var(--ease-apple),
+    border-color 0.2s var(--ease-apple),
+    box-shadow 0.2s var(--ease-apple),
+    opacity 0.2s var(--ease-apple);
+}
+
+.press:active {
+  transform: scale(0.975);
+}
+
+@media (hover: hover) {
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Pulse animation for live indicators */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* Bar grow animation */
@@ -34,14 +126,14 @@ body {
 }
 
 .bar-anim {
-  animation: bar-grow 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: bar-grow 0.7s var(--ease-apple);
 }
 
 /* Subtle fade in up */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -50,31 +142,81 @@ body {
 }
 
 .fade-up {
-  animation: fade-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: fade-up 0.45s var(--ease-apple) both;
 }
 
-/* Swiss / Minimalist input style */
+/* --- Surfaces ---------------------------------------------------------- */
+/* Card: hairline + layered soft shadow instead of a hard border. */
+.surface {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-soft);
+}
+
+.surface-hover {
+  transition:
+    transform 0.25s var(--ease-apple),
+    box-shadow 0.25s var(--ease-apple),
+    border-color 0.25s var(--ease-apple);
+}
+
+.surface-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+/* Brand glow: a warm, low-opacity halo instead of a muddy solid shadow */
+.shadow-brand {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 8px 22px -8px rgb(240 230 15 / 0.6);
+}
+
+/* --- Inputs ------------------------------------------------------------ */
 .input {
   width: 100%;
-  border-radius: 0.5rem;
-  border: 1px solid #d4d4d4;
-  padding: 0.65rem 0.95rem;
-  font-size: 0.875rem;
-  line-height: 1.45;
+  border-radius: var(--radius-control);
+  border: 1px solid #d2d2d7;
+  padding: 0.7rem 0.95rem;
+  font-size: 0.9375rem;
+  line-height: 1.4;
   outline: none;
-  background: #ffffff;
-  color: #0a0a0a;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  background: #fff;
+  color: var(--text-main);
+  transition:
+    border-color 0.2s var(--ease-apple),
+    box-shadow 0.2s var(--ease-apple);
 }
 
-.input:focus {
-  border-color: #0a0a0a;
-  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.08);
+.input::placeholder {
+  color: #a1a1a6;
 }
 
+.input:focus-visible {
+  border-color: #a69e08;
+  box-shadow: 0 0 0 4px rgb(240 230 15 / 0.3);
+}
+
+/* --- Decoration -------------------------------------------------------- */
 /* Subtle grid line decoration */
 .grid-paper {
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
                     linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .press:active,
+  .surface-hover:hover,
+  .hover-lift:hover {
+    transform: none !important;
+  }
 }

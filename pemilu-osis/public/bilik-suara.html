@@ -13,10 +13,10 @@
       --border: #e5e5e5;
       --border-dark: #171717;
       /* Warna Kuning Elegan */
-      --yellow: #f59e0b;
-      --yellow-hover: #d97706;
-      --yellow-light: #fef3c7;
-      --yellow-border: #fcd34d;
+      --yellow: #f0e60f;
+      --yellow-hover: #d6db0f;
+      --yellow-light: #fefce8;
+      --yellow-border: #e0e30f;
       --radius: 14px;
     }
 
@@ -180,13 +180,13 @@
       color: #000000;
       border: 1px solid var(--yellow-border);
       font-weight: 800;
-      box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 1px 3px rgba(240, 230, 15, 0.2);
     }
     .btn-black:hover, .btn-primary:hover {
       background: var(--yellow-hover);
       color: #000000;
       transform: translateY(-1px);
-      box-shadow: 0 3px 8px rgba(217, 119, 6, 0.3);
+      box-shadow: 0 3px 8px rgba(214, 219, 15, 0.3);
     }
     .btn-outline {
       background: #fff;
@@ -313,7 +313,7 @@
     }
     .ballot-card.selected {
       border-color: var(--yellow);
-      box-shadow: 0 0 0 2px var(--yellow-border), 0 10px 25px rgba(245, 158, 11, 0.1);
+      box-shadow: 0 0 0 2px var(--yellow-border), 0 10px 25px rgba(240, 230, 15, 0.1);
     }
 
     /* Card Top */
@@ -678,7 +678,7 @@
         <span class="selection-placeholder">Belum ada pasangan calon yang dipilih</span>
       </div>
       <button class="btn btn-black" id="btnConfirmVote" disabled onclick="openConfirmModal()">
-        Konfirmasi Suara →
+        Konfirmasi Suara <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
       </button>
     </div>
   </div>
@@ -699,12 +699,12 @@
       </div>
 
       <div class="alert-box">
-        ⚠️ <strong>PENTING:</strong> Setelah tombol ditekan, suara akan langsung dicatat secara terenkripsi dan <strong>tidak dapat diubah</strong> kembali.
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <strong>PENTING:</strong> Setelah tombol ditekan, suara akan langsung dicatat secara terenkripsi dan <strong>tidak dapat diubah</strong> kembali.
       </div>
 
       <div style="margin-top: 20px; display: flex; gap: 10px;">
         <button class="btn btn-outline" style="flex: 1;" onclick="closeConfirmModal()">Batal</button>
-        <button class="btn btn-black" style="flex: 1.4;" onclick="submitVote()">Ya, Coblos Sekarang ✓</button>
+        <button class="btn btn-black" style="flex: 1.4;" onclick="submitVote()">Ya, Coblos Sekarang <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
       </div>
     </div>
   </div>
@@ -724,7 +724,7 @@
 
       <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 10px;">
         <a href="quick-count.html" class="btn btn-black">
-          Pantau Quick Count Live ↗
+          Pantau Quick Count Live <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
         </a>
         <a href="index.html" class="btn btn-outline">
           Kembali ke Beranda
@@ -795,7 +795,7 @@
           <div class="ballot-card" id="card-${c.num}" onclick="chooseCandidate(${c.num}, '${escapeJs(c.name)}', '${escapeJs(c.className)}')">
             <div class="ballot-top">
               <div class="ballot-num">${numPad}</div>
-              <div class="check-circle" id="check-${c.num}">✓</div>
+              <div class="check-circle" id="check-${c.num}"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:16px;height:16px;"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
             </div>
 
             <div class="ballot-media">
@@ -840,7 +840,7 @@
         if (card && label) {
           if (c.num === num) {
             card.classList.add('selected');
-            label.innerText = 'Pilihan Terpilih ✓';
+            label.innerHTML = 'Pilihan Terpilih <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:middle;"><polyline points="20 6 9 17 4 12"></polyline></svg>';
           } else {
             card.classList.remove('selected');
             label.innerText = 'Klik untuk Memilih';

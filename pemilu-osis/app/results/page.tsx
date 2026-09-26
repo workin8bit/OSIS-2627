@@ -41,7 +41,7 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center font-mono text-xs text-neutral-400">
+      <div className="flex min-h-[60vh] items-center justify-center font-mono text-xs text-neutral-500">
         Sinkronisasi tabulasi suara...
       </div>
     );
@@ -50,8 +50,8 @@ export default function ResultsPage() {
   if (!status?.show_results) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
-        <div className="fade-up w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-8 text-center shadow-xs">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 font-mono text-base font-bold text-neutral-900">
+        <div className="surface fade-up w-full max-w-md p-8 text-center shadow-xs">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand font-mono text-base font-bold text-brand-ink">
             [x]
           </div>
           <h1 className="mt-4 text-xl font-bold tracking-tight text-neutral-900">
@@ -62,7 +62,7 @@ export default function ResultsPage() {
           </p>
           <Link
             href="/"
-            className="mt-6 inline-block rounded-xl bg-neutral-950 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-800"
+            className="mt-6 inline-block rounded-full bg-brand px-5 py-2.5 text-sm font-semibold tracking-normal text-brand-ink shadow-brand hover:bg-brand-hover"
           >
             Kembali ke Beranda
           </Link>
@@ -82,15 +82,15 @@ export default function ResultsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-neutral-200/80 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-brand/30 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider text-neutral-500">
+            <span className="font-medium text-xs tracking-normal text-brand-deep">
               Tabulasi Resmi
             </span>
             {status.is_open && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-neutral-950 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-white">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold tracking-normal text-brand-ink">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-ink animate-pulse" />
                 Live Feed
               </span>
             )}
@@ -99,45 +99,45 @@ export default function ResultsPage() {
             Hasil Perolehan Suara
           </h1>
         </div>
-        <div className="font-mono text-xs text-neutral-500 text-left sm:text-right">
+        <div className="font-mono text-xs text-neutral-600 text-left sm:text-right">
           Pembaruan otomatis tiap 5s
         </div>
       </div>
 
       {/* Rekap Angka Utama */}
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-neutral-500">
+        <div className="rounded-2xl border border-brand/40 bg-brand-wash p-5">
+          <div className="font-medium text-[11px] tracking-normal text-brand-deep">
             Suara Masuk
           </div>
           <div className="mt-2 text-3xl font-black tracking-tight text-neutral-950 tabular-nums">
             {totalVotes}
           </div>
-          <div className="mt-1 text-[11px] font-mono text-neutral-400">
+          <div className="mt-1 text-[11px] font-mono text-neutral-600">
             Terkonfirmasi valid
           </div>
         </div>
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-neutral-500">
+        <div className="rounded-2xl border border-brand/40 bg-brand-wash p-5">
+          <div className="font-medium text-[11px] tracking-normal text-brand-deep">
             Daftar Pemilih Tetap (DPT)
           </div>
           <div className="mt-2 text-3xl font-black tracking-tight text-neutral-950 tabular-nums">
             {totalVoters}
           </div>
-          <div className="mt-1 text-[11px] font-mono text-neutral-400">
+          <div className="mt-1 text-[11px] font-mono text-neutral-600">
             Akun siswa terdaftar
           </div>
         </div>
 
-        <div className="rounded-2xl border border-neutral-950 bg-neutral-950 p-5 text-white">
-          <div className="font-mono text-[11px] uppercase tracking-wider text-neutral-400">
+        <div className="rounded-2xl border border-brand-dark bg-brand p-5 text-brand-ink">
+          <div className="font-medium text-[11px] tracking-normal text-neutral-800">
             Tingkat Partisipasi
           </div>
-          <div className="mt-2 text-3xl font-black tracking-tight tabular-nums">
+          <div className="mt-2 text-3xl font-black tracking-tight text-brand-ink tabular-nums">
             {participation}%
           </div>
-          <div className="mt-1 text-[11px] font-mono text-neutral-400">
+          <div className="mt-1 text-[11px] font-mono text-neutral-800">
             {totalVoters - totalVotes} belum memilih
           </div>
         </div>
@@ -155,14 +155,20 @@ export default function ResultsPage() {
               key={r.candidate_id}
               className={`rounded-2xl border p-5 transition-all ${
                 isLeader
-                  ? "border-neutral-900 bg-white shadow-xs"
-                  : "border-neutral-200 bg-white"
+                  ? "border-brand-dark bg-brand-wash"
+                  : "border-brand/25 bg-white"
               }`}
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-950 font-mono text-base font-bold text-white">
-                    {r.candidate_number}
+                  <span
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl font-mono text-base font-bold ${
+                      isLeader
+                        ? "bg-brand text-brand-ink shadow-brand"
+                        : "border border-brand/40 bg-brand-wash text-brand-ink"
+                    }`}
+                  >
+                    {String(r.candidate_number).padStart(2, "0")}
                   </span>
                   <div>
                     <div className="flex items-center gap-2">
@@ -170,13 +176,13 @@ export default function ResultsPage() {
                         {r.candidate_name}
                       </h3>
                       {isLeader && (
-                        <span className="rounded-md bg-neutral-900 px-2 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-white">
+                        <span className="rounded-md bg-brand px-2 py-0.5 text-[9px] font-semibold tracking-normal text-brand-ink">
                           Suara Tertinggi
                         </span>
                       )}
                     </div>
                     <div className="text-xs font-mono text-neutral-500">
-                      Nomor Urut 0{r.candidate_number}
+                      Nomor Urut {String(r.candidate_number).padStart(2, "0")}
                     </div>
                   </div>
                 </div>
@@ -188,17 +194,17 @@ export default function ResultsPage() {
                       suara
                     </span>
                   </div>
-                  <div className="font-mono text-xs font-semibold text-neutral-600">
+                  <div className="font-mono text-xs font-semibold text-brand-deep">
                     {share}%
                   </div>
                 </div>
               </div>
 
-              {/* Progress bar monokrom dengan aksen tajam */}
-              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+              {/* Progress bar: track kuning pucat, fill kuning pekat */}
+              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-brand/15">
                 <div
                   className={`bar-anim h-full rounded-full transition-all duration-500 ${
-                    isLeader ? "bg-neutral-950" : "bg-neutral-400"
+                    isLeader ? "bg-brand-dark" : "bg-brand"
                   }`}
                   style={{ width: `${Math.max(width, r.total > 0 ? 3 : 0)}%` }}
                 />
@@ -211,9 +217,24 @@ export default function ResultsPage() {
       <div className="mt-8 flex justify-center">
         <Link
           href="/"
-          className="text-xs font-mono uppercase tracking-wider text-neutral-500 underline underline-offset-4 hover:text-neutral-900"
+          className="font-medium text-xs tracking-normal text-neutral-600 underline underline-offset-4 hover:text-brand-deep"
         >
-          ← Kembali ke Halaman Utama
+          <span className="flex items-center gap-1.5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-3 w-3"
+            >
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Kembali ke Halaman Utama
+          </span>
         </Link>
       </div>
     </div>

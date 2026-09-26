@@ -14,9 +14,9 @@
       --border: #e5e7eb;
       --text: #0a0a0a;
       --muted: #525252;
-      --yellow: #facc15;
-      --yellow-hover: #eab308;
-      --yellow-border: #ca8a04;
+      --yellow: #f0e60f;
+      --yellow-hover: #d6db0f;
+      --yellow-border: #b8bd0f;
       --radius: 12px;
     }
 
@@ -118,7 +118,9 @@
     .nav-icon-btn svg {
       width: 20px;
       height: 20px;
-      stroke-width: 2;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     .nav-icon-btn::after {
       content: attr(data-tooltip);
@@ -190,8 +192,10 @@
     .btn svg {
       width: 15px;
       height: 15px;
-      stroke-width: 2;
+      stroke-width: 1.8;
       stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .tag {
@@ -241,7 +245,7 @@
     }
     .form-input:focus {
       border-color: var(--yellow-border);
-      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25);
+      box-shadow: 0 0 0 2px rgba(240, 230, 15, 0.25);
     }
 
     /* Admin Sub Nav */
@@ -285,8 +289,10 @@
     .admin-nav-item svg {
       width: 16px;
       height: 16px;
-      stroke-width: 2;
+      stroke-width: 1.8;
       stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .admin-section {
@@ -370,7 +376,7 @@
       gap: 4px;
     }
     .badge-unvoted {
-      background: #fef3c7;
+      background: #fefce8;
       color: #92400e;
       padding: 3px 8px;
       border-radius: 4px;
@@ -446,7 +452,7 @@
     .switch-row input[type="checkbox"] {
       width: 42px;
       height: 22px;
-      accent-color: #ca8a04;
+      accent-color: #b8bd0f;
       cursor: pointer;
     }
 
@@ -504,7 +510,7 @@
     }
     .form-group textarea:focus {
       border-color: var(--yellow-border);
-      box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.25);
+      box-shadow: 0 0 0 2px rgba(240, 230, 15, 0.25);
     }
 
     /* Footer */
@@ -522,7 +528,8 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-  </style>
+   </style>
+   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -719,30 +726,38 @@
       <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h3 style="font-size: 16px; font-weight: 800;">Unggah &amp; Perbarui Data DPT (CSV)</h3>
-            <p style="font-size: 12px; color: var(--muted); margin-top: 2px;">
-              Gunakan file CSV dengan kolom: <code>nis,nama,kelas,password</code>
-            </p>
+             <h3 style="font-size: 16px; font-weight: 800;">Unggah &amp; Perbarui Data DPT (CSV / Excel)</h3>
+             <p style="font-size: 12px; color: var(--muted); margin-top: 2px;">
+               Gunakan file CSV, XLSX, atau XLS dengan kolom: <code>nis,nama,kelas,password</code>
+             </p>
           </div>
-          <div style="display: flex; gap: 10px;">
-            <a href="template-pemilih-osis.csv" download class="btn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              Unduh Template CSV
-            </a>
-            <label class="btn btn-black" style="cursor: pointer;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              Pilih &amp; Import CSV
-              <input type="file" id="csvFileInput" accept=".csv" onchange="handleCsvFile(event)" style="display: none;" />
-            </label>
-          </div>
+           <div style="display: flex; gap: 10px;">
+             <a href="template-pemilih-osis.csv" download class="btn">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                 <polyline points="7 10 12 15 17 10"></polyline>
+                 <line x1="12" y1="15" x2="12" y2="3"></line>
+               </svg>
+               Unduh Template CSV
+             </a>
+             <button class="btn" onclick="downloadExcelTemplate()" style="cursor: pointer;">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                 <polyline points="7 10 12 15 17 10"></polyline>
+                 <line x1="12" y1="15" x2="12" y2="3"></line>
+               </svg>
+               Unduh Template Excel
+             </button>
+             <label class="btn btn-black" style="cursor: pointer;">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                 <polyline points="17 8 12 3 7 8"></polyline>
+                 <line x1="12" y1="3" x2="12" y2="15"></line>
+               </svg>
+               Pilih &amp; Import CSV/Excel
+               <input type="file" id="csvFileInput" accept=".csv,.xlsx,.xls" onchange="handleVoterFile(event)" style="display: none;" />
+             </label>
+           </div>
         </div>
 
         <div id="importSuccessAlert" style="display: none; margin-top: 14px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px 16px; border-radius: 8px; font-size: 12px; color: #166534; font-family: ui-monospace, monospace;">
@@ -1015,8 +1030,9 @@
       const pass = document.getElementById('adminPassInput').value.trim();
       if (pass === "admin123") {
         document.getElementById('adminLockScreen').style.display = "none";
-        document.getElementById('adminDashboard').style.display = "block";
-        renderVoterTable(votersList);
+         document.getElementById('adminDashboard').style.display = "block";
+         document.getElementById('statDpt').innerText = votersList.length;
+         renderVoterTable(votersList);
         renderCandidateCards();
         renderQuickTally();
       } else {
@@ -1305,45 +1321,112 @@
       alert(`Pembaruan Sistem: ${msg}`);
     }
 
-    function handleCsvFile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
+     function handleVoterFile(e) {
+       const file = e.target.files[0];
+       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const text = evt.target.result;
-        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+       const fileName = file.name.toLowerCase();
+       if (fileName.endsWith('.csv')) {
+         handleCsvFile(file);
+       } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+         handleExcelFile(file);
+       } else {
+         alert('Format file tidak didukung. Gunakan CSV, XLSX, atau XLS.');
+       }
+     }
 
-        let addedCount = 0;
-        for (let i = 1; i < lines.length; i++) {
-          const parts = lines[i].split(/[,;]/);
-          if (parts.length >= 4) {
-            const nis = parts[0].trim();
-            const name = parts[1].trim();
-            const className = parts[2].trim();
-            const pw = parts[3].trim();
+     function handleCsvFile(file) {
+       const reader = new FileReader();
+       reader.onload = function(evt) {
+         const text = evt.target.result;
+         const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+         processVoterData(lines);
+       };
+       reader.readAsText(file);
+     }
 
-            if (nis && name) {
-              const existing = votersList.find(x => x.nis === nis);
-              if (existing) {
-                existing.name = name;
-                existing.className = className;
-                existing.pw = pw;
-              } else {
-                votersList.push({ nis, name, className, pw, voted: false });
-              }
-              addedCount++;
-            }
-          }
-        }
+     function handleExcelFile(file) {
+       if (typeof XLSX === 'undefined') {
+         alert('SheetJS belum dimuat. Silakan gunakan template CSV.');
+         return;
+       }
+       const reader = new FileReader();
+       reader.onload = function(evt) {
+         const data = new Uint8Array(evt.target.result);
+         const workbook = XLSX.read(data, { type: 'array' });
+         const sheetName = workbook.SheetNames[0];
+         const worksheet = workbook.Sheets[sheetName];
+         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+         const lines = rows.slice(1).filter(row => row.some(cell => cell && String(cell).trim()));
+         processVoterData(lines.map(row => row.map(cell => String(cell || '')).join('\t')));
+       };
+       reader.readAsArrayBuffer(file);
+     }
 
-        renderVoterTable(votersList);
-        document.getElementById('importedCount').innerText = addedCount;
-        document.getElementById('importSuccessAlert').style.display = "block";
-        document.getElementById('statDpt').innerText = votersList.length;
-      };
-      reader.readAsText(file);
-    }
+     function processVoterData(lines) {
+       let addedCount = 0;
+       for (let i = 0; i < lines.length; i++) {
+         const parts = lines[i].split(/[,;\t]/).map(p => p.trim());
+         if (parts.length >= 4) {
+           const nis = parts[0];
+           const name = parts[1];
+           const className = parts[2];
+           const pw = parts[3];
+
+           if (nis && name) {
+             const existing = votersList.find(x => x.nis === nis);
+             if (existing) {
+               existing.name = name;
+               existing.className = className;
+               existing.pw = pw;
+             } else {
+               votersList.push({ nis, name, className, pw, voted: false });
+             }
+             addedCount++;
+           }
+         }
+       }
+
+       renderVoterTable(votersList);
+       document.getElementById('importedCount').innerText = addedCount;
+       document.getElementById('importSuccessAlert').style.display = "block";
+       document.getElementById('statDpt').innerText = votersList.length;
+     }
+
+     function downloadExcelTemplate() {
+       if (typeof XLSX === 'undefined') {
+         alert('SheetJS belum dimuat. Silakan unduh template CSV.');
+         return;
+       }
+       const templateData = [
+         { nis: '2025001', nama: 'Ahmad Fauzi', kelas: 'XII IPA 1', password: 'siswa123' },
+         { nis: '2025002', nama: 'Dewi Lestari', kelas: 'XII IPA 1', password: 'siswa123' },
+         { nis: '2025003', nama: 'Rizky Hidayat', kelas: 'XII IPA 2', password: 'siswa123' },
+         { nis: '2025004', nama: 'Nur Aini', kelas: 'XII IPA 2', password: 'siswa123' },
+         { nis: '2025005', nama: 'Fajar Ramadhan', kelas: 'XII IPA 2', password: 'siswa123' },
+         { nis: '2025006', nama: 'Putri Ayu Lestari', kelas: 'XII IPA 3', password: 'siswa123' },
+         { nis: '2025007', nama: 'Dimas Anggara', kelas: 'XII IPA 3', password: 'siswa123' },
+         { nis: '2025008', nama: 'Rina Melati', kelas: 'XII IPA 3', password: 'siswa123' },
+         { nis: '2025009', nama: 'Hendra Wijaya', kelas: 'XII IPS 1', password: 'siswa123' },
+         { nis: '2025010', nama: 'Salsabila Zahra', kelas: 'XII IPS 1', password: 'siswa123' },
+         { nis: '2025011', nama: 'Ikbal Firmansyah', kelas: 'XII IPS 1', password: 'siswa123' },
+         { nis: '2025012', nama: 'Laila Mardhiah', kelas: 'XII IPS 2', password: 'siswa123' },
+         { nis: '2025013', nama: 'Yusuf Hakim', kelas: 'XII IPS 2', password: 'siswa123' },
+         { nis: '2025014', nama: 'Anisa Fitriani', kelas: 'XII IPS 2', password: 'siswa123' },
+         { nis: '2025015', nama: 'Galih Pambudi', kelas: 'XII IPS 3', password: 'siswa123' }
+       ];
+       const ws = XLSX.utils.json_to_sheet(templateData);
+       const wb = XLSX.utils.book_new();
+       XLSX.utils.book_append_sheet(wb, ws, 'DPT');
+       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+       const blob = new Blob([wbout], { type: 'application/octet-stream' });
+       const url = URL.createObjectURL(blob);
+       const a = document.createElement('a');
+       a.href = url;
+       a.download = 'template-pemilih-osis.xlsx';
+       a.click();
+       URL.revokeObjectURL(url);
+     }
   </script>
 </body>
 </html>
