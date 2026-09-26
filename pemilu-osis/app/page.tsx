@@ -119,21 +119,6 @@ export default function HomePage() {
             Kenali rekam jejak, visi, dan gagasan nyata setiap pasangan calon sebelum memberikan hak suaramu di bilik digital.
           </p>
 
-          <div className="mt-6 grid grid-cols-2 gap-6 border-y border-neutral-200/80 py-4">
-            <div>
-              <div className="text-[12px] text-neutral-500">Total Paslon</div>
-              <div className="mt-1 text-xl font-semibold tracking-tight text-neutral-950 tabular-nums">
-                {candidates.length}
-              </div>
-            </div>
-            <div>
-              <div className="text-[12px] text-neutral-500">Hak Suara</div>
-              <div className="mt-1 text-xl font-semibold tracking-tight text-neutral-950">
-                1 = 1 Suara
-              </div>
-            </div>
-          </div>
-
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
             <Link
               href="/vote"
@@ -312,8 +297,8 @@ export default function HomePage() {
         )}
       </section>
           <div className="font-medium flex items-center justify-between text-xs tracking-normal text-neutral-500">
-            <span>Daftar Nomor Urut ({candidates.length})</span>
-            <span className="hidden sm:inline">Profil lengkap setiap paslon</span>
+            <span>Total Paslon : {candidates.length}</span>
+            <span>1 Pengguna = 1 Suara</span>
           </div>
 
           <div className="space-y-4">

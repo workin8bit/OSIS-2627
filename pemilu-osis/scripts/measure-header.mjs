@@ -1,60 +1,50 @@
 import puppeteer from "puppeteer-core";
 
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const URL = "http://localhost:3000/";
-const WIDTHS = [320, 375, 414, 640, 768, 1024, 1440];
-
 const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: "new",
   args: ["--no-sandbox", "--disable-dev-shm-usage"],
 });
 
-console.log("  w     header  logo  nama  sub   sub-w  nav   overflow  terpotong");
-for (const width of WIDTHS) {
+for (const width of [320, 360, 390, 768, 1440]) {
   const page = await browser.newPage();
-  await page.setViewport({ width, height: 900, deviceScaleFactor: 2 });
-  await page.goto(URL, { waitUntil: "networkidle2", timeout: 120000 });
-  await new Promise((r) => setTimeout(r, 400));
+  await page.setViewport({ width, height: 780, isMobile: width < 768, hasTouch: width < 768 });
+  await page.goto("http://localhost:3000/", { waitUntil: "networkidle2", timeout: 120000 });
+  await new Promise((r) => setTimeout(r, 700));
 
-  const m = await page.evaluate(() => {
+  const r = await page.evaluate(() => {
     const header = document.querySelector("header");
-    const nav = document.querySelector("header nav");
-    const logo = document.querySelector('header img[src*="logo"]');
-    // Span nama = anak langsung dari span pembungkus; span subtitle = anak
-    // kedua dari pembungkus itu. Jangan pakai querySelectorAll("span") karena
-    // itu ikut menangkap seluruh keturunan.
-    const wrapper = logo?.parentElement?.querySelector(":scope > span:not(.sr-only)");
-    const name = wrapper?.querySelector(":scope > span");
-    const sub = wrapper?.querySelector(":scope > span + span");
-    const cs = (el) => (el ? parseFloat(getComputedStyle(el).fontSize) : 0);
+    const name = [...document.querySelectorAll("header span")].find(
+      (s) => s.textContent.trim() === "E-Pilketos" && s.children.length === 0
+    );
+    const desc = [...document.querySelectorAll("header span")].find(
+      (s) => s.textContent.trim() === "Platform Pemilihan Ketua OSIS"
+    );
+    const vis = (el) => {
+      if (!el) return null;
+      const cs = getComputedStyle(el);
+      const b = el.getBoundingClientRect();
+      return {
+        display: cs.display,
+        fontSize: cs.fontSize,
+        w: Math.round(b.width),
+        h: Math.round(b.height),
+        truncated: el.scrollWidth > el.clientWidth + 1,
+      };
+    };
     return {
-      headerH: header ? Math.round(header.getBoundingClientRect().height) : 0,
-      logo: logo ? Math.round(logo.getBoundingClientRect().height) : 0,
-      nameText: name?.textContent?.trim() ?? "-",
-      subText: sub?.textContent?.trim() ?? "-",
-      nameSize: cs(name),
-      subSize: cs(sub),
-      subW: sub ? Math.round(sub.getBoundingClientRect().width) : 0,
-      subScroll: sub ? sub.scrollWidth : 0,
-      subClipped: sub ? sub.scrollWidth > sub.clientWidth + 1 : false,
-      navW: nav ? Math.round(nav.getBoundingClientRect().width) : 0,
-      docOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      headerH: Math.round(header.getBoundingClientRect().height),
+      name: vis(name),
+      desc: vis(desc),
+      overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
     };
   });
 
-  const fmt = (n) => String(Math.round(n * 10) / 10);
   console.log(
-    `  ${String(width).padEnd(5)} h=${String(m.headerH).padEnd(4)} logo=${String(m.logo).padEnd(4)} ` +
-      `nama=${fmt(m.nameSize).padEnd(5)} sub=${fmt(m.subSize).padEnd(5)} subW=${String(m.subW).padEnd(5)} ` +
-      `nav=${String(m.navW).padEnd(5)} ovf=${String(m.docOverflow).padEnd(4)} ` +
-      `potong=${m.subClipped ? "YA" : "tidak"}`
+    `${String(width).padStart(4)}px header=${r.headerH}px overflowX=${r.overflowX} ` +
+      `name=${JSON.stringify(r.name)} desc=${JSON.stringify(r.desc)}`
   );
-  if (width === 1440) {
-    console.log(`\n  teks nama : "${m.nameText}"`);
-    console.log(`  teks sub  : "${m.subText}"`);
-    console.log(`  sub scrollWidth=${m.subScroll} clientWidth=${m.subW} (sisa ${m.subScroll - m.subW}px)`);
-  }
   await page.close();
 }
 
