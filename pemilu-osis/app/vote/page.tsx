@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/backend";
 import type { Candidate, Status, VoterSession } from "@/lib/types";
+import { CandidateMedia } from "@/components/CandidateMedia";
 
 const SESSION_KEY = "osis_session";
 
@@ -260,35 +261,22 @@ export default function VotePage() {
                   : "border-brand/25 bg-white hover:border-brand hover:bg-brand-wash/50"
               } ${notOpen ? "pointer-events-none opacity-60" : ""}`}
             >
-              <div className="flex items-start justify-between">
-                {c.photo_url ? (
-                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-brand/40 bg-brand-wash">
-                    <img
-                      src={c.photo_url}
-                      alt={c.name}
-                      className="h-full w-full object-cover grayscale contrast-125 transition-all duration-300 group-hover:grayscale-0"
-                    />
-                    <span className="absolute bottom-0.5 right-0.5 flex h-5 w-5 items-center justify-center rounded-md bg-brand font-mono text-[11px] font-black text-brand-ink shadow">
-                      {c.number}
-                    </span>
-                  </div>
-                ) : (
-                  <span
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl font-mono text-xl font-black transition-all ${
-                      isSel
-                        ? "bg-brand text-brand-ink shadow-brand"
-                        : "border border-brand/40 bg-brand-wash text-brand-ink"
-                    }`}
-                  >
-                    {String(c.number).padStart(2, "0")}
-                  </span>
-                )}
+              {/* Foto paslon sebagai elemen visual kartu. Nomor urut tetap
+                  tampil sebagai chip kecil di sudut foto supaya mudah dipindai,
+                  dan tampil lagi di kaki kartu. */}
+              <div className="relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
+                <CandidateMedia candidate={c} compact photoOnly />
+
+                <span className="absolute left-2 top-2 rounded-md bg-neutral-950/85 px-2 py-0.5 font-mono text-[11px] font-black text-white">
+                  {String(c.number).padStart(2, "0")}
+                </span>
+
                 <span
                   aria-hidden
-                  className={`flex h-6 w-6 items-center justify-center rounded-md border font-mono text-xs font-bold transition-all ${
+                  className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-md border transition-all ${
                     isSel
                       ? "border-brand bg-brand text-brand-ink"
-                      : "border-brand/40 text-transparent"
+                      : "border-brand/40 bg-white/85 text-transparent"
                   }`}
                 >
                   <svg
