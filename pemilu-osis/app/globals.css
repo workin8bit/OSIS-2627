@@ -1,34 +1,40 @@
 @import "tailwindcss";
 
 @theme {
-  /* --- Brand: single hue (H≈57), monotonic lightness ------------------- */
-  --color-brand: 240 230 15; /* logo yellow #f0e60f */
-  --color-brand-hover: 210 201 11; /* #d2c90b same hue, deeper */
-  --color-brand-dark: 166 158 8; /* #a69e08 same hue, hover-active */
-  --color-brand-deep: 119 113 6; /* #777106 AA text/icon on light bg (5.1:1) */
-  --color-brand-ink: 23 23 23; /* #171717 text/icon ON brand fill (15:1) */
-  --color-brand-wash: 254 254 240; /* #fefef0 tinted surface */
+  /* --- Brand: single hue (H≈57), monotonic lightness -------------------
+     Format WAJIB `rgb(R G B)`.
+     Nilai polos seperti `240 230 15` BUKAN warna CSS yang valid, sehingga
+     `background-color: var(--color-brand)` di-drop browser dan utility
+     seperti `bg-brand` / `text-brand-ink` diam-diam tidak menghasilkan
+     apa pun. Jangan pakai placeholder alpha-value: Tailwind v4 sudah
+     menangani modifier opacity lewat color-mix(). */
+  --color-brand: rgb(240 230 15); /* logo yellow #f0e60f */
+  --color-brand-hover: rgb(210 201 11); /* #d2c90b same hue, deeper */
+  --color-brand-dark: rgb(166 158 8); /* #a69e08 same hue, hover-active */
+  --color-brand-deep: rgb(119 113 6); /* #777106 AA text/icon on light bg (5.1:1) */
+  --color-brand-ink: rgb(23 23 23); /* #171717 text/icon ON brand fill (15:1) */
+  --color-brand-wash: rgb(254 254 240); /* #fefef0 tinted surface */
 
-  --color-surface: 245 245 247; /* #f5f5f7 Apple page gray */
-  --color-surface-elevated: 255 255 255; /* white cards */
-  --color-border: 232 232 237; /* #e8e8ed hairline */
-  --color-border-dark: 29 29 31; /* #1d1d1f Apple ink */
-  --color-text: 29 29 31; /* #1d1d1f */
-  --color-text-muted: 110 110 115; /* #6e6e73 Apple secondary */
-  --color-text-subtle: 134 134 139; /* #86868b Apple tertiary */
+  --color-surface: rgb(245 245 247); /* #f5f5f7 Apple page gray */
+  --color-surface-elevated: rgb(255 255 255); /* white cards */
+  --color-border: rgb(232 232 237); /* #e8e8ed hairline */
+  --color-border-dark: rgb(29 29 31); /* #1d1d1f Apple ink */
+  --color-text: rgb(29 29 31); /* #1d1d1f */
+  --color-text-muted: rgb(110 110 115); /* #6e6e73 Apple secondary */
+  --color-text-subtle: rgb(134 134 139); /* #86868b Apple tertiary */
 
   /* yellow-* aliases kept in sync so stray usages stay legible */
-  --color-yellow-50: 254 254 240;
-  --color-yellow-100: 254 251 224;
-  --color-yellow-200: 250 246 183;
-  --color-yellow-300: 246 239 122;
-  --color-yellow-400: 243 233 20;
-  --color-yellow-500: 240 230 15;
-  --color-yellow-600: 210 201 11;
-  --color-yellow-700: 166 158 8;
-  --color-yellow-800: 119 113 6;
-  --color-yellow-900: 76 72 5;
-  --color-yellow-950: 48 45 3;
+  --color-yellow-50: rgb(254 254 240);
+  --color-yellow-100: rgb(254 251 224);
+  --color-yellow-200: rgb(250 246 183);
+  --color-yellow-300: rgb(246 239 122);
+  --color-yellow-400: rgb(243 233 20);
+  --color-yellow-500: rgb(240 230 15);
+  --color-yellow-600: rgb(210 201 11);
+  --color-yellow-700: rgb(166 158 8);
+  --color-yellow-800: rgb(119 113 6);
+  --color-yellow-900: rgb(76 72 5);
+  --color-yellow-950: rgb(48 45 3);
 
   /* Apple-ish type stack: system face first so SF Pro is used natively. */
   --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",

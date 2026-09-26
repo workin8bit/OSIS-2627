@@ -67,7 +67,7 @@ export default function Header() {
                 aria-current={active ? "page" : undefined}
                 className={`${base} ${
                   active
-                    ? "bg-neutral-900 text-white shadow-sm"
+                    ? "bg-brand text-brand-ink shadow-sm"
                     : "text-neutral-500 hover:bg-white hover:text-neutral-900"
                 }`}
               >
