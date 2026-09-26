@@ -90,9 +90,9 @@ export default function HomePage() {
       </div>
 
 
-      <section className="mt-8 grid gap-8 sm:mt-10 lg:grid-cols-12 lg:items-start lg:gap-10">
+      <section className="mt-6 grid gap-8 sm:mt-8 lg:grid-cols-12 lg:items-start lg:gap-10">
         <div className="lg:col-span-5 lg:sticky lg:top-24">
-          <div className="text-[13px] font-medium text-brand-deep">
+          <div className="inline-flex w-fit items-center rounded-lg border border-brand/40 bg-brand-wash px-2.5 py-1 text-[13px] font-semibold text-neutral-950">
             Kandidat Calon Ketua & Wakil OSIS
           </div>
           <h1 className="mt-3 text-[32px] font-semibold leading-[1.08] tracking-tight text-neutral-950 sm:text-[40px] lg:text-[44px]">
@@ -150,7 +150,7 @@ export default function HomePage() {
 
         <div className="space-y-4 lg:col-span-7">
 
-        <section className="surface overflow-hidden">
+        <section className="overflow-hidden rounded-[var(--radius-card)] border border-brand/35 bg-brand-wash">
         <button
           type="button"
           onClick={() => setGuideOpen((g) => !g)}
@@ -158,7 +158,7 @@ export default function HomePage() {
           className="press flex w-full items-center justify-between gap-4 px-5 py-4 text-left focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-dark"
         >
           <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-neutral-700">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -204,7 +204,7 @@ export default function HomePage() {
           </span>
         </button>
         {guideOpen && (
-          <div className="border-t border-neutral-200/80 px-5 py-5">
+          <div className="border-t border-brand/25 bg-white px-5 py-5">
             <ol className="space-y-4">
               <li className="flex gap-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand font-mono text-xs font-bold text-brand-ink">
@@ -385,7 +385,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mt-12 border-t border-neutral-200 pt-8 sm:mt-16 sm:pt-10">
+      <section className="mt-10 rounded-[var(--radius-card)] border border-brand/35 bg-brand-wash p-5 sm:mt-12 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <div className="font-medium text-[11px] tracking-normal text-brand-deep">
@@ -395,12 +395,12 @@ export default function HomePage() {
               Alur Penggunaan Bilik Digital
             </h2>
           </div>
-          <p className="text-xs text-neutral-500 max-w-sm">
+          <p className="text-xs text-neutral-600 max-w-sm">
             Proses pemilihan dirancang ringkas tanpa kehilangan asas kerahasiaan pilihan.
           </p>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
           {[
             {
               step: "01",
@@ -420,7 +420,7 @@ export default function HomePage() {
           ].map((item) => (
             <div
               key={item.step}
-              className="rounded-2xl border border-neutral-200 bg-white p-6 transition-colors hover:border-brand/50"
+              className="rounded-xl border border-neutral-200 bg-white p-5 transition-colors hover:border-brand/50"
             >
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand font-mono text-lg font-black text-brand-ink shadow-brand">
                 {item.step}
@@ -436,7 +436,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mt-12 rounded-2xl bg-neutral-950 p-6 sm:mt-16 sm:p-8">
+      <section className="mt-8 rounded-2xl bg-neutral-950 p-6 sm:mt-10 sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="max-w-xl">
             <span className="font-medium text-[11px] tracking-normal text-brand">
@@ -446,7 +446,7 @@ export default function HomePage() {
               Langsung, Umum, Bebas, Rahasia, Jujur &amp; Adil
             </h3>
             <p className="mt-2 text-xs sm:text-sm text-neutral-300 leading-relaxed">
-              Pilihan suara dienkripsi dan diikat dengan proteksi Row-Level Security (RLS). Tidak ada pengurus atau guru yang dapat mengaitkan nama siswa dengan nomor paslon yang dicoblos.
+              Pilihan suara dienkripsi dan diikat dengan proteksi Row-Level Security (RLS). Tidak ada pengurus atau panitia yang dapat mengaitkan nama siswa dengan nomor paslon yang dicoblos.
             </p>
           </div>
           <Link
