@@ -417,8 +417,18 @@ export function buildVoters(matrix: string[][]): ImportResult {
       errors.push(`Baris ${lineNo}: kolom NIS/NIP kosong.`);
       continue;
     }
-    if (!/^\d+$/.test(nisn)) {
-      errors.push(`Baris ${lineNo}: NIS "${nisn}" harus angka saja.`);
+    // Siswa wajib NISN numerik. Guru boleh memakai ID non-numerik, misalnya
+    // NUPK atau username, karena kolom nis di database bertipe text dan
+    // dipakai juga sebagai kunci login. Batas 32 karakter mencegah ID
+    // ganjil yang tidak masuk akal.
+    const idValid =
+      role === "guru" ? /^[A-Za-z0-9._-]{3,32}$/.test(nisn) : /^\d+$/.test(nisn);
+    if (!idValid) {
+      errors.push(
+        role === "guru"
+          ? `Baris ${lineNo}: ID guru "${nisn}" hanya boleh huruf, angka, titik, strip, atau garis bawah (3-32 karakter).`
+          : `Baris ${lineNo}: NIS "${nisn}" harus angka saja.`
+      );
       continue;
     }
     if (!name) {

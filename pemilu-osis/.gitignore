@@ -26,6 +26,9 @@ supabase/.temp/
 # Scratch & artefak debug
 *.tar.gz
 *.log
+
+# Data pemilih (PII: NISN/NIP + nama). Jangan pernah masuk repo.
+import/
 test_check.txt
 check_server.cjs
 cdp_sql_editor.js

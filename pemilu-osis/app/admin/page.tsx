@@ -767,16 +767,27 @@ function parseVoterLines(text: string): {
       errors.push(`Baris ${i + 1}: format NIS;Nama;Kelas;Password`);
       return;
     }
-    const [nis, name, class_name, password] = parts;
-    if (!/^\d+$/.test(nis)) errors.push(`Baris ${i + 1}: NIS harus angka.`);
+    const [nis, name, class_name, password, roleRaw] = parts;
+    // Kolom kelima opsional: "guru" mengizinkan ID non-numerik, misalnya
+    // NUPK atau username. Tanpa kolom itu, aturan NISN siswa tetap berlaku.
+    const role = (roleRaw || "").toLowerCase() === "guru" ? "guru" : "siswa";
+    const idValid =
+      role === "guru" ? /^[A-Za-z0-9._-]{3,32}$/.test(nis) : /^\d+$/.test(nis);
+    if (!idValid) {
+      errors.push(
+        role === "guru"
+          ? `Baris ${i + 1}: ID guru hanya boleh huruf/angka (3-32 karakter).`
+          : `Baris ${i + 1}: NIS harus angka.`
+      );
+    }
     if (!name) errors.push(`Baris ${i + 1}: nama kosong.`);
     rows.push({
       NISN: nis,
       name,
       class_name,
       password,
-      role: "siswa",
-      NIP: "",
+      role,
+      NIP: role === "guru" ? nis : "",
     });
   });
   return { rows, errors };
@@ -1079,10 +1090,12 @@ function VotersTab({
         </div>
 
         <p className="text-xs text-neutral-500">
-          Satu baris per siswa, dipisah titik koma:{" "}
+          Satu baris per pemilih, dipisah titik koma:{" "}
           <code className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono">
-            NIS;Nama;Kelas;Password
+            NIS;Nama;Kelas;Password;Role
           </code>
+          . Kolom Role opsional; isi <code className="font-mono">guru</code>{" "}
+          bila ID-nya NIP atau NUPK non-numerik.
         </p>
         <textarea
           rows={5}

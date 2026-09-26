@@ -75,7 +75,12 @@ export default function LoginPage() {
                 value={NISN}
                 onChange={(e) => setNis(e.target.value)}
                 required
-                inputMode="numeric"
+                /* Sebagian guru memakai ID non-numerik, jadi keyboard
+                    numerik akan membuat mereka tidak bisa mengetik. */
+                inputMode="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 placeholder="cth. 2025001 atau 19850101"
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? "login-error" : undefined}
