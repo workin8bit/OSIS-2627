@@ -72,10 +72,7 @@ export default function HomePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 pt-6 pb-16 sm:px-6 sm:pt-8 sm:pb-20">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="flex flex-col items-start gap-1.5">
-          <span className="inline-flex w-fit items-center rounded-lg border border-brand/40 bg-brand-wash px-2.5 py-1 text-[13px] font-semibold text-neutral-950">
-            Platform Pemilihan Ketua OSIS
-          </span>
+        <div className="flex items-center gap-2">
           <span className="text-[13px] text-neutral-500">
             {schoolLabel} &middot; Periode {year}
           </span>
