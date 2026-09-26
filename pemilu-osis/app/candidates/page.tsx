@@ -37,13 +37,13 @@ export default function CandidatesPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-neutral-200/80 pb-6">
+      <div className="flex flex-col justify-between gap-4 border-b border-neutral-200/80 pb-6 sm:flex-row sm:items-end">
         <div>
-          <div className="font-medium text-xs tracking-normal text-neutral-500">
+          <div className="text-xs font-medium tracking-normal text-neutral-500">
             Daftar Calon Ketua & Wakil OSIS
           </div>
           <h1 className="mt-1 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">
-            Profil & Visi Misi Paslon
+            Profil &amp; Visi Misi Paslon
           </h1>
         </div>
         <Link
@@ -54,7 +54,7 @@ export default function CandidatesPage() {
         </Link>
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         {candidates.map((c) => {
           const isCurrent = (activeTab || candidates[0]?.id) === c.id;
           return (
@@ -83,114 +83,118 @@ export default function CandidatesPage() {
       </div>
 
       {active && (
-        <div className="surface fade-up mt-6 p-6 sm:p-10 shadow-xs">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between border-b border-neutral-100 pb-8">
-            <div className="flex items-start gap-5">
-              <span className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-neutral-950 font-mono text-3xl sm:text-4xl font-black text-white">
+        <article className="surface fade-up mt-6 overflow-hidden shadow-xs">
+          {/* Identitas paslon: nomor urut, nama, kelas, dan wakil dibaca
+              sebagai satu blok. Slogan ditolak ke kanan pada layar lebar
+              supaya tidak memutus baris nama. */}
+          <div className="flex flex-col gap-5 border-b border-neutral-100 p-6 sm:p-8 md:flex-row md:items-start md:justify-between">
+            <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-neutral-950 font-mono text-2xl font-black text-white sm:h-16 sm:w-16 sm:text-3xl">
                 {String(active.number).padStart(2, "0")}
               </span>
-              <div>
-                <span className="font-medium text-[11px] tracking-normal text-neutral-500">
+              <div className="min-w-0">
+                <div className="text-[11px] font-medium tracking-normal text-neutral-500">
                   Calon Ketua OSIS &middot; Nomor Urut {active.number}
-                </span>
-                <h2 className="mt-1 text-2xl sm:text-3xl font-black tracking-tight text-neutral-950">
+                </div>
+                <h2 className="mt-1 text-2xl font-black tracking-tight text-neutral-950 sm:text-3xl">
                   {active.name}
                 </h2>
-                <div className="mt-1 text-xs font-mono text-neutral-600">
-                  Kelas: {active.class_name}
-                </div>
+
+                <dl className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px]">
+                  <div className="flex items-center gap-1.5">
+                    <dt className="text-neutral-500">Ketua</dt>
+                    <dd className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 font-mono text-neutral-700">
+                      {active.class_name}
+                    </dd>
+                  </div>
+
+                  {active.wakil_name && (
+                    <div className="flex min-w-0 items-center gap-1.5">
+                      <span aria-hidden className="h-4 w-px bg-neutral-200" />
+                      <dt className="text-neutral-500">Wakil</dt>
+                      <dd className="min-w-0 truncate font-semibold text-neutral-800">
+                        {active.wakil_name}
+                      </dd>
+                      {active.wakil_class_name && (
+                        <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 font-mono text-neutral-600">
+                          {active.wakil_class_name}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </dl>
               </div>
             </div>
 
             {active.slogan && (
-              <div className="max-w-md rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                <span className="font-medium text-[11px] tracking-normal text-neutral-500">
-                  Slogan Perjuangan
-                </span>
-                <p className="mt-1 text-sm font-semibold italic text-neutral-800">
+              <blockquote className="max-w-sm rounded-xl border-l-4 border-brand bg-brand-wash/70 px-4 py-3 md:shrink-0">
+                <div className="text-[11px] font-medium tracking-normal text-neutral-500">
+                  Slogan
+                </div>
+                <p className="mt-1 text-sm font-semibold italic leading-relaxed text-neutral-900">
                   &ldquo;{active.slogan}&rdquo;
                 </p>
-              </div>
-            )}
-
-            {active.wakil_name && (
-              <div className="max-w-md rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                <span className="font-medium text-[11px] tracking-normal text-neutral-500">
-                  Calon Wakil Ketua OSIS
-                </span>
-                <div className="mt-2 flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand font-mono text-sm font-bold text-brand-ink">
-                    {String(active.number).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-neutral-900">
-                      {active.wakil_name}
-                    </p>
-                    {active.wakil_class_name && (
-                      <span className="font-mono text-[11px] text-neutral-500">
-                        Kelas: {active.wakil_class_name}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+              </blockquote>
             )}
           </div>
 
-          <CandidateMedia candidate={active} />
+          <div className="p-6 sm:p-8">
+            <CandidateMedia candidate={active} />
 
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50/60 p-6">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold tracking-normal text-neutral-900">
-                  01 / VISI STRATEGIS
-                </span>
+            {/* Visi dan misi dalam satu container dengan dua baris terpisah.
+                Penomoran "01 / 02" dihapus karena tidak menambah informasi. */}
+            <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50/60">
+              <div className="p-5 sm:p-6">
+                <h3 className="text-[12px] font-bold tracking-[0.08em] text-neutral-900 uppercase">
+                  Visi Strategis
+                </h3>
+                <p className="mt-2.5 text-[15px] leading-relaxed whitespace-pre-line text-neutral-700">
+                  {active.vision || "Belum ada visi tercantum."}
+                </p>
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-neutral-700 whitespace-pre-line">
-                {active.vision || "Belum ada visi tercantum."}
-              </p>
-            </div>
 
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50/60 p-6">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold tracking-normal text-neutral-900">
-                  02 / PROGRAM & MISI
-                </span>
-              </div>
-              <div className="mt-3 text-sm leading-relaxed text-neutral-700 font-normal">
+              <div className="border-t border-neutral-200 p-5 sm:p-6">
+                <h3 className="text-[12px] font-bold tracking-[0.08em] text-neutral-900 uppercase">
+                  Program &amp; Misi
+                </h3>
                 {active.mission ? (
-                  <MissionList text={active.mission} />
+                  <MissionList
+                    text={active.mission}
+                    className="mt-2.5 text-[15px] leading-relaxed"
+                  />
                 ) : (
-                  "Belum ada rincian misi tercantum."
+                  <p className="mt-2.5 text-[15px] leading-relaxed text-neutral-700">
+                    Belum ada rincian misi tercantum.
+                  </p>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-100 pt-6">
-            <span className="font-mono text-xs text-neutral-500">
+          <div className="flex flex-col items-center justify-between gap-4 border-t border-neutral-100 px-6 py-5 sm:flex-row sm:px-8">
+            <span className="text-xs text-neutral-500">
               Yakin dengan kandidat ini? Gunakan hak suaramu di bilik.
             </span>
             <Link
               href="/vote"
-              className="press w-full sm:w-auto rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold tracking-normal text-brand-ink shadow-brand transition-all hover:bg-brand-hover"
+              className="press w-full rounded-full bg-brand px-6 py-3 text-center text-sm font-semibold tracking-normal text-brand-ink shadow-brand transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark sm:w-auto"
             >
               Coblos Nomor {active.number} Sekarang
             </Link>
           </div>
-        </div>
+        </article>
       )}
 
-        {candidates.length === 0 && (
-          <div className="mt-8 rounded-2xl border border-dashed border-neutral-300 bg-white p-12 text-center">
-            <p className="text-base font-semibold text-neutral-800">
-              Belum ada kandidat aktif
-            </p>
-            <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-neutral-600">
-              Halaman ini akan terisi begitu panitia menambahkan pasangan calon.
-            </p>
-          </div>
-        )}
+      {candidates.length === 0 && (
+        <div className="mt-8 rounded-2xl border border-dashed border-neutral-300 bg-white p-12 text-center">
+          <p className="text-base font-semibold text-neutral-800">
+            Belum ada kandidat aktif
+          </p>
+          <p className="mx-auto mt-1 max-w-sm text-sm leading-relaxed text-neutral-600">
+            Halaman ini akan terisi begitu panitia menambahkan pasangan calon.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

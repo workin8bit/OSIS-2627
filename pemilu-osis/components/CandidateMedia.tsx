@@ -22,16 +22,24 @@ export function isVimeo(url: string) {
 export function MissionList({
   text,
   compact = false,
+  className,
 }: {
   text: string;
   compact?: boolean;
+  /**
+   * Menggantikan ukuran teks bawaan, bukan menambahinya. Dipakai halaman
+   * Paslon yang butuh ukuran lebih besar dari daftar ringkas di beranda.
+   */
+  className?: string;
 }) {
   if (!text) return null;
   const lines = text.split(/\r?\n/);
-  const body = compact ? "text-[13px] sm:text-[14px] sm:text-justify" : "text-sm";
+  const body =
+    className ??
+    (compact ? "mt-1 text-[13px] sm:text-[14px] sm:text-justify" : "mt-3 text-sm");
 
   return (
-    <ul className={`mt-1 space-y-1.5 leading-relaxed text-neutral-700 ${body}`}>
+    <ul className={`space-y-2 leading-relaxed text-neutral-700 ${body}`}>
       {lines.map((line, i) => {
         const trimmed = line.trim();
         if (!trimmed) return null;
