@@ -61,6 +61,11 @@ export default function HomePage() {
   }
 
   const schoolName = status?.school_name || "SMA Negeri 3 Rembang";
+  // Nilai sekolah berasal dari database, jadi awalan "OSIS" ditambahkan hanya
+  // bila belum ada - supaya tidak menjadi "OSIS OSIS SMA Negeri 3 Rembang".
+  const schoolLabel = /^\s*osis\b/i.test(schoolName)
+    ? schoolName
+    : `OSIS ${schoolName}`;
   const electionName = status?.election_name || "Pemilihan Ketua & Wakil OSIS";
   const year = status?.academic_year || "2026/2027";
 
@@ -69,7 +74,7 @@ export default function HomePage() {
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="flex items-center gap-2">
           <span className="text-[13px] text-neutral-500">
-            {schoolName} &middot; Periode {year}
+            {schoolLabel} &middot; Periode {year}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -368,18 +373,18 @@ export default function HomePage() {
 
                   <div className="mt-4 space-y-3 border-t border-neutral-100 pt-4 text-left text-[13px] leading-relaxed text-neutral-700 sm:justify sm:text-justify sm:text-sm">
                       <div>
-                        <span className="text-xs font-semibold text-neutral-950">
-                          Visi:{" "}
-                        </span>
-                        <span className="whitespace-pre-line">
+                        <div className="text-xs font-semibold text-neutral-950">
+                          Visi
+                        </div>
+                        <div className="mt-1 whitespace-pre-line">
                           {c.vision || "\u2014"}
-                        </span>
+                        </div>
                       </div>
                     {c.mission && (
                       <div className="border-t border-neutral-100 pt-3">
-                        <span className="text-xs font-semibold text-neutral-950">
-                          Misi Prioritas:
-                        </span>
+                        <div className="text-xs font-semibold text-neutral-950">
+                          Misi Prioritas
+                        </div>
                         <MissionList text={c.mission} compact />
                       </div>
                     )}

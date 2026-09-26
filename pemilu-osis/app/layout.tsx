@@ -28,7 +28,8 @@ export default function RootLayout({
               <span>— Platform Pemilihan Suara Daring</span>
             </div>
             <div className="text-neutral-500 text-center sm:text-right">
-              Prinsip Luber Jurdil · OSIS SMA 3 REMBANG 26/27
+              <div>Prinsip Luber Jurdil &middot; OSIS SMAN 3 REMBANG 26/27</div>
+              <div>Tri Hita Karana</div>
             </div>
           </div>
         </footer>
