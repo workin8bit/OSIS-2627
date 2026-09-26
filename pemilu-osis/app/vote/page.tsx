@@ -320,16 +320,36 @@ export default function VotePage() {
         </div>
       )}
 
-      {/* Sticky Bottom Confirmation Bar */}
-      <div className="sticky bottom-4 mt-8">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-4 rounded-2xl border border-neutral-300 bg-white/95 p-4 shadow-lg backdrop-blur-md">
+      {/* Sticky Bottom Confirmation Bar. Di layar kecil baris ini ditumpuk
+          dan dinaikkan di atas bottom nav, kalau tidak barisnya menutupi
+          navigasi. Dari md ke atas bottom nav hilang, jadi cukup 1rem. */}
+      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] mt-8 md:bottom-4">
+        <div className="mx-auto flex max-w-2xl flex-col gap-3 rounded-2xl border border-neutral-300 bg-white/95 p-4 shadow-lg backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="min-w-0">
             {chosen ? (
               <div className="text-xs">
-                <span className="text-neutral-500 font-mono">Pilihan: </span>
-                <span className="font-bold text-neutral-950">
-                  {chosen.name} (No. {chosen.number})
-                </span>
+                <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                  <span className="font-mono text-neutral-500">Pilihan: </span>
+                  <span className="min-w-0 font-bold text-neutral-950">
+                    {chosen.name} (No. {chosen.number})
+                  </span>
+                </div>
+                {chosen.wakil_name && (
+                  <div className="mt-0.5 flex min-w-0 flex-wrap items-baseline gap-x-2 text-[11px]">
+                    <span className="font-mono text-neutral-500">Wakil: </span>
+                    <span className="min-w-0 font-semibold text-neutral-800">
+                      {chosen.wakil_name}
+                      {chosen.wakil_class_name && (
+                        <span
+                          aria-label={`kelas ${chosen.wakil_class_name}`}
+                          className="ml-1.5 font-mono text-neutral-500"
+                        >
+                          {chosen.wakil_class_name}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
               </div>
             ) : (
               <span className="font-mono text-xs text-neutral-500">
@@ -341,7 +361,7 @@ export default function VotePage() {
           <button
             disabled={!chosen || notOpen}
             onClick={() => setConfirmOpen(true)}
-            className="press rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-ink shadow-brand transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark disabled:opacity-40"
+            className="press w-full rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-brand-ink shadow-brand transition-all hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark disabled:opacity-40 sm:w-auto"
           >
             <span className="flex items-center justify-center gap-1.5">
               Kunci &amp; Coblos Suara
