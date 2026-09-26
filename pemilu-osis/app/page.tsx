@@ -320,21 +320,21 @@ export default function HomePage() {
                         <h2 className="text-lg sm:text-xl font-bold tracking-tight text-neutral-950">
                           {c.name}
                         </h2>
-                        <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 font-mono text-[11px] font-medium text-neutral-600">
+                        <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[13px] font-medium text-neutral-600">
                           {c.class_name}
                         </span>
                       </div>
 
                       {c.wakil_name && (
-                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-neutral-600">
-                          <span className="text-[11px] font-semibold text-neutral-500">
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-neutral-600">
+                          <span className="text-xs font-semibold text-neutral-500">
                             Wakil:
                           </span>
                           <span className="font-semibold text-neutral-800">
                             {c.wakil_name}
                           </span>
                           {c.wakil_class_name && (
-                            <span className="rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 font-mono text-[11px] text-neutral-500">
+                            <span className="rounded-md border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[13px] text-neutral-500">
                               {c.wakil_class_name}
                             </span>
                           )}
@@ -374,7 +374,7 @@ export default function HomePage() {
                     )}
                   </div>
 
-                  <div className="mt-4 border-t border-neutral-100 pt-4">
+                  <div className="mt-4 flex justify-end border-t border-neutral-100 pt-4">
                     <Link
                       href={`/candidates?paslon=${encodeURIComponent(c.id)}`}
                       className="press inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-800 transition-colors hover:border-brand/50 hover:bg-brand-wash hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark"
