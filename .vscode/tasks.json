@@ -1,0 +1,51 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Setup: install dependensi",
+      "type": "npm",
+      "script": "setup",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dev server (Vite)",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^x^" },
+        "background": { "activeBegin": true, "beginsPattern": "VITE", "endsPattern": "ready in" }
+      },
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "Build produksi",
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Lint (oxlint)",
+      "type": "shell",
+      "command": "npx oxlint src",
+      "options": { "cwd": "${workspaceFolder}/client" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Tes database (PGlite)",
+      "type": "npm",
+      "script": "test:db",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Buat ulang supabase/setup.sql",
+      "type": "npm",
+      "script": "build:sql",
+      "problemMatcher": []
+    }
+  ]
+}

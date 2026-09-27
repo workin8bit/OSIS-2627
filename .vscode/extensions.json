@@ -1,0 +1,9 @@
+{
+  // VS Code akan menawarkan ekstensi ini saat folder proyek dibuka.
+  "recommendations": [
+    "github.copilot-chat",
+    "bradlc.vscode-tailwindcss",
+    "oxc.oxc-vscode",
+    "denoland.vscode-deno"
+  ]
+}

@@ -46,6 +46,8 @@ Admin = user Supabase Auth yang terdaftar di tabel `public.admins`. User login y
 
 ## Cara Memasang
 
+> 💻 Memakai **VS Code**? Ikuti panduan lengkap di [`docs/VSCODE.md`](docs/VSCODE.md) (ekstensi, tombol F5, dan cara memakai skill lewat Copilot).
+
 ### 1. Buat proyek Supabase
 Buat proyek baru di [supabase.com/dashboard](https://supabase.com/dashboard) (region **Southeast Asia (Singapore)** disarankan).
 
@@ -130,7 +132,7 @@ npm run test:db
 
 ## Skill untuk AI Agent
 
-Repo ini menyertakan skill **[web-design-engineer](.claude/skills/web-design-engineer/SKILL.md)** (dari [ConardLi/garden-skills](https://github.com/ConardLi/garden-skills), lisensi MIT) untuk pekerjaan desain antarmuka. Agent seperti Claude Code membacanya otomatis dari `.claude/skills/`; panduan penerapannya di proyek ini ada di [`AGENTS.md`](AGENTS.md).
+Repo ini menyertakan skill **[web-design-engineer](.claude/skills/web-design-engineer/SKILL.md)** (dari [ConardLi/garden-skills](https://github.com/ConardLi/garden-skills), lisensi MIT) untuk pekerjaan desain antarmuka. Agent seperti Claude Code dan **GitHub Copilot di VS Code** membacanya otomatis dari `.claude/skills/` (lihat [`docs/VSCODE.md`](docs/VSCODE.md#7-memakai-skill-web-design-engineer)); panduan penerapannya di proyek ini ada di [`AGENTS.md`](AGENTS.md).
 
 ## Catatan
 - Nama pengurus, nama kabinet, dan program di data contoh hanyalah **contoh** — ubah lewat panel admin.

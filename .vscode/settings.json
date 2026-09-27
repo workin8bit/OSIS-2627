@@ -1,0 +1,22 @@
+{
+  // --- Copilot: pakai AGENTS.md + skill di .claude/skills (web-design-engineer) ---
+  "chat.useAgentsMdFile": true,
+
+  // --- Tailwind CSS v4: token ada di index.css (@theme), bukan tailwind.config.js ---
+  "tailwindCSS.experimental.configFile": "client/src/index.css",
+  "files.associations": { "*.css": "tailwindcss" },
+  "css.lint.unknownAtRules": "ignore",
+  "editor.quickSuggestions": { "strings": "on" },
+
+  // --- Oxlint (linter proyek); formatter oxfmt tidak dipakai ---
+  "oxc.enable.oxlint": true,
+  "oxc.enable.oxfmt": false,
+
+  // --- Deno hanya untuk Supabase Edge Functions ---
+  "deno.enablePaths": ["supabase/functions"],
+
+  // --- Kerapian ---
+  "files.exclude": { "**/node_modules": true, "client/dist": true },
+  "search.exclude": { "**/node_modules": true, "client/dist": true, "supabase/setup.sql": true, "**/package-lock.json": true },
+  "editor.tabSize": 2
+}

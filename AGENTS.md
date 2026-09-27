@@ -8,7 +8,7 @@ Website & panel admin **OSIS SMA Negeri 3 Rembang 2026/2027** — React 19 + Vit
 |---|---|---|
 | **web-design-engineer** | [`.claude/skills/web-design-engineer/SKILL.md`](.claude/skills/web-design-engineer/SKILL.md) | Membuat/merombak tampilan halaman, komponen UI, dashboard admin, kritik desain, atau QA visual |
 
-Baca `SKILL.md` lebih dulu, lalu file di `references/` **hanya sesuai kebutuhan** (lihat tabel *References Routing* di akhir SKILL.md).
+Skill ini terdeteksi otomatis oleh Claude Code dan GitHub Copilot (VS Code) dari `.claude/skills/`. Baca `SKILL.md` lebih dulu, lalu file di `references/` **hanya sesuai kebutuhan** (lihat tabel *References Routing* di akhir SKILL.md).
 
 ### Menerapkan web-design-engineer di proyek ini
 
