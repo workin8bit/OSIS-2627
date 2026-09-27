@@ -128,6 +128,10 @@ npm run test:db
     └── config.toml               # konfigurasi Supabase CLI
 ```
 
+## Skill untuk AI Agent
+
+Repo ini menyertakan skill **[web-design-engineer](.claude/skills/web-design-engineer/SKILL.md)** (dari [ConardLi/garden-skills](https://github.com/ConardLi/garden-skills), lisensi MIT) untuk pekerjaan desain antarmuka. Agent seperti Claude Code membacanya otomatis dari `.claude/skills/`; panduan penerapannya di proyek ini ada di [`AGENTS.md`](AGENTS.md).
+
 ## Catatan
 - Nama pengurus, nama kabinet, dan program di data contoh hanyalah **contoh** — ubah lewat panel admin.
 - Aspirasi dibatasi 5 kiriman per 10 menit per IP (di fungsi `submit_aspiration`).
