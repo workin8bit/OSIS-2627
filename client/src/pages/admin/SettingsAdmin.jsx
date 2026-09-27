@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { api } from '../../lib/api';
+import { saveSettings } from '../../lib/data';
 import { useSettings, useToast } from '../../lib/context';
 
 const GROUPS = [
@@ -52,7 +52,7 @@ function SettingsForm({ initial }) {
     e.preventDefault();
     setSaving(true);
     try {
-      await api('/admin/settings', { method: 'PUT', body: { ...form, missions: form.missions.filter((m) => m.trim()) } });
+      await saveSettings({ ...form, missions: form.missions.filter((m) => m.trim()) });
       await reload();
       toast('Pengaturan disimpan');
     } catch (err) {

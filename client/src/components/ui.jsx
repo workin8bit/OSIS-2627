@@ -4,7 +4,7 @@ import {
   Monitor, Moon, Music, Palette, Shield, Star, Trophy, Users, Vote, X,
 } from 'lucide-react';
 import { initials } from '../lib/format';
-import { uploadFile } from '../lib/api';
+import { uploadFile } from '../lib/data';
 import { useToast } from '../lib/context';
 
 // Ikon yang tersedia untuk sekbid (dapat dipilih di panel admin)

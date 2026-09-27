@@ -1,11 +1,12 @@
 // Konfigurasi halaman-halaman CRUD admin.
 import CrudPage from './CrudPage';
-import { useFetch } from '../../lib/context';
+import { useQuery } from '../../lib/context';
+import { getDivisions } from '../../lib/data';
 import { Avatar, ICONS, Icon, Progress } from '../../components/ui';
-import { STATUS_PROGRAM, formatDate } from '../../lib/format';
+import { STATUS_PROGRAM, fmtTime, formatDate } from '../../lib/format';
 
 function useDivisionOptions() {
-  const { data } = useFetch('/divisions');
+  const { data } = useQuery(getDivisions);
   return (data || []).map((d) => ({ value: d.id, label: `${d.short} — ${d.name}` }));
 }
 
@@ -16,7 +17,7 @@ export function PostsAdmin() {
       title="Berita"
       wide
       searchKeys={['title', 'category']}
-      defaults={{ category: 'Kegiatan', published: 1 }}
+      defaults={{ category: 'Kegiatan', published: true }}
       fields={[
         { name: 'title', label: 'Judul', required: true, full: true },
         {
@@ -82,7 +83,7 @@ export function EventsAdmin() {
       ]}
       columns={[
         { key: 'title', label: 'Kegiatan', render: (r) => <span className="font-semibold text-slate-900">{r.title}</span> },
-        { key: 'date', label: 'Tanggal', render: (r) => `${formatDate(r.date, { withDay: true })} ${r.time || ''}` },
+        { key: 'date', label: 'Tanggal', render: (r) => `${formatDate(r.date, { withDay: true })} · ${fmtTime(r.time)}` },
         { key: 'location', label: 'Lokasi' },
         { key: 'category', label: 'Kategori', render: (r) => <span className="badge bg-slate-100 text-slate-700">{r.category}</span> },
       ]}
@@ -144,7 +145,7 @@ export function MembersAdmin() {
       title="Pengurus"
       wide
       searchKeys={['name', 'position', 'class_name']}
-      defaults={{ is_core: 0, sort_order: 10 }}
+      defaults={{ is_core: false, sort_order: 10 }}
       filters={{ key: 'division_id', label: 'Semua Sekbid', options: divOptions.map((d) => ({ value: String(d.value), label: d.label })) }}
       fields={[
         { name: 'name', label: 'Nama Lengkap', required: true },

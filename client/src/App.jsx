@@ -1,5 +1,7 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { AuthProvider, SettingsProvider, ToastProvider } from './lib/context';
+import { isSupabaseConfigured } from './lib/supabase';
+import SetupNotice from './components/SetupNotice';
 import PublicLayout from './components/Layout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
@@ -30,6 +32,7 @@ function NotFound() {
 }
 
 export default function App() {
+  if (!isSupabaseConfigured) return <SetupNotice />;
   return (
     <BrowserRouter>
       <ToastProvider>

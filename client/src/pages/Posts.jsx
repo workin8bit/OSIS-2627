@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, CalendarDays, Eye, Newspaper, Search, User } from 'lucide-react';
-import { useFetch } from '../lib/context';
+import { useQuery } from '../lib/context';
+import { getPost, getPosts } from '../lib/data';
 import { Empty, ErrorBox, PageHeader, Spinner } from '../components/ui';
 import { formatDate } from '../lib/format';
 
@@ -35,7 +36,7 @@ export function PostList() {
   const category = params.get('kategori') || '';
   const q = params.get('q') || '';
   const [search, setSearch] = useState(q);
-  const { data, loading, error } = useFetch(`/posts?page=${page}&category=${encodeURIComponent(category)}&q=${encodeURIComponent(q)}`);
+  const { data, loading, error } = useQuery(() => getPosts({ page, category, q }), [page, category, q]);
 
   const update = (patch) => {
     const next = { page: 1, kategori: category, q, ...patch };
@@ -96,7 +97,7 @@ export function PostList() {
 
 export function PostDetail() {
   const { slug } = useParams();
-  const { data, loading, error } = useFetch(`/posts/${slug}`);
+  const { data, loading, error } = useQuery(() => getPost(slug), [slug]);
   useEffect(() => {
     if (data?.title) document.title = `${data.title} — OSIS SMAN 3 Rembang`;
     return () => {

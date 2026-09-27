@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { api, getToken, setToken } from './api';
+import { supabase } from './supabase';
+import { getAdminProfile, getSettings, signIn, signOut } from './data';
 
 const SettingsCtx = createContext({ settings: {}, reload: () => {} });
 const AuthCtx = createContext(null);
@@ -7,35 +8,62 @@ const ToastCtx = createContext(() => {});
 
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState({ org_name: 'OSIS SMA Negeri 3 Rembang', period: '2026/2027', missions: [] });
-  const reload = useCallback(() => api('/settings').then(setSettings).catch(() => {}), []);
+  const reload = useCallback(() => getSettings().then(setSettings).catch(() => {}), []);
   useEffect(() => {
     reload();
   }, [reload]);
   return <SettingsCtx.Provider value={{ settings, reload }}>{children}</SettingsCtx.Provider>;
 }
 
+/**
+ * user    : user Supabase Auth yang login (atau null)
+ * profile : baris tabel `admins` milik user (null bila bukan admin)
+ */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(!!getToken());
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!getToken()) return;
-    api('/auth/me')
-      .then(setUser)
-      .catch(() => setToken(null))
-      .finally(() => setLoading(false));
+    let active = true;
+    const apply = async (session) => {
+      const u = session?.user ?? null;
+      let p = null;
+      if (u) p = await getAdminProfile(u.id).catch(() => null);
+      if (!active) return;
+      setUser(u);
+      setProfile(p);
+      setLoading(false);
+    };
+    supabase.auth.getSession().then(({ data }) => apply(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      // Jalankan di luar callback agar tidak terjadi deadlock pada supabase-js
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') setTimeout(() => apply(session), 0);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (username, password) => {
-    const { token, user } = await api('/auth/login', { method: 'POST', body: { username, password } });
-    setToken(token);
-    setUser(user);
+  const login = async (email, password) => {
+    const { user: u } = await signIn(email, password);
+    const p = await getAdminProfile(u.id);
+    if (!p) {
+      await signOut();
+      throw new Error('Akun ini tidak terdaftar sebagai admin OSIS');
+    }
+    setUser(u);
+    setProfile(p);
   };
-  const logout = () => {
-    setToken(null);
+  const logout = async () => {
+    await signOut();
     setUser(null);
+    setProfile(null);
   };
-  return <AuthCtx.Provider value={{ user, loading, login, logout }}>{children}</AuthCtx.Provider>;
+
+  const admin = user && profile ? { id: user.id, email: user.email, name: profile.name, role: profile.role } : null;
+  return <AuthCtx.Provider value={{ user: admin, authUser: user, loading, login, logout }}>{children}</AuthCtx.Provider>;
 }
 
 export function ToastProvider({ children }) {
@@ -68,14 +96,18 @@ export const useSettings = () => useContext(SettingsCtx);
 export const useAuth = () => useContext(AuthCtx);
 export const useToast = () => useContext(ToastCtx);
 
-/** Hook sederhana untuk mengambil data dari API. */
-export function useFetch(path, deps = []) {
+/**
+ * Hook sederhana untuk mengambil data async.
+ * @param {() => Promise<any>} fetcher fungsi pengambil data
+ * @param {any[]} deps dependensi yang memicu pengambilan ulang
+ */
+export function useQuery(fetcher, deps = []) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const load = useCallback(() => {
     setLoading(true);
-    return api(path)
+    return fetcher()
       .then((d) => {
         setData(d);
         setError(null);
@@ -83,7 +115,7 @@ export function useFetch(path, deps = []) {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [path, ...deps]);
+  }, deps);
   useEffect(() => {
     load();
   }, [load]);

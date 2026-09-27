@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CheckCircle2, Copy, MessageSquare, Search, Send, ShieldCheck } from 'lucide-react';
-import { api } from '../lib/api';
-import { useFetch, useToast } from '../lib/context';
+import { useQuery, useToast } from '../lib/context';
+import { getPublicAspirations, submitAspiration, trackAspiration } from '../lib/data';
 import { PageHeader } from '../components/ui';
 import { STATUS_ASPIRASI, formatDate, relativeTime } from '../lib/format';
 
@@ -15,7 +15,7 @@ export default function Aspiration() {
   const [code, setCode] = useState('');
   const [track, setTrack] = useState(null);
   const [trackErr, setTrackErr] = useState('');
-  const { data: answered } = useFetch('/aspirations/public');
+  const { data: answered } = useQuery(getPublicAspirations);
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
 
@@ -23,8 +23,7 @@ export default function Aspiration() {
     e.preventDefault();
     setSending(true);
     try {
-      const r = await api('/aspirations', { method: 'POST', body: form });
-      setTicket(r.ticket);
+      setTicket(await submitAspiration(form));
       setForm({ name: '', class_name: '', category: 'Umum', message: '', anonymous: false });
     } catch (err) {
       toast(err.message, 'error');
@@ -38,7 +37,7 @@ export default function Aspiration() {
     setTrack(null);
     setTrackErr('');
     try {
-      setTrack(await api(`/aspirations/track/${encodeURIComponent(code.trim())}`));
+      setTrack(await trackAspiration(code.trim()));
     } catch (err) {
       setTrackErr(err.message);
     }

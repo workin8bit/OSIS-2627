@@ -78,7 +78,7 @@ export default function AdminLayout() {
           <h1 className="text-lg font-bold text-slate-900">{current?.label || 'Admin'}</h1>
           <div className="ml-auto text-right text-sm">
             <p className="font-semibold text-slate-800">{user.name}</p>
-            <p className="text-xs text-slate-500">@{user.username}</p>
+            <p className="text-xs text-slate-500">{user.email}</p>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">

@@ -37,6 +37,11 @@ export function relativeTime(d) {
   return formatDate(d);
 }
 
+/** '07:00:00' -> '07.00' */
+export function fmtTime(t) {
+  return t ? String(t).slice(0, 5).replace(':', '.') : '-';
+}
+
 export function initials(name = '') {
   return name
     .split(/\s+/)

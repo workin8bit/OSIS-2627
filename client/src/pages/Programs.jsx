@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { CalendarDays, Search, Users } from 'lucide-react';
-import { useFetch } from '../lib/context';
+import { useQuery } from '../lib/context';
+import { getPrograms } from '../lib/data';
 import { Empty, ErrorBox, PageHeader, Progress, Spinner } from '../components/ui';
 import { STATUS_PROGRAM, formatDate } from '../lib/format';
 
 export default function Programs() {
-  const { data, loading, error } = useFetch('/programs');
+  const { data, loading, error } = useQuery(getPrograms);
   const [status, setStatus] = useState('');
   const [division, setDivision] = useState('');
   const [q, setQ] = useState('');

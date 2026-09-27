@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import { CalendarDays, ClipboardList, Images, MessageSquare, Newspaper, Users } from 'lucide-react';
-import { useFetch } from '../../lib/context';
+import { useQuery } from '../../lib/context';
+import { getDashboard } from '../../lib/data';
 import { ErrorBox, Spinner } from '../../components/ui';
-import { STATUS_ASPIRASI, STATUS_PROGRAM, dateParts, relativeTime } from '../../lib/format';
+import { STATUS_ASPIRASI, STATUS_PROGRAM, dateParts, fmtTime, relativeTime } from '../../lib/format';
 
 export default function Dashboard() {
-  const { data, loading, error } = useFetch('/admin/dashboard');
+  const { data, loading, error } = useQuery(getDashboard);
   if (loading) return <Spinner />;
   if (error) return <ErrorBox message={error} />;
   const c = data.counts;
@@ -95,7 +96,7 @@ export default function Dashboard() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold">{e.title}</p>
                       <p className="text-xs text-slate-500">
-                        {e.time} · {e.location}
+                        {fmtTime(e.time)} · {e.location}
                       </p>
                     </div>
                   </div>

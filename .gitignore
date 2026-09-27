@@ -1,6 +1,9 @@
 node_modules/
 dist/
-server/data/
 .env
+.env.local
+client/.env
 *.log
 .DS_Store
+supabase/.temp/
+supabase/.branches/

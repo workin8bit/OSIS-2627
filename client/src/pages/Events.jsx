@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react';
-import { useFetch } from '../lib/context';
+import { useQuery } from '../lib/context';
+import { getEvents } from '../lib/data';
 import { Empty, ErrorBox, PageHeader, Spinner } from '../components/ui';
-import { BULAN, dateParts } from '../lib/format';
+import { BULAN, dateParts, fmtTime } from '../lib/format';
 
 const HARI_S = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 const pad = (n) => String(n).padStart(2, '0');
 const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 export default function Events() {
-  const { data, loading, error } = useFetch('/events');
+  const { data, loading, error } = useQuery(getEvents);
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -139,7 +140,7 @@ function EventItem({ e }) {
         {e.description && <p className="text-xs text-slate-500">{e.description}</p>}
         <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-slate-500">
           <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" /> {e.time || '-'}
+            <Clock className="h-3 w-3" /> {fmtTime(e.time)}
           </span>
           <span className="flex items-center gap-1">
             <MapPin className="h-3 w-3" /> {e.location || '-'}

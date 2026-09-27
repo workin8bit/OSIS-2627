@@ -8,7 +8,7 @@ export default function Login() {
   const { user, login } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
-  const [form, setForm] = useState({ username: '', password: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -19,7 +19,7 @@ export default function Login() {
     setBusy(true);
     setErr('');
     try {
-      await login(form.username, form.password);
+      await login(form.email.trim(), form.password);
       nav(loc.state?.from || '/admin', { replace: true });
     } catch (e2) {
       setErr(e2.message);
@@ -40,12 +40,12 @@ export default function Login() {
           </div>
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <label className="label">Username</label>
-              <input className="input" autoFocus value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} required />
+              <label className="label">Email</label>
+              <input className="input" type="email" autoFocus autoComplete="username" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
             </div>
             <div>
               <label className="label">Password</label>
-              <input className="input" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+              <input className="input" type="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
             </div>
             {err && <p className="rounded-lg bg-red-50 p-2.5 text-sm text-red-600">{err}</p>}
             <button className="btn-primary w-full py-3" disabled={busy}>

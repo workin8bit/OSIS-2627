@@ -1,11 +1,12 @@
 import { Eye, Mail, MapPin, Phone, Quote, Target } from 'lucide-react';
-import { useSettings, useFetch } from '../lib/context';
+import { useSettings, useQuery } from '../lib/context';
+import { getStructure } from '../lib/data';
 import { Avatar, Icon, PageHeader, SectionTitle } from '../components/ui';
 
 export default function Profile() {
   const { settings: s } = useSettings();
-  const { data: divisions } = useFetch('/divisions');
-  const { data: structure } = useFetch('/structure');
+  const { data: structure } = useQuery(getStructure);
+  const divisions = structure?.divisions;
   const chair = structure?.core?.[0];
 
   return (

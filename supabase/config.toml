@@ -1,0 +1,32 @@
+# Konfigurasi minimal Supabase CLI (untuk `supabase link`, `supabase db push`,
+# `supabase functions deploy`, dan `supabase start` di lokal).
+project_id = "osis-sman3-rembang"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[storage]
+enabled = true
+file_size_limit = "5MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+# Pendaftaran publik dimatikan: akun admin dibuat oleh superadmin.
+enable_signup = false
+
+[auth.email]
+enable_signup = false
+
+[functions.admin-users]
+verify_jwt = true

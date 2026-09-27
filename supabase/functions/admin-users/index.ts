@@ -1,0 +1,82 @@
+// Edge Function: manajemen akun admin (khusus superadmin).
+// Membuat / menghapus user Supabase Auth membutuhkan service role key,
+// sehingga harus dijalankan di sisi server (bukan di browser).
+//
+// Deploy:  supabase functions deploy admin-users
+//
+// Body JSON:
+//   { "action": "create", "email": "...", "password": "...", "name": "...", "role": "admin" | "superadmin" }
+//   { "action": "delete", "user_id": "uuid" }
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method !== 'POST') return json({ error: 'Method tidak diizinkan' }, 405);
+
+  const url = Deno.env.get('SUPABASE_URL')!;
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
+
+  // Verifikasi pemanggil
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+  const { data: userData, error: userErr } = await admin.auth.getUser(token);
+  if (userErr || !userData?.user) return json({ error: 'Silakan login terlebih dahulu' }, 401);
+
+  const { data: me } = await admin.from('admins').select('role').eq('user_id', userData.user.id).maybeSingle();
+  if (me?.role !== 'superadmin') return json({ error: 'Hanya superadmin yang dapat mengelola akun admin' }, 403);
+
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: 'Body harus berupa JSON' }, 400);
+  }
+
+  if (body.action === 'create') {
+    const email = String(body.email ?? '').trim().toLowerCase();
+    const password = String(body.password ?? '');
+    const name = String(body.name ?? '').trim();
+    const role = body.role === 'superadmin' ? 'superadmin' : 'admin';
+    if (!email || !name) return json({ error: 'Lengkapi email dan nama' }, 400);
+    if (password.length < 6) return json({ error: 'Password minimal 6 karakter' }, 400);
+
+    const { data: created, error } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { name },
+    });
+    if (error || !created.user) return json({ error: error?.message ?? 'Gagal membuat user' }, 400);
+
+    const { error: insErr } = await admin.from('admins').insert({ user_id: created.user.id, name, email, role });
+    if (insErr) {
+      await admin.auth.admin.deleteUser(created.user.id);
+      return json({ error: insErr.message }, 400);
+    }
+    return json({ user_id: created.user.id, email, name, role }, 201);
+  }
+
+  if (body.action === 'delete') {
+    const userId = String(body.user_id ?? '');
+    if (!userId) return json({ error: 'user_id wajib diisi' }, 400);
+    if (userId === userData.user.id) return json({ error: 'Tidak bisa menghapus akun sendiri' }, 400);
+    const { error } = await admin.auth.admin.deleteUser(userId); // baris admins ikut terhapus (on delete cascade)
+    if (error) return json({ error: error.message }, 400);
+    return json({ ok: true });
+  }
+
+  return json({ error: 'Aksi tidak dikenal' }, 400);
+});

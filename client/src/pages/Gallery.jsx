@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useFetch } from '../lib/context';
+import { useQuery } from '../lib/context';
+import { getGallery } from '../lib/data';
 import { Empty, ErrorBox, PageHeader, Spinner } from '../components/ui';
 
 export default function Gallery() {
-  const { data, loading, error } = useFetch('/gallery');
+  const { data, loading, error } = useQuery(getGallery);
   const [album, setAlbum] = useState('');
   const [idx, setIdx] = useState(null);
   const albums = [...new Set((data || []).map((g) => g.album))];

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Search, Trash2 } from 'lucide-react';
-import { api } from '../../lib/api';
-import { useFetch, useToast } from '../../lib/context';
+import { table } from '../../lib/data';
+import { useQuery, useToast } from '../../lib/context';
 import { Empty, ErrorBox, Modal, Spinner } from '../../components/ui';
 import { STATUS_ASPIRASI, formatDate, relativeTime } from '../../lib/format';
 
 export default function AspirationsAdmin() {
-  const { data, loading, error, reload } = useFetch('/admin/aspirations');
+  const { data, loading, error, reload } = useQuery(() => table('aspirations').list());
   const toast = useToast();
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
@@ -23,7 +23,7 @@ export default function AspirationsAdmin() {
     e.preventDefault();
     setSaving(true);
     try {
-      await api(`/admin/aspirations/${sel.id}`, { method: 'PUT', body: form });
+      await table('aspirations').update(sel.id, { status: form.status, response: form.response.trim() || null });
       toast('Aspirasi diperbarui');
       setSel(null);
       reload();
@@ -36,9 +36,13 @@ export default function AspirationsAdmin() {
 
   const remove = async (a) => {
     if (!confirm(`Hapus aspirasi ${a.ticket}?`)) return;
-    await api(`/admin/aspirations/${a.id}`, { method: 'DELETE' });
-    toast('Aspirasi dihapus');
-    reload();
+    try {
+      await table('aspirations').remove(a.id);
+      toast('Aspirasi dihapus');
+      reload();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
   };
 
   const counts = Object.fromEntries(Object.keys(STATUS_ASPIRASI).map((k) => [k, (data || []).filter((a) => a.status === k).length]));

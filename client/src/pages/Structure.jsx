@@ -1,4 +1,5 @@
-import { useFetch } from '../lib/context';
+import { useQuery } from '../lib/context';
+import { getStructure } from '../lib/data';
 import { Avatar, ErrorBox, Icon, InstagramIcon, PageHeader, Spinner } from '../components/ui';
 
 function MemberCard({ m, big }) {
@@ -19,7 +20,7 @@ function MemberCard({ m, big }) {
 }
 
 export default function Structure() {
-  const { data, loading, error } = useFetch('/structure');
+  const { data, loading, error } = useQuery(getStructure);
 
   return (
     <>

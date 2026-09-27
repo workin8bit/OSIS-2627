@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Layers, MapPin, MessageSquare, Quote, Target, Users, CheckCircle2 } from 'lucide-react';
-import { useFetch } from '../lib/context';
+import { useQuery } from '../lib/context';
+import { getHome, getSettings } from '../lib/data';
 import { Avatar, ErrorBox, Progress, SectionTitle, Spinner } from '../components/ui';
-import { dateParts } from '../lib/format';
+import { dateParts, fmtTime } from '../lib/format';
 import { PostCard } from './Posts';
 
 export default function Home() {
-  const { data, loading, error } = useFetch('/home');
+  const { data, loading, error } = useQuery(async () => {
+    const [home, settings] = await Promise.all([getHome(), getSettings()]);
+    return { ...home, settings };
+  });
   const s = data?.settings || {};
 
   return (
@@ -175,7 +179,7 @@ export default function Home() {
                         <div className="min-w-0">
                           <p className="font-bold text-slate-900">{e.title}</p>
                           <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                            <Clock className="h-3.5 w-3.5" /> {e.time || '-'} WIB
+                            <Clock className="h-3.5 w-3.5" /> {fmtTime(e.time)} WIB
                           </p>
                           <p className="flex items-center gap-1 text-xs text-slate-500">
                             <MapPin className="h-3.5 w-3.5" /> {e.location || '-'}

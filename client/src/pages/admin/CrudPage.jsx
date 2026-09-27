@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
-import { api } from '../../lib/api';
-import { useFetch, useToast } from '../../lib/context';
+import { table } from '../../lib/data';
+import { useQuery, useToast } from '../../lib/context';
 import { Empty, ErrorBox, ImageInput, Modal, Spinner } from '../../components/ui';
 
 /**
@@ -10,7 +10,7 @@ import { Empty, ErrorBox, ImageInput, Modal, Spinner } from '../../components/ui
  * columns: [{ key, label, render(row) }]
  */
 export default function CrudPage({ endpoint, title, fields, columns, defaults = {}, searchKeys = [], filters, wide = false, emptyIcon = 'Inbox' }) {
-  const { data, loading, error, reload } = useFetch(`/admin/${endpoint}`);
+  const { data, loading, error, reload } = useQuery(() => table(endpoint).list(), [endpoint]);
   const toast = useToast();
   const [editing, setEditing] = useState(null); // null | {} (baru) | row
   const [form, setForm] = useState({});
@@ -36,12 +36,13 @@ export default function CrudPage({ endpoint, title, fields, columns, defaults = 
       for (const f of fields) {
         let v = form[f.name];
         if (f.type === 'number' || f.type === 'range') v = v === '' || v == null ? null : Number(v);
-        if (f.type === 'checkbox') v = v ? 1 : 0;
+        if (f.type === 'checkbox') v = !!v;
         if (f.type === 'select' && f.numeric) v = v === '' || v == null ? null : Number(v);
+        if (typeof v === 'string' && v.trim() === '' && !f.keepEmpty) v = null;
         payload[f.name] = v ?? null;
       }
-      if (editing.id) await api(`/admin/${endpoint}/${editing.id}`, { method: 'PUT', body: payload });
-      else await api(`/admin/${endpoint}`, { method: 'POST', body: payload });
+      if (editing.id) await table(endpoint).update(editing.id, payload);
+      else await table(endpoint).create(payload);
       toast(`${title} berhasil disimpan`);
       close();
       reload();
@@ -55,7 +56,7 @@ export default function CrudPage({ endpoint, title, fields, columns, defaults = 
   const remove = async (row) => {
     if (!confirm(`Hapus data ini?\n\n${row[columns[0].key] ?? ''}`)) return;
     try {
-      await api(`/admin/${endpoint}/${row.id}`, { method: 'DELETE' });
+      await table(endpoint).remove(row.id);
       toast('Data dihapus');
       reload();
     } catch (err) {
