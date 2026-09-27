@@ -33,7 +33,7 @@ VS Code akan menampilkan notifikasi *"This workspace has extension recommendatio
 | Ekstensi | Fungsi |
 |---|---|
 | GitHub Copilot Chat | Chat AI + agent mode + skill |
-| Tailwind CSS IntelliSense | Autocomplete kelas Tailwind & warna `brand-*` / `gold-*` |
+| Tailwind CSS IntelliSense | Autocomplete kelas Tailwind & warna `ink-*` (arang) / `sun-*` (kuning) |
 | Oxc | Menampilkan peringatan lint langsung di editor |
 | Deno | Hanya untuk file Edge Function di `supabase/functions` |
 

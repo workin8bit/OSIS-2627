@@ -58,10 +58,10 @@ export default function AccountAdmin() {
 
   return (
     <div className="grid max-w-5xl gap-6 lg:grid-cols-2">
-      <form onSubmit={changePw} className="card space-y-4 p-6">
+      <form onSubmit={changePw} className="card space-y-4 p-5 sm:p-6">
         <div>
-          <h2 className="font-bold text-slate-900">Ubah Password</h2>
-          <p className="text-sm text-slate-500">{user.email}</p>
+          <h2 className="text-lg font-extrabold text-ink-950">Ubah Password</h2>
+          <p className="text-sm text-ink-500">{user.email}</p>
         </div>
         <div>
           <label className="label">Password Lama</label>
@@ -75,24 +75,24 @@ export default function AccountAdmin() {
           <label className="label">Konfirmasi Password Baru</label>
           <input type="password" className="input" value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} required />
         </div>
-        <button className="btn-primary" disabled={busy}>
+        <button className="btn-primary w-full sm:w-auto" disabled={busy}>
           Simpan Password
         </button>
       </form>
 
-      <div className="card p-6">
-        <h2 className="mb-4 font-bold text-slate-900">Daftar Admin</h2>
-        <div className="divide-y divide-slate-100">
+      <div className="card p-5 sm:p-6">
+        <h2 className="mb-2 text-lg font-extrabold text-ink-950">Daftar Admin</h2>
+        <div className="divide-y divide-ink-100">
           {(users || []).map((u) => (
             <div key={u.user_id} className="flex items-center justify-between py-3">
               <div>
-                <p className="font-semibold text-slate-900">{u.name}</p>
-                <p className="text-xs text-slate-500">
+                <p className="font-semibold text-ink-900">{u.name}</p>
+                <p className="text-xs text-ink-500">
                   {u.email} · {u.role} · sejak {formatDate(u.created_at)}
                 </p>
               </div>
               {isSuper && u.user_id !== user.id && (
-                <button className="rounded-lg p-2 text-red-600 hover:bg-red-50" onClick={() => delUser(u)} aria-label="Hapus admin">
+                <button className="btn-icon h-11 w-11 text-red-600 hover:bg-red-50" onClick={() => delUser(u)} aria-label="Hapus admin">
                   <Trash2 className="h-4 w-4" />
                 </button>
               )}
@@ -100,8 +100,8 @@ export default function AccountAdmin() {
           ))}
         </div>
         {isSuper ? (
-          <form onSubmit={addUser} className="mt-4 space-y-3 border-t border-slate-200 pt-4">
-            <p className="text-sm font-semibold text-slate-700">Tambah Admin Baru</p>
+          <form onSubmit={addUser} className="mt-4 space-y-3 border-t border-ink-200 pt-4">
+            <p className="text-sm font-semibold text-ink-700">Tambah Admin Baru</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <input className="input" placeholder="Nama" value={nu.name} onChange={(e) => setNu({ ...nu, name: e.target.value })} required />
               <input className="input" type="email" placeholder="Email" value={nu.email} onChange={(e) => setNu({ ...nu, email: e.target.value })} required />
@@ -111,13 +111,13 @@ export default function AccountAdmin() {
                 <option value="superadmin">Superadmin</option>
               </select>
             </div>
-            <button className="btn-primary" disabled={busy}>
+            <button className="btn-primary w-full sm:w-auto" disabled={busy}>
               <UserPlus className="h-4 w-4" /> Tambah
             </button>
-            <p className="text-xs text-slate-500">Membutuhkan Edge Function <code>admin-users</code> yang sudah di-deploy.</p>
+            <p className="text-xs text-ink-500">Membutuhkan Edge Function <code>admin-users</code> yang sudah di-deploy.</p>
           </form>
         ) : (
-          <p className="mt-4 text-xs text-slate-500">Hanya superadmin yang dapat menambah atau menghapus admin.</p>
+          <p className="mt-4 text-xs text-ink-500">Hanya superadmin yang dapat menambah atau menghapus admin.</p>
         )}
       </div>
     </div>

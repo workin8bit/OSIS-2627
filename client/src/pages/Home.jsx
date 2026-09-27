@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, Layers, MapPin, MessageSquare, Quote, Target, Users, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock, Images, MapPin, MessageSquarePlus, Quote, UserRound, Users } from 'lucide-react';
 import { useQuery } from '../lib/context';
 import { getHome, getSettings } from '../lib/data';
-import { Avatar, ErrorBox, Progress, SectionTitle, Spinner } from '../components/ui';
+import { Avatar, ErrorBox, Progress, SectionTitle, Skeleton } from '../components/ui';
 import { dateParts, fmtTime } from '../lib/format';
-import { PostCard } from './Posts';
+import { PostCard, PostRow } from './Posts';
+
+const SHORTCUTS = [
+  { to: '/profil', label: 'Profil', icon: UserRound },
+  { to: '/struktur', label: 'Pengurus', icon: Users },
+  { to: '/agenda', label: 'Agenda', icon: CalendarDays },
+  { to: '/galeri', label: 'Galeri', icon: Images },
+];
 
 export default function Home() {
   const { data, loading, error } = useQuery(async () => {
@@ -12,211 +19,208 @@ export default function Home() {
     return { ...home, settings };
   });
   const s = data?.settings || {};
+  const chair = data?.core?.[0];
+
+  const stats = [
+    { label: 'Pengurus', value: data?.stats.members },
+    { label: 'Seksi Bidang', value: data?.stats.divisions },
+    { label: 'Program Kerja', value: data?.stats.programs },
+    { label: 'Aspirasi ditindaklanjuti', value: data?.stats.aspirations_done, accent: true },
+  ];
 
   return (
-    <>
+    <div className="space-y-12 pb-4 sm:space-y-20">
       {/* HERO */}
-      <section className="relative isolate flex min-h-[92vh] items-center overflow-hidden bg-brand-950">
-        <img src="/hero.jpg" alt="Siswa SMA Negeri 3 Rembang" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-40" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-950 via-brand-950/85 to-brand-900/30" />
-        <div className="container-x fade-in py-32 text-white">
-          <span className="badge mb-5 bg-gold-400/15 px-3 py-1 text-gold-300 ring-1 ring-gold-400/40">
-            {s.cabinet_name || 'Kabinet'} · Periode {s.period || '2026/2027'}
-          </span>
-          <h1 className="max-w-3xl text-4xl leading-tight font-extrabold sm:text-6xl">
-            OSIS <span className="text-gold-400">SMA Negeri 3</span> Rembang
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-brand-100">{s.tagline || 'Bergerak Bersama, Berkarya untuk Smaga'}</p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/program" className="btn-gold px-6 py-3 text-base">
-              Lihat Program Kerja <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link to="/aspirasi" className="btn border border-white/30 px-6 py-3 text-base text-white hover:bg-white/10">
-              <MessageSquare className="h-4 w-4" /> Kirim Aspirasi
-            </Link>
+      <section className="container-x pt-2 sm:pt-6">
+        <div className="relative isolate overflow-hidden rounded-4xl bg-ink-950 text-white lg:grid lg:min-h-[560px] lg:grid-cols-[1.15fr_1fr]">
+          <div className="relative aspect-[4/3] sm:aspect-[16/9] lg:order-2 lg:aspect-auto">
+            <img src="/hero.jpg" alt="Siswa SMA Negeri 3 Rembang" className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/20 to-transparent lg:bg-gradient-to-r lg:from-ink-950 lg:via-ink-950/10" />
+            <span className="absolute top-4 left-4 badge bg-sun-400 px-3 py-1 text-ink-950 lg:hidden">Periode {s.period || '2026/2027'}</span>
+          </div>
+          <div className="relative -mt-16 flex flex-col justify-center px-5 pb-6 sm:px-8 sm:pb-8 lg:mt-0 lg:px-12 lg:py-14">
+            <p className="mb-3 hidden text-sm font-bold text-sun-400 lg:block">
+              {s.cabinet_name || 'Kabinet'} · Periode {s.period || '2026/2027'}
+            </p>
+            <h1 className="text-[2.35rem] leading-[1.02] font-extrabold tracking-tight sm:text-6xl">
+              OSIS <span className="text-sun-400">SMA Negeri 3</span> Rembang
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-ink-300 sm:text-lg">
+              <span className="font-semibold text-white lg:hidden">{s.cabinet_name ? `${s.cabinet_name} — ` : ''}</span>
+              {s.tagline || 'Bergerak Bersama, Berkarya untuk Smaga'}
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap">
+              <Link to="/aspirasi" className="btn-sun min-h-12">
+                <MessageSquarePlus className="h-4 w-4" /> Kirim Aspirasi
+              </Link>
+              <Link to="/program" className="btn min-h-12 bg-white/10 text-white hover:bg-white/15">
+                Program Kerja <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* STATS */}
-      <section className="relative z-10 -mt-16">
-        <div className="container-x">
-          <div className="card grid grid-cols-2 divide-slate-200 p-2 md:grid-cols-4 md:divide-x">
-            {[
-              { icon: Users, label: 'Pengurus', value: data?.stats.members },
-              { icon: Layers, label: 'Seksi Bidang', value: data?.stats.divisions },
-              { icon: Target, label: 'Program Kerja', value: data?.stats.programs },
-              { icon: CheckCircle2, label: 'Aspirasi Ditindaklanjuti', value: data?.stats.aspirations_done },
-            ].map((x) => (
-              <div key={x.label} className="flex items-center gap-4 p-5">
-                <div className="rounded-xl bg-brand-50 p-3 text-brand-700">
-                  <x.icon className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-2xl font-extrabold text-brand-950">{x.value ?? '–'}</p>
-                  <p className="text-xs text-slate-500">{x.label}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* STATISTIK + PINTASAN */}
+      <section className="container-x -mt-6 space-y-3 sm:-mt-10">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {stats.map((x) => (
+            <div key={x.label} className={`rounded-3xl p-4 sm:p-5 ${x.accent ? 'bg-sun-400 text-ink-950' : 'border border-ink-200/70 bg-white'}`}>
+              {loading ? <Skeleton className="h-9 w-12 rounded-xl" /> : <p className="text-[2rem] leading-none font-extrabold tracking-tight sm:text-4xl">{x.value ?? '–'}</p>}
+              <p className={`mt-2 text-xs leading-snug font-semibold sm:text-sm ${x.accent ? 'text-ink-800' : 'text-ink-500'}`}>{x.label}</p>
+            </div>
+          ))}
         </div>
+        <nav className="grid grid-cols-4 gap-2 lg:hidden" aria-label="Pintasan">
+          {SHORTCUTS.map((sc) => (
+            <Link key={sc.to} to={sc.to} className="flex flex-col items-center gap-2 rounded-3xl py-3 transition active:scale-95 active:bg-ink-100">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-ink-900 text-sun-400">
+                <sc.icon className="h-5 w-5" />
+              </span>
+              <span className="text-xs font-bold text-ink-800">{sc.label}</span>
+            </Link>
+          ))}
+        </nav>
       </section>
 
-      {loading && <Spinner />}
       {error && (
-        <div className="container-x py-10">
+        <div className="container-x">
           <ErrorBox message={error} />
+        </div>
+      )}
+      {loading && (
+        <div className="container-x space-y-3">
+          <Skeleton className="h-6 w-40 rounded-xl" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
         </div>
       )}
 
       {data && (
         <>
-          {/* TENTANG + SAMBUTAN */}
-          <section className="py-20">
-            <div className="container-x grid items-center gap-12 lg:grid-cols-2">
-              <div>
-                <p className="mb-2 text-sm font-bold tracking-widest text-gold-500 uppercase">Tentang Kami</p>
-                <h2 className="text-3xl font-extrabold text-brand-950 sm:text-4xl">Wadah Aspirasi & Kreasi Siswa Smaga</h2>
-                <p className="mt-4 leading-relaxed text-slate-600">{s.about}</p>
-                <div className="mt-6 rounded-2xl border-l-4 border-gold-400 bg-white p-5 shadow-sm">
-                  <p className="text-xs font-bold tracking-wider text-brand-700 uppercase">Visi</p>
-                  <p className="mt-1 text-slate-700">{s.vision}</p>
-                </div>
-                <Link to="/profil" className="btn-primary mt-6">
-                  Selengkapnya <ArrowRight className="h-4 w-4" />
-                </Link>
+          {/* AGENDA TERDEKAT */}
+          <section className="container-x">
+            <SectionTitle eyebrow="Jadwal" title="Agenda terdekat" to="/agenda" linkLabel="Kalender" />
+            {data.events.length === 0 ? (
+              <p className="rounded-3xl border border-dashed border-ink-300 p-6 text-center text-sm text-ink-500">Belum ada agenda mendatang.</p>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2">
+                {data.events.map((e, i) => {
+                  const d = dateParts(e.date);
+                  return (
+                    <Link key={e.id} to="/agenda" className={`flex items-center gap-4 rounded-3xl p-3 pr-4 transition active:scale-[.98] ${i === 0 ? 'bg-ink-900 text-white' : 'border border-ink-200/70 bg-white'}`}>
+                      <div className={`flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-2xl ${i === 0 ? 'bg-sun-400 text-ink-950' : 'bg-ink-100 text-ink-900'}`}>
+                        <span className="text-2xl leading-none font-extrabold">{d.day}</span>
+                        <span className="mt-0.5 text-[11px] font-bold uppercase">{d.month}</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-2 leading-snug font-bold">{e.title}</p>
+                        <p className={`mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs ${i === 0 ? 'text-ink-300' : 'text-ink-500'}`}>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" /> {fmtTime(e.time)} WIB
+                          </span>
+                          {e.location && (
+                            <span className="inline-flex min-w-0 items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{e.location}</span>
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-              <div className="relative rounded-3xl bg-gradient-to-br from-brand-800 to-brand-950 p-8 text-white shadow-xl">
-                <Quote className="absolute top-6 right-6 h-14 w-14 text-white/10" />
-                <p className="text-sm font-bold tracking-widest text-gold-400 uppercase">Sambutan Ketua OSIS</p>
-                <p className="mt-4 leading-relaxed text-brand-100 italic">“{s.chairman_message}”</p>
-                {data.core[0] && (
-                  <div className="mt-6 flex items-center gap-4">
-                    <Avatar name={data.core[0].name} src={data.core[0].photo} className="h-14 w-14 text-lg ring-2 ring-gold-400" />
-                    <div>
-                      <p className="font-bold">{data.core[0].name}</p>
-                      <p className="text-sm text-brand-200">
-                        {data.core[0].position} · Kelas {data.core[0].class_name}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+            )}
           </section>
 
-          {/* PROGRAM BERJALAN */}
+          {/* PROGRAM BERJALAN — carousel geser di HP */}
           {data.programs.length > 0 && (
-            <section className="bg-white py-20">
+            <section>
               <div className="container-x">
-                <SectionTitle eyebrow="Program Kerja" title="Sedang Berjalan" desc="Program unggulan yang sedang dilaksanakan oleh pengurus OSIS." />
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                  {data.programs.map((p) => (
-                    <div key={p.id} className="card p-5 transition hover:-translate-y-1 hover:shadow-md">
-                      <span className="badge bg-brand-50 text-brand-700">{p.division_short || 'Umum'}</span>
-                      <h3 className="mt-3 font-bold text-slate-900">{p.title}</h3>
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-500">{p.description}</p>
-                      <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                        <span>Progres</span>
-                        <span className="font-bold text-brand-700">{p.progress}%</span>
-                      </div>
-                      <div className="mt-1.5">
-                        <Progress value={p.progress} />
-                      </div>
+                <SectionTitle eyebrow="Sedang berjalan" title="Program kerja" to="/program" />
+              </div>
+              <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-2 sm:scroll-px-6 sm:px-6 lg:container-x lg:grid lg:grid-cols-4 lg:overflow-visible">
+                {data.programs.map((p) => (
+                  <Link
+                    key={p.id}
+                    to="/program"
+                    className="flex w-[78%] shrink-0 snap-start flex-col rounded-3xl border border-ink-200/70 bg-white p-5 transition active:scale-[.98] sm:w-[46%] lg:w-auto"
+                  >
+                    <span className="badge self-start bg-ink-100 text-ink-700">{p.division_short || 'Umum'}</span>
+                    <h3 className="mt-3 line-clamp-2 text-lg leading-snug font-extrabold text-ink-950">{p.title}</h3>
+                    <p className="mt-1.5 line-clamp-2 flex-1 text-sm text-ink-500">{p.description}</p>
+                    <div className="mt-5 flex items-end justify-between">
+                      <span className="text-3xl leading-none font-extrabold tracking-tight">{p.progress}%</span>
+                      <span className="text-xs font-semibold text-ink-500">progres</span>
                     </div>
-                  ))}
-                </div>
-                <div className="mt-8 text-center">
-                  <Link to="/program" className="btn-outline">
-                    Semua Program Kerja <ArrowRight className="h-4 w-4" />
+                    <div className="mt-2">
+                      <Progress value={p.progress} />
+                    </div>
                   </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* BERITA */}
+          {data.posts.length > 0 && (
+            <section className="container-x">
+              <SectionTitle eyebrow="Kabar Smaga" title="Berita terbaru" to="/berita" />
+              <div className="grid gap-4 lg:grid-cols-2">
+                <PostCard post={data.posts[0]} large />
+                <div className="divide-y divide-ink-200/70 rounded-3xl border border-ink-200/70 bg-white px-4">
+                  {data.posts.slice(1).map((p) => (
+                    <PostRow key={p.id} post={p} />
+                  ))}
+                  {data.posts.length === 1 && <p className="py-6 text-center text-sm text-ink-500">Berita lainnya akan segera hadir.</p>}
                 </div>
               </div>
             </section>
           )}
 
-          {/* BERITA + AGENDA */}
-          <section className="py-20">
-            <div className="container-x grid gap-12 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <div className="mb-6 flex items-end justify-between">
-                  <div>
-                    <p className="mb-1 text-sm font-bold tracking-widest text-gold-500 uppercase">Kabar Smaga</p>
-                    <h2 className="text-3xl font-extrabold text-brand-950">Berita Terbaru</h2>
+          {/* SAMBUTAN KETUA + VISI */}
+          <section className="container-x grid gap-3 lg:grid-cols-5">
+            <div className="relative overflow-hidden rounded-4xl bg-ink-950 p-6 text-white sm:p-8 lg:col-span-3">
+              <Quote className="h-9 w-9 text-sun-400" strokeWidth={2.5} />
+              <p className="eyebrow mt-4 text-ink-400">Sambutan Ketua OSIS</p>
+              <p className="mt-3 text-[17px] leading-relaxed text-ink-100 sm:text-xl">{s.chairman_message}</p>
+              {chair && (
+                <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5">
+                  <Avatar name={chair.name} src={chair.photo} className="h-12 w-12 text-base ring-2 ring-sun-400" />
+                  <div className="min-w-0">
+                    <p className="truncate font-bold">{chair.name}</p>
+                    <p className="text-xs text-ink-400">
+                      {chair.position}
+                      {chair.class_name ? ` · ${chair.class_name}` : ''}
+                    </p>
                   </div>
-                  <Link to="/berita" className="text-sm font-semibold text-brand-700 hover:underline">
-                    Lihat semua →
-                  </Link>
                 </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  {data.posts.map((p, i) => (
-                    <div key={p.id} className={i === 0 ? 'sm:col-span-2' : ''}>
-                      <PostCard post={p} large={i === 0} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div className="mb-6 flex items-end justify-between">
-                  <div>
-                    <p className="mb-1 text-sm font-bold tracking-widest text-gold-500 uppercase">Jadwal</p>
-                    <h2 className="text-3xl font-extrabold text-brand-950">Agenda</h2>
-                  </div>
-                  <Link to="/agenda" className="text-sm font-semibold text-brand-700 hover:underline">
-                    Kalender →
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  {data.events.length === 0 && <p className="text-sm text-slate-500">Belum ada agenda mendatang.</p>}
-                  {data.events.map((e) => {
-                    const d = dateParts(e.date);
-                    return (
-                      <div key={e.id} className="card flex gap-4 p-4">
-                        <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-xl bg-brand-700 text-white">
-                          <span className="text-xl leading-none font-extrabold">{d.day}</span>
-                          <span className="text-xs uppercase">{d.month}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-900">{e.title}</p>
-                          <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                            <Clock className="h-3.5 w-3.5" /> {fmtTime(e.time)} WIB
-                          </p>
-                          <p className="flex items-center gap-1 text-xs text-slate-500">
-                            <MapPin className="h-3.5 w-3.5" /> {e.location || '-'}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              )}
+            </div>
+            <div className="flex flex-col rounded-4xl border border-ink-200/70 bg-white p-6 sm:p-8 lg:col-span-2">
+              <p className="eyebrow">Visi</p>
+              <p className="mt-3 flex-1 text-xl leading-snug font-extrabold tracking-tight text-ink-950 sm:text-2xl">{s.vision}</p>
+              <Link to="/profil" className="btn-outline mt-6 self-start">
+                Profil lengkap <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </section>
 
           {/* CTA ASPIRASI */}
-          <section className="pb-20">
-            <div className="container-x">
-              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-brand-800 to-brand-950 px-8 py-12 text-white sm:px-12">
-                <div className="absolute -top-10 -right-10 h-48 w-48 rounded-full bg-gold-400/20 blur-2xl" />
-                <div className="relative grid items-center gap-6 md:grid-cols-3">
-                  <div className="md:col-span-2">
-                    <h2 className="text-2xl font-extrabold sm:text-3xl">Punya ide, kritik, atau keluhan?</h2>
-                    <p className="mt-2 text-brand-100">
-                      Sampaikan lewat Kanal Aspirasi Digital — boleh anonim. Pantau tindak lanjutnya dengan kode tiket.
-                    </p>
-                  </div>
-                  <div className="md:text-right">
-                    <Link to="/aspirasi" className="btn-gold px-6 py-3 text-base">
-                      <MessageSquare className="h-4 w-4" /> Sampaikan Sekarang
-                    </Link>
-                  </div>
-                </div>
+          <section className="container-x">
+            <div className="relative overflow-hidden rounded-4xl bg-sun-400 p-6 text-ink-950 sm:p-10">
+              <div className="pointer-events-none absolute -right-8 -bottom-10 h-44 w-44 rounded-full border-[28px] border-ink-950/5 sm:h-64 sm:w-64" />
+              <div className="relative max-w-xl">
+                <h2 className="text-[1.75rem] leading-tight font-extrabold tracking-tight sm:text-4xl">Punya ide, kritik, atau keluhan?</h2>
+                <p className="mt-2 text-[15px] text-ink-800 sm:text-base">Sampaikan lewat Kanal Aspirasi — boleh anonim. Pantau tindak lanjutnya dengan kode tiket.</p>
+                <Link to="/aspirasi" className="btn-primary mt-5 min-h-12 w-full sm:w-auto">
+                  Sampaikan sekarang <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             </div>
           </section>
         </>
       )}
-    </>
+    </div>
   );
 }
-

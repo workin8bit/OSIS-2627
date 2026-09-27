@@ -86,14 +86,18 @@ export function ToastProvider({ children }) {
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <div className="pointer-events-none fixed right-4 bottom-4 z-[100] flex flex-col gap-2">
+      <div className="pointer-events-none fixed inset-x-4 top-3 z-[100] flex flex-col items-center gap-2 sm:inset-x-auto sm:top-auto sm:right-6 sm:bottom-6 sm:items-end" aria-live="polite">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`fade-in pointer-events-auto rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg ${
-              t.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'
+            role={t.type === 'error' ? 'alert' : 'status'}
+            className={`fade-in pointer-events-auto flex max-w-sm items-center gap-2.5 rounded-full py-2.5 pr-5 pl-2.5 text-sm font-semibold shadow-[0_12px_32px_-8px_rgba(21,20,18,.45)] ${
+              t.type === 'error' ? 'bg-red-600 text-white' : 'bg-ink-900 text-white'
             }`}
           >
+            <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-black ${t.type === 'error' ? 'bg-white/20' : 'bg-sun-400 text-ink-950'}`}>
+              {t.type === 'error' ? '!' : '✓'}
+            </span>
             {t.message}
           </div>
         ))}

@@ -71,8 +71,8 @@ function SettingsForm({ initial }) {
   return (
     <form onSubmit={save} className="max-w-4xl space-y-6">
       {GROUPS.map((g) => (
-        <div key={g.title} className="card p-6">
-          <h2 className="mb-4 font-bold text-slate-900">{g.title}</h2>
+        <div key={g.title} className="card p-5 sm:p-6">
+          <h2 className="mb-4 text-lg font-extrabold text-ink-950">{g.title}</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {g.fields.map(([k, label, type]) => (
               <div key={k} className={type ? 'sm:col-span-2' : ''}>
@@ -91,9 +91,9 @@ function SettingsForm({ initial }) {
               <div className="space-y-2">
                 {form.missions.map((m, i) => (
                   <div key={i} className="flex gap-2">
-                    <span className="flex h-10 w-8 shrink-0 items-center justify-center text-sm font-bold text-slate-500">{i + 1}.</span>
+                    <span className="flex h-12 w-8 shrink-0 items-center justify-center text-sm font-bold text-ink-500">{i + 1}.</span>
                     <input className="input" value={m} onChange={(e) => setMission(i, e.target.value)} />
-                    <button type="button" className="rounded-lg p-2 text-red-600 hover:bg-red-50" onClick={() => setForm({ ...form, missions: form.missions.filter((_, j) => j !== i) })} aria-label="Hapus misi">
+                    <button type="button" className="btn-icon h-11 w-11 text-red-600 hover:bg-red-50" onClick={() => setForm({ ...form, missions: form.missions.filter((_, j) => j !== i) })} aria-label="Hapus misi">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -106,8 +106,8 @@ function SettingsForm({ initial }) {
           )}
         </div>
       ))}
-      <div className="sticky bottom-4 flex justify-end">
-        <button className="btn-primary px-6 py-3 shadow-lg" disabled={saving}>
+      <div className="sticky bottom-20 z-20 flex justify-end lg:bottom-4">
+        <button className="btn-sun min-h-12 w-full px-6 shadow-[0_12px_32px_-8px_rgba(21,20,18,.45)] sm:w-auto" disabled={saving}>
           {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
         </button>
       </div>

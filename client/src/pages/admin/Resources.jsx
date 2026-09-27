@@ -39,10 +39,10 @@ export function PostsAdmin() {
           label: 'Judul',
           render: (r) => (
             <div className="flex items-center gap-3">
-              {r.cover ? <img src={r.cover} alt="" className="h-10 w-14 rounded-lg object-cover" /> : <div className="h-10 w-14 rounded-lg bg-slate-200" />}
+              {r.cover ? <img src={r.cover} alt="" className="h-10 w-14 rounded-xl object-cover" /> : <div className="h-10 w-14 rounded-xl bg-ink-200" />}
               <div>
-                <p className="font-semibold text-slate-900">{r.title}</p>
-                <p className="text-xs text-slate-500">/{r.slug}</p>
+                <p className="font-semibold text-ink-900">{r.title}</p>
+                <p className="text-xs text-ink-500">/{r.slug}</p>
               </div>
             </div>
           ),
@@ -53,7 +53,7 @@ export function PostsAdmin() {
         {
           key: 'published',
           label: 'Status',
-          render: (r) => <span className={`badge ${r.published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>{r.published ? 'Terbit' : 'Draf'}</span>,
+          render: (r) => <span className={`badge ${r.published ? 'bg-emerald-100 text-emerald-700' : 'bg-ink-100 text-ink-600'}`}>{r.published ? 'Terbit' : 'Draf'}</span>,
         },
       ]}
     />
@@ -82,10 +82,10 @@ export function EventsAdmin() {
         { name: 'description', label: 'Keterangan', type: 'textarea', rows: 3 },
       ]}
       columns={[
-        { key: 'title', label: 'Kegiatan', render: (r) => <span className="font-semibold text-slate-900">{r.title}</span> },
+        { key: 'title', label: 'Kegiatan', render: (r) => <span className="font-semibold text-ink-900">{r.title}</span> },
         { key: 'date', label: 'Tanggal', render: (r) => `${formatDate(r.date, { withDay: true })} · ${fmtTime(r.time)}` },
         { key: 'location', label: 'Lokasi' },
-        { key: 'category', label: 'Kategori', render: (r) => <span className="badge bg-slate-100 text-slate-700">{r.category}</span> },
+        { key: 'category', label: 'Kategori', render: (r) => <span className="badge bg-ink-100 text-ink-700">{r.category}</span> },
       ]}
     />
   );
@@ -118,7 +118,7 @@ export function ProgramsAdmin() {
         { name: 'description', label: 'Deskripsi', type: 'textarea', rows: 3 },
       ]}
       columns={[
-        { key: 'title', label: 'Program', render: (r) => <span className="font-semibold text-slate-900">{r.title}</span> },
+        { key: 'title', label: 'Program', render: (r) => <span className="font-semibold text-ink-900">{r.title}</span> },
         { key: 'division_id', label: 'Sekbid', render: (r) => divOptions.find((d) => d.value === r.division_id)?.label.split(' — ')[0] || '-' },
         { key: 'start_date', label: 'Waktu', render: (r) => formatDate(r.start_date) },
         { key: 'status', label: 'Status', render: (r) => <span className={`badge ${STATUS_PROGRAM[r.status]?.cls}`}>{STATUS_PROGRAM[r.status]?.label}</span> },
@@ -165,7 +165,7 @@ export function MembersAdmin() {
           render: (r) => (
             <div className="flex items-center gap-3">
               <Avatar name={r.name} src={r.photo} className="h-10 w-10 text-sm" />
-              <span className="font-semibold text-slate-900">{r.name}</span>
+              <span className="font-semibold text-ink-900">{r.name}</span>
             </div>
           ),
         },
@@ -175,7 +175,7 @@ export function MembersAdmin() {
           key: 'division_id',
           label: 'Bagian',
           render: (r) =>
-            r.is_core ? <span className="badge bg-gold-400/25 text-amber-800">Inti</span> : divOptions.find((d) => d.value === r.division_id)?.label.split(' — ')[0] || '-',
+            r.is_core ? <span className="badge bg-sun-400/25 text-amber-800">Inti</span> : divOptions.find((d) => d.value === r.division_id)?.label.split(' — ')[0] || '-',
         },
       ]}
     />
@@ -202,17 +202,17 @@ export function DivisionsAdmin() {
           label: 'Seksi Bidang',
           render: (r) => (
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-brand-50 p-2 text-brand-700">
+              <div className="rounded-xl bg-ink-900 p-2 text-sun-400">
                 <Icon name={r.icon} className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-gold-500">{r.short}</p>
-                <p className="font-semibold text-slate-900">{r.name}</p>
+                <p className="text-xs font-bold text-sun-500">{r.short}</p>
+                <p className="font-semibold text-ink-900">{r.name}</p>
               </div>
             </div>
           ),
         },
-        { key: 'description', label: 'Deskripsi', render: (r) => <span className="line-clamp-2 text-slate-600">{r.description}</span> },
+        { key: 'description', label: 'Deskripsi', render: (r) => <span className="line-clamp-2 text-ink-600">{r.description}</span> },
         { key: 'sort_order', label: 'Urutan' },
       ]}
     />
@@ -233,9 +233,9 @@ export function GalleryAdmin() {
         { name: 'album', label: 'Album', placeholder: 'cth. LDKS 2026' },
       ]}
       columns={[
-        { key: 'image', label: 'Foto', render: (r) => <img src={r.image} alt="" className="h-14 w-20 rounded-lg object-cover" /> },
+        { key: 'image', label: 'Foto', render: (r) => <img src={r.image} alt="" className="h-14 w-20 rounded-xl object-cover" /> },
         { key: 'title', label: 'Keterangan' },
-        { key: 'album', label: 'Album', render: (r) => <span className="badge bg-slate-100 text-slate-700">{r.album}</span> },
+        { key: 'album', label: 'Album', render: (r) => <span className="badge bg-ink-100 text-ink-700">{r.album}</span> },
         { key: 'created_at', label: 'Diunggah', render: (r) => formatDate(r.created_at) },
       ]}
     />

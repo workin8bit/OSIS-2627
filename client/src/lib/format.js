@@ -54,15 +54,15 @@ export function initials(name = '') {
 export { BULAN, HARI };
 
 export const STATUS_PROGRAM = {
-  rencana: { label: 'Rencana', cls: 'bg-slate-100 text-slate-700' },
-  berjalan: { label: 'Berjalan', cls: 'bg-blue-100 text-blue-700' },
-  selesai: { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-700' },
+  rencana: { label: 'Rencana', cls: 'bg-ink-100 text-ink-700' },
+  berjalan: { label: 'Berjalan', cls: 'bg-sun-400 text-ink-950' },
+  selesai: { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-800' },
   batal: { label: 'Dibatalkan', cls: 'bg-red-100 text-red-700' },
 };
 
 export const STATUS_ASPIRASI = {
-  baru: { label: 'Baru', cls: 'bg-amber-100 text-amber-800' },
-  diproses: { label: 'Diproses', cls: 'bg-blue-100 text-blue-700' },
-  selesai: { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-700' },
+  baru: { label: 'Baru', cls: 'bg-sun-400 text-ink-950' },
+  diproses: { label: 'Diproses', cls: 'bg-ink-900 text-white' },
+  selesai: { label: 'Selesai', cls: 'bg-emerald-100 text-emerald-800' },
   ditolak: { label: 'Tidak Dapat Diproses', cls: 'bg-red-100 text-red-700' },
 };

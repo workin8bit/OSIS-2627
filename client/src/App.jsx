@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { AuthProvider, SettingsProvider, ToastProvider, useSettings } from './lib/context';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -11,19 +12,31 @@ import { PostDetail, PostList } from './pages/Posts';
 import Events from './pages/Events';
 import Gallery from './pages/Gallery';
 import Aspiration from './pages/Aspiration';
-import AdminLayout from './pages/admin/AdminLayout';
-import Login from './pages/admin/Login';
-import Dashboard from './pages/admin/Dashboard';
-import { DivisionsAdmin, EventsAdmin, GalleryAdmin, MembersAdmin, PostsAdmin, ProgramsAdmin } from './pages/admin/Resources';
-import AspirationsAdmin from './pages/admin/AspirationsAdmin';
-import SettingsAdmin from './pages/admin/SettingsAdmin';
-import AccountAdmin from './pages/admin/AccountAdmin';
+import { Spinner } from './components/ui';
+
+// Panel admin dimuat terpisah agar pengunjung publik (umumnya di HP) tidak mengunduh kodenya.
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const Login = lazy(() => import('./pages/admin/Login'));
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
+const AspirationsAdmin = lazy(() => import('./pages/admin/AspirationsAdmin'));
+const SettingsAdmin = lazy(() => import('./pages/admin/SettingsAdmin'));
+const AccountAdmin = lazy(() => import('./pages/admin/AccountAdmin'));
+const res = (name) => lazy(() => import('./pages/admin/Resources').then((m) => ({ default: m[name] })));
+const PostsAdmin = res('PostsAdmin');
+const EventsAdmin = res('EventsAdmin');
+const ProgramsAdmin = res('ProgramsAdmin');
+const MembersAdmin = res('MembersAdmin');
+const DivisionsAdmin = res('DivisionsAdmin');
+const GalleryAdmin = res('GalleryAdmin');
 
 function NotFound() {
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center bg-slate-50 px-4 pt-20 text-center">
-      <p className="text-7xl font-extrabold text-brand-700">404</p>
-      <p className="mt-2 text-lg font-semibold text-slate-700">Halaman tidak ditemukan</p>
+    <div className="container-x flex min-h-[65dvh] flex-col items-center justify-center py-12 text-center">
+      <p className="text-[6rem] leading-none font-extrabold tracking-tighter text-ink-950">
+        4<span className="mark">0</span>4
+      </p>
+      <p className="mt-4 text-lg font-bold text-ink-800">Halaman tidak ditemukan</p>
+      <p className="mt-1 text-sm text-ink-500">Tautannya mungkin salah atau halamannya sudah dipindah.</p>
       <Link to="/" className="btn-primary mt-6">
         Kembali ke Beranda
       </Link>
@@ -45,6 +58,7 @@ export default function App() {
         <SettingsProvider>
           <SchemaGate>
           <AuthProvider>
+            <Suspense fallback={<Spinner className="min-h-dvh" />}>
             <Routes>
               <Route element={<PublicLayout />}>
                 <Route index element={<Home />} />
@@ -72,6 +86,7 @@ export default function App() {
                 <Route path="akun" element={<AccountAdmin />} />
               </Route>
             </Routes>
+            </Suspense>
           </AuthProvider>
           </SchemaGate>
         </SettingsProvider>

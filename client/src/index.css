@@ -1,77 +1,159 @@
 @import 'tailwindcss';
 
+/*
+ * Design tokens — OSIS SMAN 3 Rembang 2026/2027
+ * ink = hitam-arang hangat (teks, permukaan gelap, tombol utama)
+ * sun = kuning aksen (CTA, sorotan, status aktif). Kuning SELALU dipasangkan
+ *       dengan teks ink-950 — jangan menaruh teks kuning di atas latar terang.
+ */
 @theme {
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --color-brand-50: #eff4ff;
-  --color-brand-100: #dbe6fe;
-  --color-brand-200: #bfd3fe;
-  --color-brand-300: #93b4fd;
-  --color-brand-400: #608bfa;
-  --color-brand-500: #3b65f6;
-  --color-brand-600: #2546eb;
-  --color-brand-700: #1d35d8;
-  --color-brand-800: #1e2daf;
-  --color-brand-900: #1e2b8a;
-  --color-brand-950: #151b54;
-  --color-gold-300: #fcd34d;
-  --color-gold-400: #fbbf24;
-  --color-gold-500: #f59e0b;
+
+  --color-ink-50: #f6f5f1;
+  --color-ink-100: #edebe5;
+  --color-ink-200: #dcd9d0;
+  --color-ink-300: #c2beb2;
+  --color-ink-400: #9b968a;
+  --color-ink-500: #77736a;
+  --color-ink-600: #5b5850;
+  --color-ink-700: #45433d;
+  --color-ink-800: #2e2c28;
+  --color-ink-900: #201f1c;
+  --color-ink-950: #151412;
+
+  --color-sun-50: #fffbe6;
+  --color-sun-100: #fff4b8;
+  --color-sun-200: #ffea80;
+  --color-sun-300: #ffe04d;
+  --color-sun-400: #ffd21f;
+  --color-sun-500: #f5bf00;
+  --color-sun-600: #cc9c00;
+  --color-sun-700: #8f6c00;
+
+  --radius-4xl: 2rem;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  @apply bg-ink-50 text-ink-900 antialiased;
+}
+h1,
+h2,
+h3,
+p {
+  text-wrap: pretty;
+}
+::selection {
+  @apply bg-sun-300 text-ink-950;
+}
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-ink-900;
 }
 
 @utility container-x {
-  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
 }
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Tombol: tinggi 44–48px agar nyaman disentuh */
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-bold transition duration-200 select-none active:scale-[.97] disabled:pointer-events-none disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-brand-700 text-white shadow-sm hover:bg-brand-800;
+  @apply btn bg-ink-900 text-white hover:bg-ink-800;
 }
-@utility btn-gold {
-  @apply btn bg-gold-400 text-brand-950 shadow-sm hover:bg-gold-300;
+@utility btn-sun {
+  @apply btn bg-sun-400 text-ink-950 hover:bg-sun-300;
 }
 @utility btn-outline {
-  @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-100;
+  @apply btn border border-ink-200 bg-white text-ink-800 hover:border-ink-300 hover:bg-ink-50;
 }
 @utility btn-danger {
   @apply btn bg-red-600 text-white hover:bg-red-700;
 }
 @utility btn-ghost {
-  @apply btn text-slate-600 hover:bg-slate-100;
+  @apply btn text-ink-600 hover:bg-ink-100;
 }
-@utility input {
-  @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100;
-}
-@utility label {
-  @apply mb-1.5 block text-sm font-medium text-slate-700;
-}
-@utility card {
-  @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
-}
-@utility badge {
-  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
-}
-.prose-osis p {
-  @apply mb-4 leading-relaxed text-slate-700;
+@utility btn-icon {
+  @apply inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition active:scale-95;
 }
 
-.fade-in {
-  animation: fadeIn 0.5s ease both;
+@utility input {
+  @apply min-h-12 w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-ink-900 focus:ring-4 focus:ring-sun-300/50;
+}
+@utility label {
+  @apply mb-1.5 block text-sm font-semibold text-ink-700;
+}
+@utility card {
+  @apply rounded-3xl border border-ink-200/70 bg-white;
+}
+@utility badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold whitespace-nowrap;
+}
+/* Chip filter yang dapat digeser horizontal di HP */
+@utility chip {
+  @apply inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-ink-200 bg-white px-4 text-sm font-semibold text-ink-700 transition active:scale-95;
+}
+@utility chip-active {
+  @apply border-ink-900 bg-ink-900 text-white;
+}
+@utility eyebrow {
+  @apply text-xs font-extrabold tracking-[.14em] text-ink-500 uppercase;
+}
+/* Stabilo kuning di belakang kata penting */
+@utility mark {
+  background: linear-gradient(transparent 58%, var(--color-sun-400) 58%, var(--color-sun-400) 92%, transparent 92%);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding-inline: 0.08em;
+}
+
+.prose-osis p {
+  @apply mb-5 leading-[1.8] text-ink-700;
+}
+
+@utility fade-in {
+  animation: fadeIn 0.45s var(--ease-out-soft) both;
+}
+@utility sheet-in {
+  animation: sheetIn 0.35s var(--ease-out-soft) both;
 }
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: none;
+  }
+}
+@keyframes sheetIn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

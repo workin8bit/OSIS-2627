@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  Activity, BookOpen, Camera, Flag, Heart, ImagePlus, Inbox, Languages, Lightbulb, Loader2, Megaphone,
+  Activity, ArrowRight, BookOpen, Camera, Flag, Heart, ImagePlus, Inbox, Languages, Lightbulb, Loader2, Megaphone,
   Monitor, Moon, Music, Palette, Shield, Star, Trophy, Users, Vote, X,
 } from 'lucide-react';
 import { initials } from '../lib/format';
@@ -21,60 +22,83 @@ export function Logo({ className = 'h-10 w-10' }) {
 
 export function Spinner({ className = '' }) {
   return (
-    <div className={`flex items-center justify-center py-16 text-brand-700 ${className}`}>
-      <Loader2 className="h-8 w-8 animate-spin" />
+    <div className={`flex items-center justify-center py-16 text-ink-400 ${className}`} role="status" aria-label="Memuat">
+      <Loader2 className="h-7 w-7 animate-spin" />
     </div>
   );
 }
 
+/** Kerangka abu-abu saat memuat, agar tata letak tidak meloncat. */
+export function Skeleton({ className = '' }) {
+  return <div className={`animate-pulse rounded-3xl bg-ink-100 ${className}`} />;
+}
+
 export function ErrorBox({ message }) {
-  return <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{message}</div>;
+  return <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{message}</div>;
 }
 
 export function Empty({ icon = 'Inbox', title = 'Belum ada data', desc }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white py-14 text-center">
-      <Icon name={icon} className="mb-3 h-10 w-10 text-slate-400" />
-      <p className="font-semibold text-slate-700">{title}</p>
-      {desc && <p className="mt-1 text-sm text-slate-500">{desc}</p>}
+    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-ink-300 bg-white/60 px-6 py-14 text-center">
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-ink-100 text-ink-500">
+        <Icon name={icon} className="h-7 w-7" />
+      </div>
+      <p className="font-bold text-ink-800">{title}</p>
+      {desc && <p className="mt-1 max-w-xs text-sm text-ink-500">{desc}</p>}
     </div>
   );
 }
 
+const AVATAR_TONES = ['bg-ink-900 text-sun-400', 'bg-sun-400 text-ink-950', 'bg-ink-200 text-ink-800', 'bg-ink-700 text-white', 'bg-sun-200 text-ink-900'];
+
 export function Avatar({ name, src, className = 'h-20 w-20 text-xl' }) {
   if (src) return <img src={src} alt={name} className={`${className} rounded-full object-cover`} />;
-  const colors = ['from-brand-600 to-brand-800', 'from-amber-400 to-orange-500', 'from-emerald-500 to-teal-600', 'from-fuchsia-500 to-purple-600', 'from-sky-500 to-blue-600'];
-  const idx = [...(name || '')].reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length;
+  const idx = [...(name || '')].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_TONES.length;
   return (
-    <div className={`${className} flex items-center justify-center rounded-full bg-gradient-to-br ${colors[idx]} font-bold text-white`}>
+    <div className={`${className} flex shrink-0 items-center justify-center rounded-full font-extrabold ${AVATAR_TONES[idx]}`} aria-label={name}>
       {initials(name)}
     </div>
   );
 }
 
-export function SectionTitle({ eyebrow, title, desc, center = true }) {
+/** Judul bagian — rata kiri (pola aplikasi), dengan tautan "Lihat semua" opsional. */
+export function SectionTitle({ eyebrow, title, desc, to, linkLabel = 'Lihat semua', dark = false }) {
   return (
-    <div className={`mb-10 ${center ? 'mx-auto max-w-2xl text-center' : ''}`}>
-      {eyebrow && <p className="mb-2 text-sm font-bold tracking-widest text-gold-500 uppercase">{eyebrow}</p>}
-      <h2 className="text-3xl font-extrabold tracking-tight text-brand-950 sm:text-4xl">{title}</h2>
-      {desc && <p className="mt-3 text-slate-600">{desc}</p>}
+    <div className="mb-5 flex items-end justify-between gap-4">
+      <div className="min-w-0">
+        {eyebrow && <p className={`eyebrow mb-1.5 ${dark ? 'text-ink-400' : ''}`}>{eyebrow}</p>}
+        <h2 className={`text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl ${dark ? 'text-white' : 'text-ink-950'}`}>{title}</h2>
+        {desc && <p className={`mt-2 max-w-2xl text-sm leading-relaxed sm:text-base ${dark ? 'text-ink-300' : 'text-ink-600'}`}>{desc}</p>}
+      </div>
+      {to && (
+        <Link to={to} className={`group inline-flex shrink-0 items-center gap-1 py-2 text-sm font-bold ${dark ? 'text-sun-400' : 'text-ink-900'}`}>
+          {linkLabel} <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+        </Link>
+      )}
     </div>
   );
 }
 
-export function PageHeader({ title, desc, eyebrow }) {
+/** Kepala halaman ringkas. `highlight` = kata yang diberi stabilo kuning. */
+export function PageHeader({ title, highlight, desc, eyebrow, children }) {
   return (
-    <section className="relative overflow-hidden bg-brand-950 pt-28 pb-16 text-white">
-      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, #3b65f6 0, transparent 40%), radial-gradient(circle at 80% 60%, #f59e0b 0, transparent 35%)' }} />
-      <div className="container-x relative">
-        {eyebrow && <p className="mb-2 text-sm font-bold tracking-widest text-gold-400 uppercase">{eyebrow}</p>}
-        <h1 className="text-3xl font-extrabold sm:text-5xl">{title}</h1>
-        {desc && <p className="mt-4 max-w-2xl text-brand-100">{desc}</p>}
-      </div>
-    </section>
+    <header className="container-x pt-6 pb-6 sm:pt-12 sm:pb-10">
+      {eyebrow && (
+        <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-ink-900 py-1 pr-3 pl-1.5 text-[11px] font-extrabold tracking-[.12em] text-white uppercase">
+          <span className="h-4 w-4 rounded-full bg-sun-400" />
+          {eyebrow}
+        </p>
+      )}
+      <h1 className="text-[2rem] leading-[1.1] font-extrabold tracking-tight text-ink-950 sm:text-5xl">
+        {title} {highlight && <span className="mark">{highlight}</span>}
+      </h1>
+      {desc && <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-ink-600 sm:text-lg">{desc}</p>}
+      {children}
+    </header>
   );
 }
 
+/** Modal — tampil sebagai bottom sheet di HP, dialog di tengah pada layar besar. */
 export function Modal({ open, onClose, title, children, wide = false }) {
   useEffect(() => {
     if (!open) return;
@@ -88,15 +112,19 @@ export function Modal({ open, onClose, title, children, wide = false }) {
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 backdrop-blur-sm sm:items-center" onMouseDown={onClose}>
-      <div className={`fade-in card my-8 w-full ${wide ? 'max-w-3xl' : 'max-w-lg'}`} onMouseDown={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-          <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-          <button onClick={onClose} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100" aria-label="Tutup">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-ink-950/60 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={onClose} role="dialog" aria-modal="true" aria-label={title}>
+      <div
+        className={`sheet-in flex max-h-[92dvh] w-full flex-col rounded-t-4xl bg-white sm:fade-in sm:rounded-4xl ${wide ? 'sm:max-w-3xl' : 'sm:max-w-lg'}`}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-ink-200 sm:hidden" />
+        <div className="flex items-center justify-between gap-3 px-5 pt-3 pb-3 sm:px-6 sm:pt-5">
+          <h3 className="text-lg font-extrabold text-ink-950">{title}</h3>
+          <button onClick={onClose} className="btn-icon -mr-2 text-ink-500 hover:bg-ink-100" aria-label="Tutup">
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className="safe-bottom overflow-y-auto px-5 pb-6 sm:px-6">{children}</div>
       </div>
     </div>
   );
@@ -121,8 +149,8 @@ export function ImageInput({ value, onChange }) {
   };
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
-        {value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <ImagePlus className="h-6 w-6 text-slate-400" />}
+      <div className="flex h-20 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-ink-200 bg-ink-50">
+        {value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <ImagePlus className="h-6 w-6 text-ink-400" />}
       </div>
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn-outline" onClick={() => ref.current.click()} disabled={busy}>
@@ -139,10 +167,12 @@ export function ImageInput({ value, onChange }) {
   );
 }
 
-export function Progress({ value = 0 }) {
+/** Bar progres. `dark` untuk dipakai di atas permukaan gelap (isi kuning). */
+export function Progress({ value = 0, dark = false }) {
+  const v = Math.min(100, Math.max(0, value));
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-      <div className="h-full rounded-full bg-gradient-to-r from-brand-600 to-gold-400 transition-all" style={{ width: `${Math.min(100, Math.max(0, value))}%` }} />
+    <div className={`h-2 w-full overflow-hidden rounded-full ${dark ? 'bg-white/15' : 'bg-ink-100'}`} role="progressbar" aria-valuenow={v} aria-valuemin={0} aria-valuemax={100}>
+      <div className={`h-full rounded-full transition-all duration-700 ${dark ? 'bg-sun-400' : 'bg-ink-900'}`} style={{ width: `${v}%` }} />
     </div>
   );
 }
