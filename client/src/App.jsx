@@ -1,7 +1,7 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
-import { AuthProvider, SettingsProvider, ToastProvider } from './lib/context';
+import { AuthProvider, SettingsProvider, ToastProvider, useSettings } from './lib/context';
 import { isSupabaseConfigured } from './lib/supabase';
-import SetupNotice from './components/SetupNotice';
+import SetupNotice, { DatabaseSetupNotice } from './components/SetupNotice';
 import PublicLayout from './components/Layout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
@@ -31,12 +31,19 @@ function NotFound() {
   );
 }
 
+/** Tampilkan panduan setup bila tabel Supabase belum dibuat. */
+function SchemaGate({ children }) {
+  const { schemaMissing, reload } = useSettings();
+  return schemaMissing ? <DatabaseSetupNotice onRetry={reload} /> : children;
+}
+
 export default function App() {
   if (!isSupabaseConfigured) return <SetupNotice />;
   return (
     <BrowserRouter>
       <ToastProvider>
         <SettingsProvider>
+          <SchemaGate>
           <AuthProvider>
             <Routes>
               <Route element={<PublicLayout />}>
@@ -66,6 +73,7 @@ export default function App() {
               </Route>
             </Routes>
           </AuthProvider>
+          </SchemaGate>
         </SettingsProvider>
       </ToastProvider>
     </BrowserRouter>

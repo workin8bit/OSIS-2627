@@ -15,9 +15,16 @@ function translate(msg = '') {
 
 /** Ambil `data` dari respons Supabase, lempar Error berbahasa Indonesia bila gagal. */
 function unwrap({ data, error }) {
-  if (error) throw new Error(translate(error.message));
+  if (error) {
+    const err = new Error(translate(error.message));
+    err.code = error.code;
+    throw err;
+  }
   return data;
 }
+
+/** True bila error menandakan skema database belum dipasang. */
+export const isSchemaMissing = (err) => ['PGRST205', 'PGRST202', '42P01', '42883'].includes(err?.code);
 
 const today = () => {
   const d = new Date();

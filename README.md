@@ -50,9 +50,10 @@ Admin = user Supabase Auth yang terdaftar di tabel `public.admins`. User login y
 Buat proyek baru di [supabase.com/dashboard](https://supabase.com/dashboard) (region **Southeast Asia (Singapore)** disarankan).
 
 ### 2. Jalankan migrasi database
-Buka **SQL Editor** di dashboard, lalu jalankan berurutan:
-1. isi file [`supabase/migrations/20260927000000_init.sql`](supabase/migrations/20260927000000_init.sql) — tabel, RLS, fungsi, bucket storage
-2. isi file [`supabase/seed.sql`](supabase/seed.sql) — data contoh (opsional)
+Buka **SQL Editor → New query**, tempel **seluruh** isi file [`supabase/setup.sql`](supabase/setup.sql), lalu klik **Run**.
+File ini berisi skema (tabel, RLS, fungsi, bucket storage) + data contoh, dan aman dijalankan ulang (data contoh hanya dimasukkan bila tabel masih kosong).
+
+> `setup.sql` dibuat otomatis dari `supabase/migrations/` + `supabase/seed.sql`. Setelah mengubah salah satunya, jalankan `npm run build:sql`.
 
 <details><summary>Atau dengan Supabase CLI</summary>
 

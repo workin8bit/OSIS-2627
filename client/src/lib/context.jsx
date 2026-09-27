@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from './supabase';
-import { getAdminProfile, getSettings, signIn, signOut } from './data';
+import { getAdminProfile, getSettings, isSchemaMissing, signIn, signOut } from './data';
 
 const SettingsCtx = createContext({ settings: {}, reload: () => {} });
 const AuthCtx = createContext(null);
@@ -8,11 +8,21 @@ const ToastCtx = createContext(() => {});
 
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState({ org_name: 'OSIS SMA Negeri 3 Rembang', period: '2026/2027', missions: [] });
-  const reload = useCallback(() => getSettings().then(setSettings).catch(() => {}), []);
+  const [schemaMissing, setSchemaMissing] = useState(false);
+  const reload = useCallback(
+    () =>
+      getSettings()
+        .then((s) => {
+          setSettings(s);
+          setSchemaMissing(false);
+        })
+        .catch((e) => setSchemaMissing(isSchemaMissing(e))),
+    []
+  );
   useEffect(() => {
     reload();
   }, [reload]);
-  return <SettingsCtx.Provider value={{ settings, reload }}>{children}</SettingsCtx.Provider>;
+  return <SettingsCtx.Provider value={{ settings, reload, schemaMissing }}>{children}</SettingsCtx.Provider>;
 }
 
 /**
