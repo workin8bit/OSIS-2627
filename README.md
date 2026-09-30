@@ -67,6 +67,8 @@ File ini berisi skema (tabel, RLS, fungsi, bucket storage) + data contoh, dan am
 
 > `setup.sql` dibuat otomatis dari `supabase/migrations/` + `supabase/seed.sql`. Setelah mengubah salah satunya, jalankan `npm run build:sql`.
 
+> **Situs sudah terpasang, tapi tabel hak akses belum?** Tempel [`supabase/patch-hak-akses.sql`](supabase/patch-hak-akses.sql) (satu file, idempoten) di SQL Editor. Isinya migrasi hak akses + tautan `admins.member_id` + pembersihan data anggota contoh. Halaman *Akun & Hak Akses* akan menampilkan peringatan merah selama kolom tersebut belum ada.
+
 <details><summary>Atau dengan Supabase CLI</summary>
 
 ```bash

@@ -345,6 +345,15 @@ export async function linkAdminMember(userId, memberId) {
   return unwrap(await supabase.from('admins').update({ member_id: memberId }).eq('user_id', userId).select().single());
 }
 
+/**
+ * True bila kolom `admins.member_id` sudah ada di database.
+ * Selama belum ada, tautan ke anggota pengurus tidak bisa disimpan.
+ */
+export async function hasMemberLink() {
+  const { error } = await supabase.from('admins').select('member_id').limit(1);
+  return !error;
+}
+
 async function callAdminUsers(body) {
   const { data, error } = await supabase.functions.invoke('admin-users', { body });
   if (error) {

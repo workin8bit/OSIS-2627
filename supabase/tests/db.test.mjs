@@ -77,7 +77,22 @@ await db.exec(read('migrations/20260930000000_admin_access.sql')); // idempoten
 await db.exec(read('migrations/20260930010000_division_member_access.sql'));
 await db.exec(read('migrations/20260930010000_division_member_access.sql')); // idempoten
 
+// Patch gabungan untuk SQL Editor harus valid & idempoten (dijalankan setelah
+// migrasi hak akses, meniru kondisi proyek yang sudah terpasang)
+await db.exec(read('patch-hak-akses.sql'));
+await db.exec(read('patch-hak-akses.sql'));
+
 console.log('Seed & migrasi');
+await test('patch-hak-akses.sql idempoten', async () => {
+  const { rows } = await db.query(
+    `select (select count(*) from information_schema.columns where table_name = 'admins' and column_name = 'member_id')::int c,
+            (select count(*) from public.admin_permissions)::int ap,
+            (select count(*) from public.members)::int m`
+  );
+  assert.equal(rows[0].c, 1);
+  assert.ok(rows[0].ap > 0);
+  assert.equal(rows[0].m, 27);
+});
 await test('data contoh termuat', async () => {
   const { rows } = await db.query(`select (select count(*) from divisions)::int d, (select count(*) from members)::int m, (select count(*) from programs)::int p`);
   assert.deepEqual(rows[0], { d: 10, m: 27, p: 13 }); // 7 pengurus inti + 10 koordinator + 10 anggota

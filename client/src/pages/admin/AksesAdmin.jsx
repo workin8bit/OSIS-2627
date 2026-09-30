@@ -9,6 +9,7 @@ import {
   getDivisions,
   getPermissionsOf,
   getStructure,
+  hasMemberLink,
   linkAdminMember,
   listAdmins,
   listDivisionPermissions,
@@ -57,6 +58,8 @@ export default function AksesAdmin() {
   const { data: admins, loading, reload } = useQuery(listAdmins, []);
   const { data: divisions } = useQuery(getDivisions, []);
   const { data: structure } = useQuery(getStructure, []);
+  // Kolom admins.member_id belum ada selama migrasi hak akses belum dijalankan
+  const { data: canLink } = useQuery(hasMemberLink, []);
 
   // hak akses tiap admin: { [user_id]: { module: access } }
   const [grants, setGrants] = useState({});
@@ -94,8 +97,33 @@ export default function AksesAdmin() {
     return [...core, ...secs];
   }, [structure]);
 
+  // Jumlah anggota tiap seksi bidang (untuk label dropdown & ringkasan)
+  const counts = useMemo(() => {
+    const map = new Map();
+    members.forEach((m) => map.set(m.divisionName, (map.get(m.divisionName) || 0) + 1));
+    return map;
+  }, [members]);
+
+  // Anggota dikelompokkan per seksi bidang agar mudah dipilah di dropdown
+  const groups = useMemo(() => {
+    const out = [];
+    const core = members.filter((m) => m.division === null);
+    if (core.length) out.push({ name: 'Pengurus Inti', items: core });
+    const byDivision = new Map();
+    members.forEach((m) => {
+      if (m.division === null) return;
+      if (!byDivision.has(m.divisionName)) byDivision.set(m.divisionName, []);
+      byDivision.get(m.divisionName).push(m);
+    });
+    byDivision.forEach((items, name) => out.push({ name, items }));
+    return out;
+  }, [members]);
+
   const linkedIds = new Set((admins || []).map((a) => a.member_id).filter(Boolean));
   const available = members.filter((m) => !linkedIds.has(m.id));
+  const availableGroups = groups
+    .map((g) => ({ ...g, items: g.items.filter((m) => !linkedIds.has(m.id)) }))
+    .filter((g) => g.items.length);
 
   const pickMember = members.find((m) => String(m.id) === String(form.member_id));
 
@@ -223,6 +251,16 @@ export default function AksesAdmin() {
 
   return (
     <div className="space-y-6">
+      {canLink === false && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          <p className="font-semibold">Tautan ke anggota pengurus belum aktif di database</p>
+          <p className="mt-1 text-red-800">
+            Kolom <code>admins.member_id</code> belum ada, jadi memilih anggota pada kolom Bagian tidak tersimpan. Jalankan
+            migrasi di SQL Editor Supabase, lalu muat ulang halaman ini.
+          </p>
+        </div>
+      )}
+
       <div className="card p-6">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
@@ -240,11 +278,15 @@ export default function AksesAdmin() {
           <label className="block lg:col-span-2">
             <span className="label">Anggota Pengurus</span>
             <select className="input" required value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })}>
-              <option value="">— pilih anggota —</option>
-              {available.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} · {m.position} · {m.divisionName}
-                </option>
+              <option value="">— pilih anggota ({available.length} belum punya akun) —</option>
+              {availableGroups.map((g) => (
+                <optgroup key={g.name} label={`${g.name} · ${g.items.length} anggota`}>
+                  {g.items.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} · {m.position}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>
@@ -286,14 +328,17 @@ export default function AksesAdmin() {
               <em>Auto Confirm User</em>), lalu jalankan di SQL Editor:
             </p>
             <pre className="mt-2 overflow-x-auto rounded-lg bg-white/70 p-3 text-xs text-ink-800">
-              {`-- akun sudah ada: tautkan ke anggota seksi bidang
+              {`-- 1. pasang kolom & tabel hak akses (tempel seluruh isi file)
+--    supabase/patch-hak-akses.sql  ->  SQL Editor -> Run
+
+-- 2. tautkan akun yang sudah ada ke anggota seksi bidang
 update public.admins a
    set member_id = m.id
   from public.members m
  where a.email = 'email@sekolah.id'
    and m.name = 'NAMA LENGKAP PENGURUS';
 
--- terapkan template hak akses sesuai seksi bidang
+-- 3. terapkan template hak akses sesuai seksi bidang
 select public.apply_division_template(
   (select user_id from public.admins where email = 'email@sekolah.id')
 );`}
@@ -337,10 +382,14 @@ select public.apply_division_template(
                         onChange={(e) => changeMember(a, e.target.value)}
                       >
                         <option value="">— belum ditautkan —</option>
-                        {members.map((m) => (
-                          <option key={m.id} value={m.id} disabled={linkedIds.has(m.id) && m.id !== a.member_id}>
-                            {m.name} · {m.divisionName}
-                          </option>
+                        {groups.map((g) => (
+                          <optgroup key={g.name} label={`${g.name} · ${g.items.length} anggota`}>
+                            {g.items.map((m) => (
+                              <option key={m.id} value={m.id} disabled={linkedIds.has(m.id) && m.id !== a.member_id}>
+                                {m.name} · {m.position}
+                              </option>
+                            ))}
+                          </optgroup>
                         ))}
                       </select>
                       {a.member_id && (
@@ -400,6 +449,29 @@ select public.apply_division_template(
       </div>
 
       <div className="card p-6">
+        <h2 className="font-bold text-slate-900">Jumlah Anggota per Seksi Bidang</h2>
+        <p className="text-sm text-slate-500">
+          Total {members.length} pengurus · {linkedIds.size} sudah punya akun panel · {available.length} belum.
+        </p>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {groups.map((g) => {
+            const linked = g.items.filter((m) => linkedIds.has(m.id)).length;
+            return (
+              <div key={g.name} className="rounded-xl border border-slate-200 px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="truncate text-sm font-semibold text-slate-800">{g.name}</p>
+                  <span className="badge-primary shrink-0 text-[11px]">{g.items.length} anggota</span>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  {linked} punya akun · {g.items.length - linked} belum
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="card p-6">
         <h2 className="font-bold text-slate-900">Template Hak Akses per Seksi Bidang</h2>
         <p className="text-sm text-slate-500">
           Sekali klik tombol <strong>Template</strong> pada tabel di atas untuk menyalinnya ke akun pengurus.
@@ -415,6 +487,11 @@ select public.apply_division_template(
               }`}
             >
               {d.short || d.name}
+              <span
+                className={`ml-1.5 text-xs font-bold ${String(activeDivision) === String(d.id) ? 'text-gold-300' : 'text-slate-400'}`}
+              >
+                {counts.get(d.short || d.name) || 0}
+              </span>
             </button>
           ))}
         </div>
