@@ -178,9 +178,9 @@ export default function AksesAdmin() {
         // Edge Function versi lama tidak mengirim member_id -> akses belum terikat sekbid
         setNotice({
           title: 'Akun dibuat, tetapi belum tertaut ke seksi bidang',
-          body: 'Edge Function yang ter-deploy masih versi lama sehingga anggota pengurus tidak ikut tersimpan. Deploy ulang Edge Function, lalu klik tombol Template pada baris akun tersebut.',
+          body: 'Perbaiki langsung dari halaman ini: pada kolom "Bagian" di baris akun tersebut, pilih anggota pengurus yang benar, lalu klik tombol Template. Edge Function hanya perlu di-deploy ulang agar penautan otomatis bekerja di akun berikutnya.',
         });
-        toast('Akun dibuat, tautan ke seksi bidang belum tersimpan', 'error');
+        toast('Akun dibuat — pilih anggota di kolom Bagian, lalu klik Template', 'error');
       }
     } catch (err) {
       toast(err.message, 'error');
@@ -286,12 +286,17 @@ export default function AksesAdmin() {
               <em>Auto Confirm User</em>), lalu jalankan di SQL Editor:
             </p>
             <pre className="mt-2 overflow-x-auto rounded-lg bg-white/70 p-3 text-xs text-ink-800">
-              {`insert into public.admins (user_id, name, email, role, member_id)
-select u.id, m.name, u.email, 'admin', m.id
-from auth.users u
-join public.members m on m.name = 'NAMA LENGKAP'
-where u.email = 'email@sekolah.id';
-select public.apply_division_template((select user_id from public.admins where email = 'email@sekolah.id'));`}
+              {`-- akun sudah ada: tautkan ke anggota seksi bidang
+update public.admins a
+   set member_id = m.id
+  from public.members m
+ where a.email = 'email@sekolah.id'
+   and m.name = 'NAMA LENGKAP PENGURUS';
+
+-- terapkan template hak akses sesuai seksi bidang
+select public.apply_division_template(
+  (select user_id from public.admins where email = 'email@sekolah.id')
+);`}
             </pre>
           </div>
         )}
