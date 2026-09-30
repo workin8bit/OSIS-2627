@@ -7,6 +7,12 @@ const SettingsCtx = createContext({ settings: {}, reload: () => {} });
 const AuthCtx = createContext(null);
 const ToastCtx = createContext(() => {});
 const EMPTY_CAN = () => false;
+/**
+ * Nilai khusus: tabel `admin_permissions` belum tersedia (migrasi hak akses
+ * belum dijalankan di Supabase). Selama itu belum terpasang, semua admin
+ * memakai akses penuh seperti perilaku awal agar tidak terkunci.
+ */
+const UNRESTRICTED = null;
 
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState({ org_name: 'OSIS SMA Negeri 3 Rembang', period: '2026/2027', missions: [] });
@@ -36,7 +42,7 @@ export function SettingsProvider({ children }) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [permissions, setPermissions] = useState({});
+  const [permissions, setPermissions] = useState(UNRESTRICTED); // null = fitur hak akses belum terpasang di database
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,10 +50,10 @@ export function AuthProvider({ children }) {
     const apply = async (session) => {
       const u = session?.user ?? null;
       let p = null;
-      let perms = {};
+      let perms = UNRESTRICTED;
       if (u) {
         p = await getAdminProfile(u.id).catch(() => null);
-        if (p) perms = await getAdminPermissions(u.id).catch(() => {});
+        if (p) perms = await getAdminPermissions(u.id).catch(() => null);
       }
       if (!active) return;
       setUser(u);
@@ -73,7 +79,7 @@ export function AuthProvider({ children }) {
       await signOut();
       throw new Error('Akun ini tidak terdaftar sebagai admin OSIS');
     }
-    const perms = await getAdminPermissions(u.id).catch(() => ({}));
+    const perms = await getAdminPermissions(u.id).catch(() => UNRESTRICTED);
     setUser(u);
     setProfile(p);
     setPermissions(perms);
@@ -82,7 +88,7 @@ export function AuthProvider({ children }) {
     await signOut();
     setUser(null);
     setProfile(null);
-    setPermissions({});
+    setPermissions(UNRESTRICTED);
   };
 
   const admin = user && profile
@@ -93,6 +99,7 @@ export function AuthProvider({ children }) {
     (module, need = 'read') => {
       if (!profile) return false;
       if (profile.role === 'superadmin') return true;
+      if (permissions === UNRESTRICTED) return true; // migrasi hak akses belum dijalankan
       const access = permissions[module];
       if (!access) return false;
       return need === 'read' ? true : access === 'write';
