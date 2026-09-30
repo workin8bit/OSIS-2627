@@ -77,7 +77,15 @@ File ini berisi skema (tabel, RLS, fungsi, bucket storage) + data contoh, dan am
 
    Ketiganya idempoten (aman dijalankan ulang). Patch 3 ditutup query verifikasi — `kolom_member_id` harus `1`, `tabel_izin` `2`, `jumlah_anggota` `27`, `template_sekbid` `50`.
    Bila `kolom_member_id` sudah `1` tetapi error *schema cache* masih muncul, muat ulang cache lewat **Project Settings → API → Reload schema**, lalu hard refresh browser (Ctrl+Shift+R).
-   Halaman **Akun & Hak Akses** menampilkan pita merah berisi urutan patch tersebut selama skema belum terpasang, dan tombol **Periksa lagi** untuk mengecek ulang tanpa refresh.
+
+#### Mode sementara (opsional, tidak memblokir)
+
+Anda **tidak harus** menjalankan patch di atas untuk memakai fitur hak akses. Selama tabel `admins.member_id` / `admin_permissions` belum ada, aplikasi otomatis menyimpan tautan anggota, matriks izin, dan template seksi bidang sebagai JSON pada tabel `settings` yang memang sudah ada (lihat `client/src/lib/access.js`). Halaman **Akun & Hak Akses** menampilkan pita kuning "Mode sementara" beserta tombol:
+
+- **Periksa lagi** — mendeteksi ulang apakah patch sudah terpasang.
+- **Pindahkan data ke tabel resmi** — menyalin isi penyimpanan cadangan ke `admins.member_id`, `admin_permissions`, dan `division_permissions` tanpa menimpa data yang sudah ada.
+
+Yang **belum** aktif selama mode sementara: penjagaan di sisi server. RLS masih memakai aturan lama (semua admin boleh mengubah data publik), jadi pembatasan modul baru ditegakkan di antarmuka, bukan di database. Menjalankan ketiga patch menutup celah tersebut. Panel berpindah ke backend native secara otomatis begitu kolomnya terdeteksi.
 
 <details><summary>Atau dengan Supabase CLI</summary>
 

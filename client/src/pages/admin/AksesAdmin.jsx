@@ -14,6 +14,7 @@ import {
   linkAdminMember,
   listAdmins,
   listDivisionPermissions,
+  migrateAccessStore,
   setAdminPermissions,
   setDivisionPermissions,
 } from '../../lib/data';
@@ -59,10 +60,25 @@ export default function AksesAdmin() {
   const { data: admins, loading, reload } = useQuery(listAdmins, []);
   const { data: divisions } = useQuery(getDivisions, []);
   const { data: structure } = useQuery(getStructure, []);
-  // Status skema hak akses di database: selama belum ready, tautan anggota
-  // dan matriks izin tidak bisa disimpan.
+  // Backend hak akses: 'native' bila tabel admins.member_id & admin_permissions
+  // sudah ada, 'settings' bila belum (penyimpanan cadangan, fitur tetap jalan).
   const { data: schema, reload: reloadSchema } = useQuery(getAccessSchemaStatus, []);
   const accessReady = schema?.ready !== false;
+  const [migrating, setMigrating] = useState(false);
+
+  const runMigrate = async () => {
+    setMigrating(true);
+    try {
+      const r = await migrateAccessStore();
+      toast(`Data dipindahkan: ${r.links} tautan anggota, ${r.permissions} izin, ${r.templates} template sekbid`);
+      reloadSchema();
+      reload();
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setMigrating(false);
+    }
+  };
 
   // hak akses tiap admin: { [user_id]: { module: access } }
   const [grants, setGrants] = useState({});
@@ -202,6 +218,12 @@ export default function AksesAdmin() {
         member_id: pickMember.id,
       });
       setForm({ member_id: '', email: '', password: '' });
+
+      // Edge Function menyimpan member_id di tabel admins. Bila kolomnya belum
+      // ada, ia melaporkan warning; tautan dicatat lewat penyimpanan cadangan.
+      if (created?.user_id && created.linked === false) {
+        await linkAdminMember(created.user_id, pickMember.id).catch(() => {});
+      }
       reload();
 
       const n = created?.user_id ? await applyDivisionTemplate(created.user_id).catch(() => 0) : 0;
@@ -262,43 +284,51 @@ export default function AksesAdmin() {
 
   return (
     <div className="space-y-6">
-      {!accessReady && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">
+      {schema?.backend === 'settings' && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="font-semibold">Hak akses belum terpasang di database ini</p>
-            <button type="button" className="btn-secondary px-3 py-1.5 text-xs" onClick={reloadSchema}>
-              Periksa lagi
-            </button>
+            <p className="font-semibold">Mode sementara: hak akses disimpan di tabel settings</p>
+            <span className="badge-warning text-[11px]">Server-side RLS belum aktif</span>
           </div>
-          <p className="mt-1 text-red-800">
-            {!schema?.memberLink && (
-              <>
-                Kolom <code>admins.member_id</code> belum ada, jadi memilih anggota pada kolom <strong>Bagian</strong> tidak
-                tersimpan.{' '}
-              </>
-            )}
-            {!schema?.permissions && (
-              <>
-                Tabel <code>admin_permissions</code> belum ada, jadi matriks hak akses tidak bisa disimpan.{' '}
-              </>
-            )}
-            Jalankan tiga berkas berikut di <strong>Supabase Dashboard → SQL Editor</strong> sesuai urutannya:
+          <p className="mt-1 text-amber-800">
+            Tabel <code>admins.member_id</code> dan <code>admin_permissions</code> belum ada di database ini, jadi tautan
+            anggota &amp; matriks izin disimpan sebagai JSON pada tabel <code>settings</code>. <strong>Semua fitur di
+            halaman ini tetap berfungsi normal</strong> — menautkan anggota, menerapkan template seksi bidang, dan
+            membatasi modul.
+          </p>
+          <p className="mt-2 text-xs text-amber-800">
+            Yang belum aktif adalah penjagaan di sisi server: selama tabel hak akses belum ada, Row Level Security masih
+            memakai aturan lama (semua admin boleh mengubah data publik). Limiter modul sudah bekerja di antarmuka. Untuk
+            menutup celah ini, jalankan tiga berkas berikut di <strong>Supabase Dashboard → SQL Editor</strong>. Setelah
+            selesai, panel otomatis beralih ke mode native dan tombol di bawah memindahkan datanya ke tabel resmi:
           </p>
           <ol className="mt-3 space-y-2">
             {ACCESS_SETUP_STEPS.map((s, i) => (
-              <li key={s.file} className="rounded-lg border border-red-200 bg-white/70 p-3">
-                <p className="font-semibold text-red-900">
+              <li key={s.file} className="rounded-lg border border-amber-200 bg-white/70 p-3">
+                <p className="font-semibold text-amber-900">
                   {i + 1}. {s.title} — <code className="text-xs">{s.file}</code>
                 </p>
-                <p className="mt-0.5 text-xs text-red-800">{s.body}</p>
+                <p className="mt-0.5 text-xs text-amber-800">{s.body}</p>
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-xs text-red-800">
-            Patch 3 sudah memuat <code>notify pgrst, 'reload schema'</code> dan query verifikasi di bagian akhir. Setelah
-            Ketiga berkas selesai, klik <strong>Periksa lagi</strong>. Bila <code>member_id</code> sudah ada tetapi error
-            &ldquo;schema cache&rdquo; masih muncul, muat ulang cache lewat{' '}
-            <strong>Project Settings → API → Reload schema</strong>, lalu hard refresh browser (Ctrl+Shift+R).
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button type="button" className="btn-secondary px-3 py-1.5 text-xs" onClick={reloadSchema} disabled={migrating}>
+              Periksa lagi
+            </button>
+            <button type="button" className="btn-primary px-3 py-1.5 text-xs" onClick={runMigrate} disabled={migrating}>
+              {migrating ? 'Memindahkan…' : 'Pindahkan data ke tabel resmi'}
+            </button>
+            <span className="text-xs text-amber-800">
+              Tekan &ldquo;Periksa lagi&rdquo; setelah ketiga berkas selesai, lalu &ldquo;Pindahkan data&rdquo; untuk
+              memindahkannya ke tabel resmi. Data yang sudah ada di tabel resmi tidak ditimpa.
+            </span>
+          </div>
+          <p className="mt-3 text-xs text-amber-800">
+            Patch 3 memuat <code>notify pgrst, 'reload schema'</code> dan query verifikasi di bagian akhir. Setelah ketiga
+            berkas selesai, klik <strong>Periksa lagi</strong>. Bila <code>member_id</code> sudah ada tetapi masih muncul
+            error &ldquo;schema cache&rdquo;, muat ulang cache lewat <strong>Project Settings → API → Reload schema</strong>,
+            lalu hard refresh browser (Ctrl+Shift+R).
           </p>
         </div>
       )}
