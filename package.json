@@ -13,7 +13,9 @@
     "preview": "npm run preview --prefix client",
     "test:db": "node supabase/tests/db.test.mjs",
     "build:sql": "node scripts/build-setup-sql.mjs",
-    "admin:create": "node scripts/create-superadmin.mjs"
+    "admin:create": "node scripts/create-superadmin.mjs",
+    "deploy": "npx vercel --prod --cwd client",
+    "deploy:preview": "npx vercel --cwd client"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
