@@ -14,6 +14,7 @@
     "test:db": "node supabase/tests/db.test.mjs",
     "build:sql": "node scripts/build-setup-sql.mjs",
     "db:patch": "node scripts/apply-access-patch.mjs",
+    "db:patch:api": "node scripts/apply-access-patch-api.mjs",
     "admin:create": "node scripts/create-superadmin.mjs",
     "deploy": "npx vercel --prod --cwd client",
     "deploy:preview": "npx vercel --cwd client"

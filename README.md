@@ -78,9 +78,16 @@ $env:PG_PASSWORD = "password-yang-anda-salin"
 npm run db:patch
 ```
 
-Skrip `scripts/apply-access-patch.mjs` konek ke pooler Asia Tenggara, menjalankan `patch-1` → `patch-2` → `patch-3` berurutan, mencetak hasil verifikasi, lalu menjalankan patch sekali lagi untuk membuktikan idempoten. Password hanya hidup di environment Powershell sesi itu — tidak pernah ditulis ke repo atau frontend.
+Alternatif tanpa database password — pakai **Personal Access Token** dari [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens):
 
-Selesai setelah itu: **Project Settings → API → Reload schema**, lalu buka `/admin/akses` dengan Ctrl+Shift+R dan tekan **Pindahkan data ke tabel resmi**.
+```powershell
+$env:SUPABASE_ACCESS_TOKEN = "sbp_..."
+npm run db:patch:api
+```
+
+Kedua skrip menjalankan `patch-1` → `patch-2` → `patch-3` berurutan, mencetak hasil verifikasi, memuat ulang cache skema PostgREST, lalu menjalankan patch sekali lagi untuk membuktikan idempoten. Kredensial hanya hidup di environment Powershell sesi itu — tidak pernah ditulis ke repo atau frontend.
+
+Selesai setelah itu: buka `/admin/akses` dengan Ctrl+Shift-R. Pita "Mode sementara" akan hilang otomatis karena tabel resmi sudah terdeteksi.
 
 <details><summary>Alternatif: tempel manual di SQL Editor</summary>
 
