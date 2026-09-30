@@ -2,15 +2,49 @@
 // auth, edge function) terkumpul di sini agar halaman tetap sederhana.
 import { MEDIA_BUCKET, supabase } from './supabase';
 
+/**
+ * Petunjuk yang tampil di dalam panel *Akun & Hak Akses* ketika skema hak akses
+ * belum terpasang di database produksi. Dua berkas SQL dijalankan berurutan.
+ */
+export const ACCESS_SETUP_STEPS = [
+  {
+    file: 'supabase/patch-1-skema.sql',
+    title: 'Skema hak akses',
+    body: 'Menambah kolom admins.member_id, tabel admin_permissions & division_permissions, serta fungsi can_access / apply_division_template.',
+  },
+  {
+    file: 'supabase/patch-2-rls.sql',
+    title: 'Policy RLS',
+    body: 'Mengatur siapa boleh mengubah tiap tabel dan siapa boleh mengelola akun admin.',
+  },
+  {
+    file: 'supabase/patch-3-data.sql',
+    title: 'Data awal & pembersihan',
+    body: 'Memberi akses penuh kepada admin lama, membuat template seksi bidang, membersihkan anggota contoh, lalu memuat ulang cache skema.',
+  },
+];
+
+const ACCESS_SETUP_HINT =
+  'Fitur hak akses belum terpasang di database. Jalankan patch-1-skema.sql, patch-2-rls.sql, lalu patch-3-data.sql di Supabase SQL Editor.';
+
 const ERROR_ID = {
   'Invalid login credentials': 'Email atau password salah',
   'Email not confirmed': 'Email belum dikonfirmasi',
   'new row violates row-level security policy': 'Anda tidak memiliki izin untuk melakukan aksi ini',
-  // Fitur hak akses belum aktif (migrasi belum dijalankan di Supabase)
-  admin_permissions: 'Fitur hak akses belum aktif. Jalankan migrasi 20260930000000_admin_access.sql di SQL Editor Supabase.',
-  apply_division_template: 'Fitur hak akses belum aktif. Jalankan migrasi 20260930000000_admin_access.sql di SQL Editor Supabase.',
-  'Could not find a relationship': 'Kolom member_id belum ada. Jalankan migrasi 20260930000000_admin_access.sql di SQL Editor Supabase.',
+  // Skema hak akses belum aktif di database produksi
+  admin_permissions: ACCESS_SETUP_HINT,
+  division_permissions: ACCESS_SETUP_HINT,
+  apply_division_template: ACCESS_SETUP_HINT,
+  can_access: ACCESS_SETUP_HINT,
+  can_manage_access: ACCESS_SETUP_HINT,
+  manages_division: ACCESS_SETUP_HINT,
+  is_admin_module: ACCESS_SETUP_HINT,
+  'Could not find a relationship': ACCESS_SETUP_HINT,
+  member_id: ACCESS_SETUP_HINT,
 };
+
+/** Kode error PostgREST/Postgres yang menandakan skema hak akses belum ada. */
+const SCHEMA_MISSING_CODES = ['PGRST200', 'PGRST202', 'PGRST204', 'PGRST205', '42P01', '42703', '42883'];
 
 function translate(msg = '') {
   for (const [en, id] of Object.entries(ERROR_ID)) if (msg.includes(en)) return id;
@@ -28,7 +62,7 @@ function unwrap({ data, error }) {
 }
 
 /** True bila error menandakan skema database belum dipasang. */
-export const isSchemaMissing = (err) => ['PGRST205', 'PGRST202', '42P01', '42883'].includes(err?.code);
+export const isSchemaMissing = (err) => SCHEMA_MISSING_CODES.includes(err?.code);
 
 const today = () => {
   const d = new Date();
@@ -171,7 +205,7 @@ export async function getAdminProfile(userId) {
     .select('*, member:members(id, name, position, class_name, division:divisions(id, name, short))')
     .eq('user_id', userId)
     .maybeSingle();
-  // Migrasi hak akses belum terpasang ->量大 kolom member_id belum ada
+  // Kolom admins.member_id belum ada -> pakai profil polos, jangan sampai login gagal
   if (!joined.error) return joined.data;
   return unwrap(await supabase.from('admins').select('*').eq('user_id', userId).maybeSingle());
 }
@@ -282,10 +316,23 @@ export const ADMIN_MODULES = [
   { key: 'akun', label: 'Akun & Hak Akses' },
 ];
 
+/**
+ * Versi `unwrap` yang tidak melempar saat skema hak akses belum terpasang.
+ * Dipakai untuk pembacaan supaya panel tetap terbuka (dengan data kosong)
+ * ketika migrasi belum dijalankan.
+ */
+function unwrapOr({ data, error }, fallback) {
+  if (!error) return data;
+  if (isSchemaMissing(error)) return fallback;
+  return unwrap({ data, error });
+}
+
 /** { module: 'read' | 'write' } milik seorang admin. */
 export async function getAdminPermissions(userId) {
-  const rows = unwrap(await supabase.from('admin_permissions').select('module, access').eq('user_id', userId));
-  return Object.fromEntries(rows.map((r) => [r.module, r.access]));
+  const res = await supabase.from('admin_permissions').select('module, access').eq('user_id', userId);
+  // null = tabel belum ada -> pemanggil memakai akses penuh (lihat context.jsx)
+  const rows = unwrapOr(res, null);
+  return rows ? Object.fromEntries(rows.map((r) => [r.module, r.access])) : null;
 }
 
 /** Daftar admin beserta anggota pengurus & seksi bidang yang tertaut. */
@@ -294,18 +341,19 @@ export async function listAdmins() {
     .from('admins')
     .select('*, member:members(id, name, position, class_name, division:divisions(id, name, short))')
     .order('created_at');
-  // Migrasi hak akses belum terpasang -> relasi member belum dikenal
+  // Kolom admins.member_id belum ada -> relasi member belum dikenal
   if (!joined.error) return joined.data;
   return unwrap(await supabase.from('admins').select('*').order('created_at'));
 }
 
 export async function getPermissionsOf(userId) {
-  const rows = unwrap(await supabase.from('admin_permissions').select('module, access').eq('user_id', userId));
+  const rows = unwrapOr(await supabase.from('admin_permissions').select('module, access').eq('user_id', userId), []);
   return Object.fromEntries(rows.map((r) => [r.module, r.access]));
 }
 
 /** Ganti seluruh hak akses seorang admin dengan daftar { module, access }. */
 export async function setAdminPermissions(userId, rows) {
+  if ((await getAccessSchemaStatus()).permissions === false) throw new Error(ACCESS_SETUP_HINT);
   const target = unwrap(await supabase.from('admins').select('user_id').eq('user_id', userId).maybeSingle());
   if (!target) throw new Error('Admin tidak ditemukan');
   unwrap(await supabase.from('admin_permissions').delete().eq('user_id', userId));
@@ -316,7 +364,7 @@ export async function setAdminPermissions(userId, rows) {
 }
 
 export async function listDivisionPermissions() {
-  const rows = unwrap(await supabase.from('division_permissions').select('division_id, module, access'));
+  const rows = unwrapOr(await supabase.from('division_permissions').select('division_id, module, access'), []);
   const out = {};
   rows.forEach((r) => {
     out[r.division_id] = { ...(out[r.division_id] || {}), [r.module]: r.access };
@@ -325,6 +373,7 @@ export async function listDivisionPermissions() {
 }
 
 export async function setDivisionPermissions(divisionId, map) {
+  if ((await getAccessSchemaStatus()).permissions === false) throw new Error(ACCESS_SETUP_HINT);
   unwrap(await supabase.from('division_permissions').delete().eq('division_id', divisionId));
   const rows = Object.entries(map)
     .filter(([, access]) => access)
@@ -342,6 +391,7 @@ export async function applyDivisionTemplate(userId) {
 
 /** Tautkan (atau lepaskan) akun admin ke anggota pengurus. */
 export async function linkAdminMember(userId, memberId) {
+  if (!(await hasMemberLink())) throw new Error(ACCESS_SETUP_HINT);
   return unwrap(await supabase.from('admins').update({ member_id: memberId }).eq('user_id', userId).select().single());
 }
 
@@ -352,6 +402,19 @@ export async function linkAdminMember(userId, memberId) {
 export async function hasMemberLink() {
   const { error } = await supabase.from('admins').select('member_id').limit(1);
   return !error;
+}
+
+/** Status skema hak akses, dipakai untuk menampilkan panduan pemasangan. */
+export async function getAccessSchemaStatus() {
+  const [memberLink, permissions] = await Promise.all([
+    supabase.from('admins').select('member_id').limit(1),
+    supabase.from('admin_permissions').select('user_id').limit(1),
+  ]);
+  return {
+    memberLink: !memberLink.error,
+    permissions: !permissions.error,
+    ready: !memberLink.error && !permissions.error,
+  };
 }
 
 async function callAdminUsers(body) {

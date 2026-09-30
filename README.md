@@ -67,7 +67,17 @@ File ini berisi skema (tabel, RLS, fungsi, bucket storage) + data contoh, dan am
 
 > `setup.sql` dibuat otomatis dari `supabase/migrations/` + `supabase/seed.sql`. Setelah mengubah salah satunya, jalankan `npm run build:sql`.
 
-> **Situs sudah terpasang, tapi tabel hak akses belum?** Tempel [`supabase/patch-hak-akses.sql`](supabase/patch-hak-akses.sql) (satu file, idempoten) di SQL Editor. Isinya migrasi hak akses + tautan `admins.member_id` + pembersihan data anggota contoh. Halaman *Akun & Hak Akses* akan menampilkan peringatan merah selama kolom tersebut belum ada.
+> **Situs sudah terpasang, tapi hak akses belum aktif?** Error yang muncul adalah `Could not find the 'member_id' column of 'admins' in the schema cache` atau `relation "public.admin_permissions" does not exist`. Buka **SQL Editor → New query**, lalu jalankan **satu per satu** (supabase SQL Editor memakai satu transaksi, jadi memecahnya membuat kesalahan mudah dilacak):
+
+   | Urutan | File | Isi |
+   | --- | --- | --- |
+   | 1 | [`supabase/patch-1-skema.sql`](supabase/patch-1-skema.sql) | kolom `admins.member_id`, tabel `admin_permissions` & `division_permissions`, fungsi `can_access` / `can_manage_access` / `manages_division` / `apply_division_template` |
+   | 2 | [`supabase/patch-2-rls.sql`](supabase/patch-2-rls.sql) | policy RLS untuk tabel publik, anggota, akun admin, dan bucket media |
+   | 3 | [`supabase/patch-3-data.sql`](supabase/patch-3-data.sql) | backfill izin admin lama, template seksi bidang, pembersihan anggota contoh, `notify pgrst, 'reload schema'`, dan query verifikasi |
+
+   Ketiganya idempoten (aman dijalankan ulang). Patch 3 ditutup query verifikasi — `kolom_member_id` harus `1`, `tabel_izin` `2`, `jumlah_anggota` `27`, `template_sekbid` `50`.
+   Bila `kolom_member_id` sudah `1` tetapi error *schema cache* masih muncul, muat ulang cache lewat **Project Settings → API → Reload schema**, lalu hard refresh browser (Ctrl+Shift+R).
+   Halaman **Akun & Hak Akses** menampilkan pita merah berisi urutan patch tersebut selama skema belum terpasang, dan tombol **Periksa lagi** untuk mengecek ulang tanpa refresh.
 
 <details><summary>Atau dengan Supabase CLI</summary>
 
@@ -100,11 +110,29 @@ npm run admin:create -- --email superadmin@osissmaga.id --password "osis2627" --
 ```
 Skrip membuat user Auth (email langsung terverifikasi) sekaligus.insert baris `admins` ber-role `superadmin`. Jalankan **setelah** migrasi `supabase/migrations/*.sql` terpasang.
 
+<details><summary>Butuh akses database dari komputer sendiri (opsional)</summary>
+
+Semua pekerjaan SQL di halaman ini cukup lewat **SQL Editor** di Dashboard. Bila ingin menjalankan migrasi dari terminal, butuh salah satu dari:
+
+- **Supabase CLI** (disarankan):
+  ```bash
+  npx supabase login                                  # access token dari supabase.com/dashboard/account/tokens
+  npx supabase link --project-ref fawwphybcnxwvwimoqwp
+  npx supabase db push
+  ```
+  `db push` hanya menjalankan berkas di `supabase/migrations/`. Untuk proyek yang database-nya sudah terlanjur terpasang tanpa migrasi hak akses, jalankan `supabase/patch-*.sql` lewat SQL Editor.
+- **PostgreSQL langsung** (butuh *database password* dari **Project Settings → Database** dan `psql` terpasang):
+  ```bash
+  psql "postgresql://postgres.<ref>:<password>@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres" -f supabase/patch-1-skema.sql
+  ```
+- **Service role key** hanya diperlukan untuk skrip `npm run admin:create`. Key itu tidak dapat menjalankan DDL — untuk itu tetap perlu CLI atau SQL Editor.
+</details>
+
 ### 5. Deploy Edge Function (untuk menambah/menghapus admin dari panel)
 ```bash
 npx supabase functions deploy admin-users --project-ref <PROJECT_REF>
 ```
-Tanpa langkah ini semua fitur tetap jalan, hanya menambah/mengapus akun dari halaman *Hak Akses* yang tidak aktif (admin tetap bisa ditambah manual seperti langkah 4). Fungsi ini memakai kolom `admins.member_id` dan tabel `admin_permissions`, jadi **deploy ulang** setelah migrasi hak akses dipakai.
+Tanpa langkah ini semua fitur tetap jalan, hanya menambah/mengapus akun dari halaman *Hak Akses* yang tidak aktif (admin tetap bisa ditambah manual seperti langkah 4). Fungsi ini memakai kolom `admins.member_id` dan tabel `admin_permissions`, jadi **deploy ulang** setelah patch skema hak akses dipakai. Fungsi sudah menangani kolom yang belum ada: akun tetap dibuat, hanya tautan ke seksi bidang yang dilewati dan dilaporkan lewat `warning`.
 
 ### 6. Jalankan frontend
 ```bash

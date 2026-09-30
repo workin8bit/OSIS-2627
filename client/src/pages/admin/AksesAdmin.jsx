@@ -2,14 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Link2, ShieldCheck, Trash2, UserPlus, Wand2 } from 'lucide-react';
 import {
+  ACCESS_SETUP_STEPS,
   ADMIN_MODULES,
   applyDivisionTemplate,
   createAdmin,
   deleteAdmin,
+  getAccessSchemaStatus,
   getDivisions,
   getPermissionsOf,
   getStructure,
-  hasMemberLink,
   linkAdminMember,
   listAdmins,
   listDivisionPermissions,
@@ -58,8 +59,10 @@ export default function AksesAdmin() {
   const { data: admins, loading, reload } = useQuery(listAdmins, []);
   const { data: divisions } = useQuery(getDivisions, []);
   const { data: structure } = useQuery(getStructure, []);
-  // Kolom admins.member_id belum ada selama migrasi hak akses belum dijalankan
-  const { data: canLink } = useQuery(hasMemberLink, []);
+  // Status skema hak akses di database: selama belum ready, tautan anggota
+  // dan matriks izin tidak bisa disimpan.
+  const { data: schema, reload: reloadSchema } = useQuery(getAccessSchemaStatus, []);
+  const accessReady = schema?.ready !== false;
 
   // hak akses tiap admin: { [user_id]: { module: access } }
   const [grants, setGrants] = useState({});
@@ -186,6 +189,9 @@ export default function AksesAdmin() {
   const addAccount = async (e) => {
     e.preventDefault();
     if (!pickMember) return toast('Pilih anggota pengurus terlebih dahulu', 'error');
+    if (!accessReady) {
+      return toast('Jalankan patch skema hak akses lebih dulu agar akun bisa ditautkan ke seksi bidang', 'error');
+    }
     setBusy('create');
     try {
       const created = await createAdmin({
@@ -214,6 +220,11 @@ export default function AksesAdmin() {
       toast(err.message, 'error');
       if (/belum di-deploy|not found|404|Failed to send/i.test(err.message)) {
         setNotice({ title: 'Edge Function admin-users belum bisa dipakai', body: null });
+      } else if (/hanya.*superadmin|berwenang|42501|row-level security/i.test(err.message)) {
+        setNotice({
+          title: 'Server menolak permintaan ini',
+          body: 'Edge Function admin-users memeriksa caller memakai tabel admin_permissions. Jalankan patch-1-skema.sql bila tabel itu belum ada, lalu deploy ulang Edge Function.',
+        });
       }
     } finally {
       setBusy(null);
@@ -251,12 +262,43 @@ export default function AksesAdmin() {
 
   return (
     <div className="space-y-6">
-      {canLink === false && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
-          <p className="font-semibold">Tautan ke anggota pengurus belum aktif di database</p>
+      {!accessReady && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-900">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="font-semibold">Hak akses belum terpasang di database ini</p>
+            <button type="button" className="btn-secondary px-3 py-1.5 text-xs" onClick={reloadSchema}>
+              Periksa lagi
+            </button>
+          </div>
           <p className="mt-1 text-red-800">
-            Kolom <code>admins.member_id</code> belum ada, jadi memilih anggota pada kolom Bagian tidak tersimpan. Jalankan
-            migrasi di SQL Editor Supabase, lalu muat ulang halaman ini.
+            {!schema?.memberLink && (
+              <>
+                Kolom <code>admins.member_id</code> belum ada, jadi memilih anggota pada kolom <strong>Bagian</strong> tidak
+                tersimpan.{' '}
+              </>
+            )}
+            {!schema?.permissions && (
+              <>
+                Tabel <code>admin_permissions</code> belum ada, jadi matriks hak akses tidak bisa disimpan.{' '}
+              </>
+            )}
+            Jalankan tiga berkas berikut di <strong>Supabase Dashboard → SQL Editor</strong> sesuai urutannya:
+          </p>
+          <ol className="mt-3 space-y-2">
+            {ACCESS_SETUP_STEPS.map((s, i) => (
+              <li key={s.file} className="rounded-lg border border-red-200 bg-white/70 p-3">
+                <p className="font-semibold text-red-900">
+                  {i + 1}. {s.title} — <code className="text-xs">{s.file}</code>
+                </p>
+                <p className="mt-0.5 text-xs text-red-800">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-xs text-red-800">
+            Patch 3 sudah memuat <code>notify pgrst, 'reload schema'</code> dan query verifikasi di bagian akhir. Setelah
+            Ketiga berkas selesai, klik <strong>Periksa lagi</strong>. Bila <code>member_id</code> sudah ada tetapi error
+            &ldquo;schema cache&rdquo; masih muncul, muat ulang cache lewat{' '}
+            <strong>Project Settings → API → Reload schema</strong>, lalu hard refresh browser (Ctrl+Shift+R).
           </p>
         </div>
       )}
@@ -328,8 +370,10 @@ export default function AksesAdmin() {
               <em>Auto Confirm User</em>), lalu jalankan di SQL Editor:
             </p>
             <pre className="mt-2 overflow-x-auto rounded-lg bg-white/70 p-3 text-xs text-ink-800">
-              {`-- 1. pasang kolom & tabel hak akses (tempel seluruh isi file)
---    supabase/patch-hak-akses.sql  ->  SQL Editor -> Run
+              {`-- 1. pasang skema hak akses (SQL Editor, jalankan berurutan)
+--    supabase/patch-1-skema.sql
+--    supabase/patch-2-rls.sql
+--    supabase/patch-3-data.sql
 
 -- 2. tautkan akun yang sudah ada ke anggota seksi bidang
 update public.admins a
@@ -379,6 +423,8 @@ select public.apply_division_template(
                       <select
                         className="input py-1 text-xs"
                         value={a.member_id || ''}
+                        disabled={!accessReady || busy === a.user_id}
+                        title={accessReady ? 'Tautkan ke anggota pengurus' : 'Jalankan patch skema hak akses lebih dulu'}
                         onChange={(e) => changeMember(a, e.target.value)}
                       >
                         <option value="">— belum ditautkan —</option>
@@ -403,7 +449,7 @@ select public.apply_division_template(
                     <td key={m.key} className="px-2 py-3">
                       <AccessSelect
                         value={grants[a.user_id]?.[m.key] || ''}
-                        disabled={busy === a.user_id}
+                        disabled={!accessReady || busy === a.user_id}
                         onChange={(v) => saveGrants(a.user_id, { ...(grants[a.user_id] || {}), [m.key]: v })}
                       />
                     </td>
@@ -413,7 +459,7 @@ select public.apply_division_template(
                       <button
                         className="btn-secondary px-2 py-1.5 text-xs"
                         onClick={() => applyTemplate(a)}
-                        disabled={!a.member_id || busy === a.user_id}
+                        disabled={!a.member_id || !accessReady || busy === a.user_id}
                         title="Salin template hak akses seksi bidang ke akun ini"
                       >
                         <Wand2 className="h-3.5 w-3.5" /> Template
@@ -503,7 +549,7 @@ select public.apply_division_template(
                 <span className="text-sm text-slate-700">{m.label}</span>
                 <AccessSelect
                   value={templates[activeDivision]?.[m.key] || ''}
-                  disabled={busy === `div-${activeDivision}`}
+                  disabled={!accessReady || busy === `div-${activeDivision}`}
                   onChange={(v) => saveTemplate(Number(activeDivision), { ...(templates[activeDivision] || {}), [m.key]: v })}
                 />
               </label>

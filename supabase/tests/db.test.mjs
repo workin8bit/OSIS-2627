@@ -77,21 +77,41 @@ await db.exec(read('migrations/20260930000000_admin_access.sql')); // idempoten
 await db.exec(read('migrations/20260930010000_division_member_access.sql'));
 await db.exec(read('migrations/20260930010000_division_member_access.sql')); // idempoten
 
-// Patch gabungan untuk SQL Editor harus valid & idempoten (dijalankan setelah
-// migrasi hak akses, meniru kondisi proyek yang sudah terpasang)
-await db.exec(read('patch-hak-akses.sql'));
-await db.exec(read('patch-hak-akses.sql'));
+// Tiga patch SQL untuk SQL Editor harus valid, idempoten, dan cukup untuk
+// menggantikan kedua migrasi hak akses (dijalankan pada kondisi proyek yang
+// hanya sudah punya migrasi awal, seperti produksi).
+const before = (
+  await db.query(
+    `select (select count(*) from divisions)::int d, (select count(*) from members)::int m, (select count(*) from posts)::int p`
+  )
+).rows[0];
+for (const f of ['patch-1-skema.sql', 'patch-2-rls.sql', 'patch-3-data.sql']) {
+  await db.exec(read(f));
+  await db.exec(read(f)); // idempoten
+}
 
 console.log('Seed & migrasi');
-await test('patch-hak-akses.sql idempoten', async () => {
+await test('patch skema hak akses idempoten', async () => {
   const { rows } = await db.query(
-    `select (select count(*) from information_schema.columns where table_name = 'admins' and column_name = 'member_id')::int c,
+    `select (select count(*) from information_schema.columns
+              where table_schema = 'public' and table_name = 'admins' and column_name = 'member_id')::int c,
+            (select count(*) from information_schema.tables
+              where table_schema = 'public' and table_name in ('admin_permissions', 'division_permissions'))::int t,
+            (select count(*) from public.members)::int m,
             (select count(*) from public.admin_permissions)::int ap,
-            (select count(*) from public.members)::int m`
+            (select count(*) from public.division_permissions)::int dp`
   );
-  assert.equal(rows[0].c, 1);
-  assert.ok(rows[0].ap > 0);
-  assert.equal(rows[0].m, 27);
+  assert.equal(rows[0].c, 1, 'kolom admins.member_id harus ada');
+  assert.equal(rows[0].t, 2, 'dua tabel izin harus ada');
+  assert.equal(rows[0].m, 27, 'data contoh dibersihkan & dedupe');
+  assert.ok(rows[0].ap > 0, 'izin admin lama dibackfill');
+  assert.equal(rows[0].dp, 50, 'template 10 sekbid x 5 modul');
+});
+await test('patch tidak merusak atau menggandakan data', async () => {
+  const { rows } = await db.query(
+    `select (select count(*) from divisions)::int d, (select count(*) from members)::int m, (select count(*) from posts)::int p`
+  );
+  assert.deepEqual(rows[0], { ...before, m: 27 }); // anggota didedupe, sisanya utuh
 });
 await test('data contoh termuat', async () => {
   const { rows } = await db.query(`select (select count(*) from divisions)::int d, (select count(*) from members)::int m, (select count(*) from programs)::int p`);
@@ -325,5 +345,64 @@ await test('hanya admin yang dapat mengunggah ke bucket media', async () => {
   const { rows } = await as('anon', null, `select name from storage.objects where bucket_id = 'media'`);
   assert.equal(rows.length, 1);
 });
+
+// Skenario produksi: hanya migrasi awal yang terpasang, lalu ketiga patch
+// dipakai sebagai satu-satunya cara memasang hak akses.
+console.log('Skenario produksi (patch saja, tanpa migrasi hak akses)');
+{
+  const fresh = new PGlite();
+  await fresh.exec(SUPABASE_STUB);
+  await fresh.exec(read('migrations/20260927000000_init.sql'));
+  await fresh.exec(read('migrations/20260927010000_rename_cabinet.sql'));
+  await fresh.exec(read('migrations/20260927020000_add_tiktok_setting.sql'));
+  await fresh.exec(read('migrations/20260928000000_dedupe_seed_data.sql'));
+  await fresh.exec(read('seed.sql'));
+  await fresh.query(`insert into auth.users (email) values ('super@osis.id'), ('admin@osis.id')`);
+  await fresh.query(
+    `insert into public.admins (user_id, name, email, role)
+     select u.id, 'Super', u.email, 'superadmin' from auth.users u where u.email = 'super@osis.id'`
+  );
+  await fresh.query(
+    `insert into public.admins (user_id, name, email, role)
+     select u.id, 'Admin', u.email, 'admin' from auth.users u where u.email = 'admin@osis.id'`
+  );
+
+  await test('ketiga patch berhasil pada skema produksi', async () => {
+    for (const f of ['patch-1-skema.sql', 'patch-2-rls.sql', 'patch-3-data.sql']) await fresh.exec(read(f));
+    const { rows } = await fresh.query(
+      `select (select count(*) from information_schema.columns
+                where table_schema = 'public' and table_name = 'admins' and column_name = 'member_id')::int c,
+              (select count(*) from public.admin_permissions)::int ap,
+              (select count(*) from public.division_permissions)::int dp,
+              (select count(*) from public.members)::int m`
+    );
+    assert.equal(rows[0].c, 1);
+    assert.equal(rows[0].ap, 10, '1 admin biasa x 10 modul (superadmin tidak butuh baris izin)');
+    assert.equal(rows[0].dp, 50, '10 sekbid x 5 modul');
+    assert.equal(rows[0].m, 27);
+  });
+
+  await test('apply_division_template berfungsi setelah patch', async () => {
+    const { rows: admins } = await fresh.query(`select user_id from public.admins where role = 'admin'`);
+    const { rows: koordinator } = await fresh.query(
+      `select id from public.members where name like 'Koordinator%' order by id limit 1`
+    );
+    await fresh.query(`update public.admins set member_id = $1 where user_id = $2`, [koordinator[0].id, admins[0].user_id]);
+    // Panggil sebagai superadmin agar can_manage_access()true
+    const { rows: sup } = await fresh.query(`select user_id from public.admins where role = 'superadmin'`);
+    const call = await fresh.transaction(async (tx) => {
+      await tx.query(`select set_config('request.jwt.claim.sub', $1, true)`, [sup[0].user_id]);
+      await tx.query(`set local role authenticated`);
+      return tx.query(`select public.apply_division_template($1) as n`, [admins[0].user_id]);
+    });
+    assert.equal(call.rows[0].n, 5, 'template seksi bidang = 5 modul read');
+    const { rows: perms } = await fresh.query(
+      `select module, access from public.admin_permissions where user_id = $1 order by module`,
+      [admins[0].user_id]
+    );
+    assert.equal(perms.length, 5);
+    assert.ok(perms.every((p) => p.access === 'read'));
+  });
+}
 
 console.log(`\n${passed} tes lulus${process.exitCode ? ', ada yang GAGAL' : ''}.`);

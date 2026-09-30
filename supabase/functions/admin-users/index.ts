@@ -41,6 +41,7 @@ Deno.serve(async (req) => {
 
   const callerId = userData.user.id;
   const { data: me } = await admin.from('admins').select('role').eq('user_id', callerId).maybeSingle();
+  // Tabel admin_permissions belum ada bila migrasi hak akses belum dijalankan
   const { data: grant } = await admin
     .from('admin_permissions')
     .select('access')
@@ -74,14 +75,38 @@ Deno.serve(async (req) => {
     });
     if (error || !created.user) return json({ error: error?.message ?? 'Gagal membuat user' }, 400);
 
-    const { error: insErr } = await admin
-      .from('admins')
-      .insert({ user_id: created.user.id, name, email, role, member_id: Number.isNaN(memberId as number) ? null : memberId });
+    const row = { user_id: created.user.id, name, email, role };
+    const memberValue = Number.isNaN(memberId as number) ? null : memberId;
+    // Kolom member_id belum ada bila migrasi hak akses belum dijalankan:
+    // buat akunnya dulu, lalu coba tautkan. Jangan gagalkan pembuatan akun.
+    const withMember = memberValue == null ? null : { ...row, member_id: memberValue };
+    let linked = false;
+    let insErr = null;
+    if (withMember) {
+      const res = await admin.from('admins').insert(withMember);
+      insErr = res.error;
+      linked = !res.error;
+    }
+    if (!linked) {
+      const res = await admin.from('admins').insert(row);
+      insErr = res.error;
+    }
     if (insErr) {
       await admin.auth.admin.deleteUser(created.user.id);
       return json({ error: insErr.message }, 400);
     }
-    return json({ user_id: created.user.id, email, name, role, member_id: memberId }, 201);
+    return json(
+      {
+        user_id: created.user.id,
+        email,
+        name,
+        role,
+        member_id: linked ? memberValue : null,
+        linked,
+        ...(linked ? {} : { warning: 'Kolom admins.member_id belum ada. Jalankan supabase/patch-1-skema.sql lalu tautkan manual.' }),
+      },
+      201
+    );
   }
 
   if (body.action === 'delete') {
