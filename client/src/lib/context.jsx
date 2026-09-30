@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { CheckCircle2, X } from 'lucide-react';
 import { supabase } from './supabase';
-import { getAdminProfile, getSettings, isSchemaMissing, signIn, signOut } from './data';
+import { getAdminPermissions, getAdminProfile, getSettings, isSchemaMissing, signIn, signOut } from './data';
 
 const SettingsCtx = createContext({ settings: {}, reload: () => {} });
 const AuthCtx = createContext(null);
 const ToastCtx = createContext(() => {});
+const EMPTY_CAN = () => false;
 
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState({ org_name: 'OSIS SMA Negeri 3 Rembang', period: '2026/2027', missions: [] });
@@ -26,12 +28,15 @@ export function SettingsProvider({ children }) {
 }
 
 /**
- * user    : user Supabase Auth yang login (atau null)
- * profile : baris tabel `admins` milik user (null bila bukan admin)
+ * user      : user Supabase Auth yang login (atau null)
+ * profile   : baris tabel `admins` milik user (null bila bukan admin)
+ * permissions: { module: 'read' | 'write' } dari tabel `admin_permissions`
+ * can()     : cek hak akses modul; superadmin selalu true
  */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [permissions, setPermissions] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,10 +44,15 @@ export function AuthProvider({ children }) {
     const apply = async (session) => {
       const u = session?.user ?? null;
       let p = null;
-      if (u) p = await getAdminProfile(u.id).catch(() => null);
+      let perms = {};
+      if (u) {
+        p = await getAdminProfile(u.id).catch(() => null);
+        if (p) perms = await getAdminPermissions(u.id).catch(() => {});
+      }
       if (!active) return;
       setUser(u);
       setProfile(p);
+      setPermissions(perms);
       setLoading(false);
     };
     supabase.auth.getSession().then(({ data }) => apply(data.session));
@@ -63,17 +73,38 @@ export function AuthProvider({ children }) {
       await signOut();
       throw new Error('Akun ini tidak terdaftar sebagai admin OSIS');
     }
+    const perms = await getAdminPermissions(u.id).catch(() => ({}));
     setUser(u);
     setProfile(p);
+    setPermissions(perms);
   };
   const logout = async () => {
     await signOut();
     setUser(null);
     setProfile(null);
+    setPermissions({});
   };
 
-  const admin = user && profile ? { id: user.id, email: user.email, name: profile.name, role: profile.role } : null;
-  return <AuthCtx.Provider value={{ user: admin, authUser: user, loading, login, logout }}>{children}</AuthCtx.Provider>;
+  const admin = user && profile
+    ? { id: user.id, email: user.email, name: profile.name, role: profile.role, member: profile.member }
+    : null;
+  const isSuper = profile?.role === 'superadmin';
+  const can = useCallback(
+    (module, need = 'read') => {
+      if (!profile) return false;
+      if (profile.role === 'superadmin') return true;
+      const access = permissions[module];
+      if (!access) return false;
+      return need === 'read' ? true : access === 'write';
+    },
+    [profile, permissions]
+  );
+
+  return (
+    <AuthCtx.Provider value={{ user: admin, authUser: user, loading, login, logout, permissions, isSuper, can }}>
+      {children}
+    </AuthCtx.Provider>
+  );
 }
 
 export function ToastProvider({ children }) {
@@ -86,15 +117,14 @@ export function ToastProvider({ children }) {
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <div className="pointer-events-none fixed right-4 bottom-4 z-[100] flex flex-col gap-2">
+      <div className="toast-container">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`fade-in pointer-events-auto rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg ${
-              t.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'
-            }`}
+            className={`toast ${t.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'} animate-fade-in`}
           >
-            {t.message}
+            {t.type === 'error' ? <X className="h-5 w-5 text-white" /> : <CheckCircle2 className="h-5 w-5 text-gold-400" />}
+            <span className="text-sm font-medium">{t.message}</span>
           </div>
         ))}
       </div>
@@ -103,7 +133,7 @@ export function ToastProvider({ children }) {
 }
 
 export const useSettings = () => useContext(SettingsCtx);
-export const useAuth = () => useContext(AuthCtx);
+export const useAuth = () => useContext(AuthCtx) || { user: null, loading: true, can: EMPTY_CAN };
 export const useToast = () => useContext(ToastCtx);
 
 /**

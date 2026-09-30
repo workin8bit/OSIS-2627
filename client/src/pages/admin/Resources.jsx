@@ -145,7 +145,11 @@ export function MembersAdmin() {
       title="Pengurus"
       wide
       searchKeys={['name', 'position', 'class_name']}
-      defaults={{ is_core: false, sort_order: 10 }}
+      defaults={({ division_id }) => ({
+        is_core: false,
+        sort_order: 10,
+        division_id: division_id ? Number(division_id) : null,
+      })}
       filters={{ key: 'division_id', label: 'Semua Sekbid', options: divOptions.map((d) => ({ value: String(d.value), label: d.label })) }}
       fields={[
         { name: 'name', label: 'Nama Lengkap', required: true },

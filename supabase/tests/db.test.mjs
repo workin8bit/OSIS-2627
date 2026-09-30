@@ -58,20 +58,29 @@ await db.exec(read('migrations/20260927000000_init.sql'));
 await db.exec(read('seed.sql'));
 // Jalankan migrasi dua kali untuk memastikan idempoten
 await db.exec(read('migrations/20260927000000_init.sql'));
+await db.exec(read('migrations/20260927010000_rename_cabinet.sql'));
+await db.exec(read('migrations/20260927020000_add_tiktok_setting.sql'));
+await db.exec(read('migrations/20260928000000_dedupe_seed_data.sql'));
 
 const { rows: users } = await db.query(
-  `insert into auth.users (email) values ('super@osis.id'), ('admin@osis.id'), ('siswa@osis.id') returning id, email`
+  `insert into auth.users (email) values ('super@osis.id'), ('admin@osis.id'), ('siswa@osis.id'), ('sekbid@osis.id') returning id, email`
 );
-const [SUPER, ADMIN, SISWA] = users.map((u) => u.id);
+const [SUPER, ADMIN, SISWA, SEKBID] = users.map((u) => u.id);
 await db.query(
   `insert into public.admins (user_id, name, email, role) values ($1, 'Super', 'super@osis.id', 'superadmin'), ($2, 'Admin', 'admin@osis.id', 'admin')`,
   [SUPER, ADMIN]
 );
 
+// Migrasi hak akses dijalankan setelah admin awal ada agar backfill teruji
+await db.exec(read('migrations/20260930000000_admin_access.sql'));
+await db.exec(read('migrations/20260930000000_admin_access.sql')); // idempoten
+await db.exec(read('migrations/20260930010000_division_member_access.sql'));
+await db.exec(read('migrations/20260930010000_division_member_access.sql')); // idempoten
+
 console.log('Seed & migrasi');
 await test('data contoh termuat', async () => {
   const { rows } = await db.query(`select (select count(*) from divisions)::int d, (select count(*) from members)::int m, (select count(*) from programs)::int p`);
-  assert.deepEqual(rows[0], { d: 10, m: 37, p: 13 });
+  assert.deepEqual(rows[0], { d: 10, m: 27, p: 13 }); // 7 pengurus inti + 10 koordinator + 10 anggota
 });
 await test('bucket media dibuat', async () => {
   const { rows } = await db.query(`select public from storage.buckets where id = 'media'`);
@@ -101,7 +110,7 @@ await test('berita draf tersembunyi dari publik', async () => {
 });
 await test('public_stats mengembalikan statistik', async () => {
   const { rows } = await as('anon', null, `select public_stats() s`);
-  assert.equal(rows[0].s.members, 37);
+  assert.equal(rows[0].s.members, 27);
   assert.equal(rows[0].s.aspirations_done, 1);
 });
 
@@ -165,10 +174,16 @@ await test('pengaturan dapat di-upsert admin, tidak oleh anon', async () => {
 });
 
 console.log('Manajemen admin');
-await test('admin biasa dapat melihat daftar admin tapi tidak menambah', async () => {
+await test('admin biasa dapat melihat daftar admin, menambah admin biasa, tapi tidak superadmin', async () => {
   const { rows } = await as('authenticated', ADMIN, `select * from admins`);
   assert.equal(rows.length, 2);
-  await rejects(as('authenticated', ADMIN, `insert into admins (user_id, name) values ($1, 'X')`, [SISWA]), /row-level security/);
+  const add = await as('authenticated', ADMIN, `insert into admins (user_id, name) values ($1, 'X') returning user_id`, [SISWA]);
+  assert.equal(add.rows.length, 1);
+  await db.query(`delete from admins where user_id = $1`, [SISWA]);
+  await rejects(
+    as('authenticated', ADMIN, `insert into admins (user_id, name, role) values ($1, 'X', 'superadmin')`, [SISWA]),
+    /row-level security|superadmin/
+  );
 });
 await test('superadmin dapat menambah & menghapus admin, tapi tidak menghapus diri sendiri', async () => {
   await as('authenticated', SUPER, `insert into admins (user_id, name) values ($1, 'Siswa')`, [SISWA]);
@@ -176,6 +191,115 @@ await test('superadmin dapat menambah & menghapus admin, tapi tidak menghapus di
   assert.equal(del.rows.length, 1);
   const self = await as('authenticated', SUPER, `delete from admins where user_id = $1 returning user_id`, [SUPER]);
   assert.equal(self.rows.length, 0);
+});
+
+console.log('Hak akses berbasis modul & seksi bidang');
+const { rows: divRows } = await db.query(`select id from divisions order by sort_order limit 1`);
+const DIV = divRows[0].id;
+const { rows: memRows } = await db.query(`select id from members where division_id = $1 order by id limit 1`, [DIV]);
+const MEMBER = memRows[0].id;
+await db.query(`insert into admins (user_id, name, email, role, member_id) values ($1, 'Sekbid', 'sekbid@osis.id', 'admin', $2)`, [SEKBID, MEMBER]);
+
+await test('admin lama mendapat akses penuh setiap modul', async () => {
+  const { rows } = await as('authenticated', ADMIN, `select public.can_access('berita', 'write') a, public.can_access('akun', 'write') b`);
+  assert.deepEqual(rows[0], { a: true, b: true });
+});
+await test('superadmin selalu punya akses penuh', async () => {
+  const { rows } = await as('authenticated', SUPER, `select public.can_access('akun', 'write') a, public.can_access('galeri', 'write') b`);
+  assert.deepEqual(rows[0], { a: true, b: true });
+});
+await test('template awal terisi untuk setiap seksi bidang', async () => {
+  const { rows } = await db.query(`select (select count(*) from division_permissions)::int n, (select count(distinct division_id) from division_permissions)::int d`);
+  assert.deepEqual(rows[0], { n: 50, d: 10 });
+});
+await test('admin tanpa izin tidak dapat mengelola konten', async () => {
+  const { rows } = await as('authenticated', SEKBID, `select public.can_access('agenda', 'read') a`);
+  assert.equal(rows[0].a, false);
+  await rejects(as('authenticated', SEKBID, `insert into events (title, date) values ('X', '2026-12-01')`), /row-level security/);
+});
+await test('template seksi bidang dapat diterapkan ke anggota admin', async () => {
+  const { rows } = await as('authenticated', SUPER, `select public.apply_division_template($1) n`, [SEKBID]);
+  assert.equal(rows[0].n, 5);
+  const { rows: r } = await as('authenticated', SEKBID, `select public.can_access('berita', 'read') a, public.can_access('berita', 'write') b`);
+  assert.deepEqual(r[0], { a: true, b: false });
+  await rejects(as('authenticated', SEKBID, `insert into events (title, date) values ('X', '2026-12-01')`), /row-level security/);
+});
+await test('admin tidak dapat menerapkan template untuk dirinya sendiri', async () => {
+  await rejects(as('authenticated', ADMIN, `select public.apply_division_template($1)`, [ADMIN]), /42501|hak akses/);
+});
+await test('admin berizin dapat mengubah hak akses admin lain', async () => {
+  await as(
+    'authenticated',
+    ADMIN,
+    `insert into admin_permissions (user_id, module, access) values ($1, 'agenda', 'write')
+     on conflict (user_id, module) do update set access = excluded.access`,
+    [SEKBID]
+  );
+  const { rows } = await as('authenticated', SEKBID, `select public.can_access('agenda', 'write') a`);
+  assert.equal(rows[0].a, true);
+  const ins = await as('authenticated', SEKBID, `insert into events (title, date, time) values ('Latihan', '2026-12-02', '09:00') returning id`);
+  assert.equal(ins.rows.length, 1);
+  await db.query(`delete from events where id = $1`, [ins.rows[0].id]);
+});
+await test('admin tidak dapat mengubah hak akses sendiri', async () => {
+  const { rows } = await as('authenticated', ADMIN, `update admin_permissions set access = 'write' where user_id = $1 returning user_id`, [ADMIN]);
+  assert.equal(rows.length, 0, 'baris sendiri harus tersembunyi dari RLS');
+});
+await test('admin biasa tidak dapat menaikkan peran menjadi superadmin', async () => {
+  await rejects(as('authenticated', ADMIN, `update admins set role = 'superadmin' where user_id = $1`, [SEKBID]), /superadmin|row-level security/);
+});
+await test('admin biasa tidak dapat menghapus akun superadmin', async () => {
+  await rejects(as('authenticated', ADMIN, `delete from admins where user_id = $1`, [SUPER]), /superadmin/);
+});
+await test('admin berizin dapat menautkan anggota pengurus ke akun admin', async () => {
+  const { rows } = await as('authenticated', ADMIN, `update admins set member_id = $1 where user_id = $2 returning member_id`, [MEMBER, SEKBID]);
+  assert.deepEqual(rows, [{ member_id: MEMBER }]);
+});
+
+console.log('Kelola anggota per seksi bidang');
+const { rows: divRows2 } = await db.query(`select id from divisions order by sort_order limit 2 offset 1`);
+const [DIV_A, DIV_B] = divRows2.map((d) => d.id);
+
+await test('nama anggota contoh tanpa sufiks A/B, satu per sekbid', async () => {
+  const { rows } = await db.query(
+    `select count(*)::int total,
+            count(*) filter (where name ~ '^Anggota Sekbid [0-9]+$')::int polos,
+            count(*) filter (where name ~ '\\s[AB]$')::int bersufiks
+     from members where position = 'Anggota'`
+  );
+  assert.deepEqual(rows[0], { total: 10, polos: 10, bersufiks: 0 });
+});
+await test('admin sekbid boleh menambah anggota sekbidnya sendiri', async () => {
+  const ins = await as(
+    'authenticated',
+    SEKBID,
+    `insert into members (name, position, division_id) values ('Anggota Uji', 'Anggota', $1) returning id, division_id`,
+    [DIV]
+  );
+  assert.equal(ins.rows.length, 1);
+  await db.query(`delete from members where id = $1`, [ins.rows[0].id]);
+});
+await test('admin sekbid tidak boleh menambah anggota sekbid lain', async () => {
+  await rejects(
+    as('authenticated', SEKBID, `insert into members (name, position, division_id) values ('Anggota Terobosan', 'Anggota', $1)`, [DIV_A]),
+    /row-level security/
+  );
+  await rejects(
+    as('authenticated', SEKBID, `insert into members (name, position) values ('Tanpa Sekbid', 'Anggota')`),
+    /row-level security/
+  );
+});
+await test('admin sekbid tidak dapat menghapus anggota sekbid lain', async () => {
+  const { rows } = await db.query(`select id from members where division_id = $1 limit 1`, [DIV_A]);
+  const del = await as('authenticated', SEKBID, `delete from members where id = $1 returning id`, [rows[0].id]);
+  assert.equal(del.rows.length, 0);
+  const { rows: left } = await db.query(`select id from members where id = $1`, [rows[0].id]);
+  assert.equal(left.length, 1);
+});
+await test('superadmin tetap dapat menambah anggota di sekbid mana pun', async () => {
+  const ins = await as('authenticated', SUPER, `insert into members (name, position, division_id) values ('Anggota Super', 'Anggota', $1) returning id`, [DIV_B]);
+  assert.equal(ins.rows.length, 1);
+  await db.query(`delete from members where id = $1`, [ins.rows[0].id]);
 });
 
 console.log('Storage');

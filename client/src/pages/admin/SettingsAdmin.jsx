@@ -29,6 +29,7 @@ const GROUPS = [
       ['email', 'Email'],
       ['phone', 'Telepon'],
       ['instagram', 'Username Instagram'],
+      ['tiktok', 'Username TikTok'],
       ['youtube', 'URL YouTube'],
       ['maps_embed', 'URL Embed Google Maps', 'full'],
     ],

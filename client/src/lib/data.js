@@ -6,6 +6,10 @@ const ERROR_ID = {
   'Invalid login credentials': 'Email atau password salah',
   'Email not confirmed': 'Email belum dikonfirmasi',
   'new row violates row-level security policy': 'Anda tidak memiliki izin untuk melakukan aksi ini',
+  // Fitur hak akses belum aktif (migrasi belum dijalankan di Supabase)
+  admin_permissions: 'Fitur hak akses belum aktif. Jalankan migrasi 20260930000000_admin_access.sql di SQL Editor Supabase.',
+  apply_division_template: 'Fitur hak akses belum aktif. Jalankan migrasi 20260930000000_admin_access.sql di SQL Editor Supabase.',
+  'Could not find a relationship': 'Kolom member_id belum ada. Jalankan migrasi 20260930000000_admin_access.sql di SQL Editor Supabase.',
 };
 
 function translate(msg = '') {
@@ -41,15 +45,24 @@ export async function getSettings() {
   return s;
 }
 
+/** Buang entri kembar (seed pernah dijalankan dua kali) berdasarkan kunci yang diberikan. */
+const uniqueBy = (rows, keyFn) => [...new Map(rows.map((r) => [keyFn(r), r])).values()];
+
 export async function getHome() {
   const [stats, core, posts, events, programs] = await Promise.all([
     supabase.rpc('public_stats').then(unwrap),
     supabase.from('members').select('*').eq('is_core', true).order('sort_order').order('id').limit(3).then(unwrap),
-    supabase.from('posts').select('id,title,slug,excerpt,cover,category,created_at').eq('published', true).order('created_at', { ascending: false }).limit(3).then(unwrap),
-    supabase.from('events').select('*').gte('date', today()).order('date').order('time').limit(4).then(unwrap),
-    supabase.from('programs').select('*, division:divisions(short)').eq('status', 'berjalan').order('progress', { ascending: false }).limit(4).then(unwrap),
+    supabase.from('posts').select('id,title,slug,excerpt,cover,category,created_at').eq('published', true).order('created_at', { ascending: false }).limit(6).then(unwrap),
+    supabase.from('events').select('*').gte('date', today()).order('date').order('time').limit(20).then(unwrap),
+    supabase.from('programs').select('*, division:divisions(short)').eq('status', 'berjalan').order('progress', { ascending: false }).limit(6).then(unwrap),
   ]);
-  return { stats, core, posts, events, programs: programs.map((p) => ({ ...p, division_short: p.division?.short })) };
+  return {
+    stats,
+    core: uniqueBy(core, (m) => `${m.name}|${m.position}`),
+    posts: uniqueBy(posts, (p) => p.slug),
+    events: uniqueBy(events, (e) => `${e.date}|${e.time}|${e.title}`),
+    programs: uniqueBy(programs, (p) => p.title).map((p) => ({ ...p, division_short: p.division?.short })),
+  };
 }
 
 export async function getDivisions() {
@@ -57,19 +70,24 @@ export async function getDivisions() {
 }
 
 export async function getStructure() {
-  const [divisions, members] = await Promise.all([
+  const [divisions, coreMembers, divisionMembers] = await Promise.all([
     getDivisions(),
-    supabase.from('members').select('*').order('sort_order').order('id').then(unwrap),
+    supabase.from('members').select('*').eq('is_core', true).order('sort_order').order('id').then(unwrap),
+    supabase.from('members').select('*').eq('is_core', false).order('sort_order').order('id').then(unwrap),
   ]);
+  // Deduplicate by name+position+division_id (seed may have been run multiple times)
+  const dedupe = (arr) => [...new Map(arr.map(m => [`${m.name}|${m.position}|${m.division_id ?? 'core'}`, m])).values()];
+  const uniqueCore = dedupe(coreMembers);
+  const uniqueDivisionMembers = dedupe(divisionMembers);
   return {
-    core: members.filter((m) => m.is_core),
-    divisions: divisions.map((d) => ({ ...d, members: members.filter((m) => m.division_id === d.id && !m.is_core) })),
+    core: uniqueCore,
+    divisions: divisions.map((d) => ({ ...d, members: uniqueDivisionMembers.filter((m) => m.division_id === d.id) })),
   };
 }
 
 export async function getPrograms() {
   const rows = unwrap(await supabase.from('programs').select('*, division:divisions(name, short, sort_order)').order('start_date'));
-  return rows
+  return uniqueBy(rows, (p) => p.title)
     .map((p) => ({ ...p, division_name: p.division?.name, division_short: p.division?.short, _order: p.division?.sort_order ?? 999 }))
     .sort((a, b) => a._order - b._order);
 }
@@ -90,7 +108,7 @@ export async function getPosts({ q = '', category = '', page = 1, limit = 9 } = 
   const [{ data, count, error }, cats] = await Promise.all([query, supabase.from('posts').select('category').eq('published', true)]);
   if (error) throw new Error(translate(error.message));
   const categories = [...new Set(unwrap(cats).map((r) => r.category))];
-  return { items: data, total: count, page, pages: Math.max(1, Math.ceil((count || 0) / limit)), categories };
+  return { items: uniqueBy(data || [], (p) => p.slug), total: count, page, pages: Math.max(1, Math.ceil((count || 0) / limit)), categories };
 }
 
 export async function getPost(slug) {
@@ -104,7 +122,8 @@ export async function getPost(slug) {
 }
 
 export async function getEvents() {
-  return unwrap(await supabase.from('events').select('*').order('date').order('time'));
+  const rows = unwrap(await supabase.from('events').select('*').order('date').order('time'));
+  return uniqueBy(rows, (e) => `${e.date}|${e.time}|${e.title}`);
 }
 
 export async function getGallery() {
@@ -137,7 +156,8 @@ export async function getPublicAspirations() {
 // Auth
 // ---------------------------------------------------------------------
 export async function signIn(email, password) {
-  return unwrap(await supabase.auth.signInWithPassword({ email, password }));
+  // Normalisasi email: spasi nyasar / huruf besar sering jadi penyebab "salah"
+  return unwrap(await supabase.auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password }));
 }
 
 export async function signOut() {
@@ -146,6 +166,13 @@ export async function signOut() {
 
 /** Ambil profil admin untuk user yang sedang login (null bila bukan admin). */
 export async function getAdminProfile(userId) {
+  const joined = await supabase
+    .from('admins')
+    .select('*, member:members(id, name, position, class_name, division:divisions(id, name, short))')
+    .eq('user_id', userId)
+    .maybeSingle();
+  // Migrasi hak akses belum terpasang ->量大 kolom member_id belum ada
+  if (!joined.error) return joined.data;
   return unwrap(await supabase.from('admins').select('*').eq('user_id', userId).maybeSingle());
 }
 
@@ -238,8 +265,84 @@ export async function uploadFile(file) {
   return supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path).data.publicUrl;
 }
 
+// ---------------------------------------------------------------------
+// Hak akses admin
+// ---------------------------------------------------------------------
+/** Daftar modul yang bisa dibatasi aksesnya (label untuk UI panel). */
+export const ADMIN_MODULES = [
+  { key: 'beranda', label: 'Tampilan Siswa' },
+  { key: 'berita', label: 'Berita' },
+  { key: 'agenda', label: 'Agenda' },
+  { key: 'program', label: 'Program Kerja' },
+  { key: 'pengurus', label: 'Pengurus' },
+  { key: 'sekbid', label: 'Seksi Bidang' },
+  { key: 'galeri', label: 'Galeri' },
+  { key: 'aspirasi', label: 'Aspirasi' },
+  { key: 'pengaturan', label: 'Pengaturan Situs' },
+  { key: 'akun', label: 'Akun & Hak Akses' },
+];
+
+/** { module: 'read' | 'write' } milik seorang admin. */
+export async function getAdminPermissions(userId) {
+  const rows = unwrap(await supabase.from('admin_permissions').select('module, access').eq('user_id', userId));
+  return Object.fromEntries(rows.map((r) => [r.module, r.access]));
+}
+
+/** Daftar admin beserta anggota pengurus & seksi bidang yang tertaut. */
 export async function listAdmins() {
+  const joined = await supabase
+    .from('admins')
+    .select('*, member:members(id, name, position, class_name, division:divisions(id, name, short))')
+    .order('created_at');
+  // Migrasi hak akses belum terpasang -> relasi member belum dikenal
+  if (!joined.error) return joined.data;
   return unwrap(await supabase.from('admins').select('*').order('created_at'));
+}
+
+export async function getPermissionsOf(userId) {
+  const rows = unwrap(await supabase.from('admin_permissions').select('module, access').eq('user_id', userId));
+  return Object.fromEntries(rows.map((r) => [r.module, r.access]));
+}
+
+/** Ganti seluruh hak akses seorang admin dengan daftar { module, access }. */
+export async function setAdminPermissions(userId, rows) {
+  const target = unwrap(await supabase.from('admins').select('user_id').eq('user_id', userId).maybeSingle());
+  if (!target) throw new Error('Admin tidak ditemukan');
+  unwrap(await supabase.from('admin_permissions').delete().eq('user_id', userId));
+  if (rows.length) {
+    const { error } = await supabase.from('admin_permissions').insert(rows.map((r) => ({ user_id: userId, ...r })));
+    if (error) throw new Error(translate(error.message));
+  }
+}
+
+export async function listDivisionPermissions() {
+  const rows = unwrap(await supabase.from('division_permissions').select('division_id, module, access'));
+  const out = {};
+  rows.forEach((r) => {
+    out[r.division_id] = { ...(out[r.division_id] || {}), [r.module]: r.access };
+  });
+  return out;
+}
+
+export async function setDivisionPermissions(divisionId, map) {
+  unwrap(await supabase.from('division_permissions').delete().eq('division_id', divisionId));
+  const rows = Object.entries(map)
+    .filter(([, access]) => access)
+    .map(([module, access]) => ({ division_id: divisionId, module, access }));
+  if (rows.length) {
+    const { error } = await supabase.from('division_permissions').insert(rows);
+    if (error) throw new Error(translate(error.message));
+  }
+}
+
+/** Salin template hak akses seksi bidang anggota ke akun adminnya. */
+export async function applyDivisionTemplate(userId) {
+  return unwrap(await supabase.rpc('apply_division_template', { p_user_id: userId }));
+}
+
+/** Tautkan (atau lepaskan) akun admin ke anggota pengurus. */
+export async function linkAdminMember(userId, memberId) {
+  return unwrap(await supabase.from('admins').update({ member_id: memberId }).eq('user_id', userId).select().single());
 }
 
 async function callAdminUsers(body) {

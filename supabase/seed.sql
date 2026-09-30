@@ -9,8 +9,8 @@ insert into public.settings (key, value) values
   ('org_name',         to_jsonb('OSIS SMA Negeri 3 Rembang'::text)),
   ('school_name',      to_jsonb('SMA Negeri 3 Rembang'::text)),
   ('period',           to_jsonb('2026/2027'::text)),
-  ('cabinet_name',     to_jsonb('Kabinet Cakrawala Aksara'::text)),
-  ('tagline',          to_jsonb('Bergerak Bersama, Berkarya untuk Smaga'::text)),
+  ('cabinet_name',     to_jsonb('Kabinet Tri Hita Karana'::text)),
+  ('tagline',          to_jsonb('Bergerak Bersama, Berkarya untuk SMAGA'::text)),
   ('about',            to_jsonb('Organisasi Siswa Intra Sekolah (OSIS) SMA Negeri 3 Rembang adalah wadah resmi bagi seluruh siswa untuk mengembangkan potensi, menyalurkan aspirasi, dan berperan aktif dalam membangun lingkungan sekolah yang religius, berprestasi, dan berkarakter.'::text)),
   ('vision',           to_jsonb('Mewujudkan OSIS SMA Negeri 3 Rembang sebagai organisasi yang religius, inovatif, kolaboratif, dan menjadi teladan dalam membangun budaya sekolah yang berprestasi dan berkarakter Pancasila.'::text)),
   ('missions',         '[
@@ -20,12 +20,13 @@ insert into public.settings (key, value) values
       "Membangun budaya literasi, kreativitas, dan pemanfaatan teknologi secara positif.",
       "Menumbuhkan kepedulian sosial dan cinta lingkungan di lingkungan sekolah dan masyarakat."
     ]'::jsonb),
-  ('chairman_message', to_jsonb('Assalamu’alaikum warahmatullahi wabarakatuh. Terima kasih atas kepercayaan seluruh warga SMA Negeri 3 Rembang. Bersama Kabinet Cakrawala Aksara, kami berkomitmen menghadirkan OSIS yang terbuka, mendengar, dan bergerak nyata. Mari kita wujudkan Smaga yang lebih hebat, bersama!'::text)),
+  ('chairman_message', to_jsonb('Assalamu’alaikum warahmatullahi wabarakatuh. Terima kasih atas kepercayaan seluruh warga SMA Negeri 3 Rembang. Bersama Kabinet Tri Hita Karana, kami berkomitmen menghadirkan OSIS yang terbuka, mendengar, dan bergerak nyata. Mari kita wujudkan Smaga yang lebih hebat, bersama!'::text)),
   ('address',          to_jsonb('Jl. Gajah Mada No. 8, Pantiharjo, Kec. Kaliori, Kab. Rembang, Jawa Tengah'::text)),
   ('email',            to_jsonb('osis@sma3rembang.sch.id'::text)),
   ('phone',            to_jsonb('(0295) 691280'::text)),
   ('instagram',        to_jsonb('osis.smagarembang'::text)),
-  ('youtube',          to_jsonb(''::text)),
+  ('youtube',        to_jsonb(''::text)),
+  ('tiktok',         to_jsonb(''::text)),
   ('maps_embed',       to_jsonb('https://www.google.com/maps?q=SMA+Negeri+3+Rembang&output=embed'::text))
 on conflict (key) do nothing;
 
@@ -38,7 +39,7 @@ insert into public.divisions (name, short, description, icon, sort_order) values
   ('Kreativitas, Keterampilan, dan Kewirausahaan', 'Sekbid 6', 'Market day, bazar, dan pelatihan kewirausahaan siswa.', 'Lightbulb', 6),
   ('Kualitas Jasmani, Kesehatan, dan Gizi', 'Sekbid 7', 'Senam bersama, classmeeting olahraga, dan kampanye hidup sehat.', 'Activity', 7),
   ('Sastra dan Budaya', 'Sekbid 8', 'Pentas seni, bulan bahasa, dan pelestarian budaya lokal Rembang.', 'Palette', 8),
-  ('Teknologi Informasi dan Komunikasi', 'Sekbid 9', 'Pengelolaan media sosial, website, dan dokumentasi OSIS.', 'Monitor', 9),
+  ('Komunikasi Media dan Publikasi', 'Sekbid 9', 'Pengelolaan media sosial, website, dan dokumentasi OSIS.', 'Monitor', 9),
   ('Komunikasi dalam Bahasa Inggris', 'Sekbid 10', 'English day, debate club, dan lomba berbahasa Inggris.', 'Languages', 10);
 
 -- Pengurus inti
@@ -51,14 +52,13 @@ insert into public.members (name, position, class_name, is_core, quote, sort_ord
   ('Nama Bendahara I', 'Bendahara I', 'XI-4', true, 'Transparan dan amanah.', 6),
   ('Nama Bendahara II', 'Bendahara II', 'X-2', true, null, 7);
 
--- Anggota tiap sekbid (1 koordinator + 2 anggota)
+-- Anggota tiap sekbid (1 koordinator + 1 anggota)
 insert into public.members (name, position, class_name, division_id, is_core, sort_order)
 select format(v.label, d.sort_order), v.position, v.class_name, d.id, false, v.ord
 from public.divisions d
 cross join (values
   ('Koordinator Sekbid %s', 'Koordinator', 'XI', 1),
-  ('Anggota Sekbid %s A', 'Anggota', 'X', 2),
-  ('Anggota Sekbid %s B', 'Anggota', 'X', 3)
+  ('Anggota Sekbid %s', 'Anggota', 'X', 2)
 ) as v(label, position, class_name, ord)
 order by d.sort_order, v.ord;
 
@@ -82,7 +82,7 @@ from (values
 
 insert into public.posts (title, slug, excerpt, content, category, author, created_at) values
   ('Pelantikan Pengurus OSIS Periode 2026/2027', 'pelantikan-pengurus-osis-2026-2027',
-   'Pengurus OSIS SMA Negeri 3 Rembang Kabinet Cakrawala Aksara resmi dilantik oleh Kepala Sekolah.',
+   'Pengurus OSIS SMA Negeri 3 Rembang Kabinet Tri Hita Karana resmi dilantik oleh Kepala Sekolah.',
    E'Pengurus OSIS SMA Negeri 3 Rembang periode 2026/2027 resmi dilantik dalam upacara bendera yang diikuti seluruh warga sekolah.\n\nDalam sambutannya, Kepala Sekolah berpesan agar pengurus baru menjadi teladan, amanah, dan mampu menjadi jembatan aspirasi siswa.\n\nKetua OSIS terpilih menyampaikan komitmen untuk menjalankan program kerja yang inovatif serta membuka kanal aspirasi digital yang dapat diakses seluruh siswa melalui website ini.',
    'Organisasi', 'Sekbid 9 - TIK', '2026-08-03 08:00:00+07'),
   ('Semarak Peringatan Maulid Nabi di Smaga', 'semarak-maulid-nabi-smaga',

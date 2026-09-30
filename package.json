@@ -3,15 +3,20 @@
   "version": "2.0.0",
   "private": true,
   "description": "Website & panel admin OSIS SMA Negeri 3 Rembang Periode 2026/2027 (React + Supabase)",
+  "allowScripts": {
+    "@electric-sql/pglite": true
+  },
   "scripts": {
     "setup": "npm install && npm install --prefix client",
     "dev": "npm run dev --prefix client",
     "build": "npm run build --prefix client",
     "preview": "npm run preview --prefix client",
     "test:db": "node supabase/tests/db.test.mjs",
-    "build:sql": "node scripts/build-setup-sql.mjs"
+    "build:sql": "node scripts/build-setup-sql.mjs",
+    "admin:create": "node scripts/create-superadmin.mjs"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8"
+    "@electric-sql/pglite": "^0.5.8",
+    "supabase": "^2.118.0"
   }
 }

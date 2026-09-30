@@ -376,6 +376,347 @@ create policy "Admin dapat menghapus media" on storage.objects
   for delete to authenticated using (bucket_id = 'media' and public.is_admin());
 
 
+-- Perbarui tagline resmi dan nama kabinet ke "Kabinet Tri Hita Karana".
+-- Idempotent: hanya mengubah baris yang masih memakai nilai lama.
+update public.settings
+   set value = to_jsonb('Bergerak Bersama, Berkarya untuk SMAGA'::text)
+ where key = 'tagline'
+   and value is distinct from to_jsonb('Bergerak Bersama, Berkarya untuk SMAGA'::text);
+
+update public.settings
+   set value = to_jsonb('Kabinet Tri Hita Karana'::text)
+ where key = 'cabinet_name'
+   and value is distinct from to_jsonb('Kabinet Tri Hita Karana'::text);
+
+
+-- Pastikan key pengaturan media sosial TikTok selalu tersedia.
+insert into public.settings (key, value) values
+  ('tiktok', to_jsonb(''::text))
+on conflict (key) do nothing;
+
+
+-- Bersihkan data kembar hasil seed yang sempat dijalankan dua kali.
+-- Idempoten: hanya menghapus baris duplikat, menyisakan satu baris (id terkecil).
+delete from public.events e
+  using public.events d
+ where d.id < e.id
+   and d.date = e.date
+   and coalesce(d.time::text, '') = coalesce(e.time::text, '')
+   and d.title = e.title;
+
+delete from public.programs p
+  using public.programs d
+ where d.id < p.id
+   and d.title = p.title;
+
+delete from public.posts p
+  using public.posts d
+ where d.id < p.id
+   and d.slug = p.slug;
+
+delete from public.members m
+  using public.members d
+ where d.id < m.id
+   and d.name = m.name
+   and coalesce(d.position, '') = coalesce(m.position, '')
+   and coalesce(m.division_id, -1) = coalesce(d.division_id, -1);
+
+
+-- =====================================================================
+-- Hak akses berbasis modul + seksi bidang (migrasi)
+-- 1. Akun admin (pengurus) bisa ditautkan ke baris `members` + seksi bidangnya.
+-- 2. Setiap modul punya akses 'read' atau 'write' per admin.
+-- 3. Tiap seksi bidang punya template akses yang bisa disalin ke anggotanya.
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- 1. Tautan admin -> pengurus
+-- ---------------------------------------------------------------------
+alter table public.admins add column if not exists member_id bigint references public.members (id) on delete set null;
+
+-- ---------------------------------------------------------------------
+-- 2. Daftar modul yang bisa diatur haknya
+-- ---------------------------------------------------------------------
+create or replace function public.is_admin_module(m text)
+returns boolean
+language sql immutable
+as $$
+  select m in (
+    'beranda',    -- Tampilan Siswa
+    'aspirasi',
+    'berita',
+    'agenda',
+    'program',
+    'pengurus',
+    'sekbid',
+    'galeri',
+    'pengaturan',
+    'akun'        -- Akun & hak akses
+  )
+$$;
+
+-- ---------------------------------------------------------------------
+-- 3. Tabel hak akses
+-- ---------------------------------------------------------------------
+create table if not exists public.admin_permissions (
+  user_id uuid not null references public.admins (user_id) on delete cascade,
+  module  text not null check (public.is_admin_module(module)),
+  access  text not null check (access in ('read', 'write')),
+  primary key (user_id, module)
+);
+
+create table if not exists public.division_permissions (
+  division_id bigint not null references public.divisions (id) on delete cascade,
+  module      text not null check (public.is_admin_module(module)),
+  access      text not null check (access in ('read', 'write')),
+  primary key (division_id, module)
+);
+
+create index if not exists admin_permissions_module_idx on public.admin_permissions (module);
+create index if not exists admins_member_idx on public.admins (member_id);
+
+alter table public.admin_permissions enable row level security;
+alter table public.division_permissions enable row level security;
+
+-- ---------------------------------------------------------------------
+-- 4. Pengecekan hak akses (dipakai seluruh policy RLS)
+-- ---------------------------------------------------------------------
+-- Superadmin: selalu TRUE.
+-- Admin biasa: TRUE bila modulnya diizinkan. 'akun' hanya write (khusus
+-- superadmin atau admin yang memang diberi izin mengelola akses).
+create or replace function public.can_access(p_module text, p_need text default 'read')
+returns boolean
+language sql stable security definer
+set search_path = public
+as $$
+  select case
+    when public.is_superadmin() then true
+    when not public.is_admin() then false
+    when not public.is_admin_module(p_module) then false
+    when p_need = 'read' then exists (
+      select 1 from public.admin_permissions ap
+      where ap.user_id = auth.uid() and ap.module = p_module
+    )
+    else exists (
+      select 1 from public.admin_permissions ap
+      where ap.user_id = auth.uid() and ap.module = p_module and ap.access = 'write'
+    )
+  end
+$$;
+
+-- Admin berizin (= superadmin atau punya write pada modul 'akun')
+create or replace function public.can_manage_access()
+returns boolean
+language sql stable security definer
+set search_path = public
+as $$
+  select public.is_superadmin() or (public.is_admin() and public.can_access('akun', 'write'))
+$$;
+
+-- ---------------------------------------------------------------------
+-- 5. Terapkan template hak akses seksi bidang ke satu admin
+-- ---------------------------------------------------------------------
+create or replace function public.apply_division_template(p_user_id uuid)
+returns integer
+language plpgsql security definer
+set search_path = public
+as $$
+declare n integer;
+begin
+  if not public.can_manage_access() then
+    raise exception 'Hanya superadmin atau admin berizin yang dapat mengubah hak akses' using errcode = '42501';
+  end if;
+  if p_user_id = auth.uid() then
+    raise exception 'Tidak dapat mengubah hak akses milik sendiri' using errcode = '42501';
+  end if;
+  if not exists (select 1 from public.admins a where a.user_id = p_user_id) then
+    raise exception 'Admin tidak ditemukan' using errcode = '22023';
+  end if;
+
+  delete from public.admin_permissions where user_id = p_user_id;
+
+  insert into public.admin_permissions (user_id, module, access)
+  select p_user_id, dp.module, dp.access
+  from public.admins a
+  join public.members m on m.id = a.member_id
+  join public.division_permissions dp on dp.division_id = m.division_id
+  where a.user_id = p_user_id
+  on conflict (user_id, module) do update set access = excluded.access;
+
+  get diagnostics n = row_count;
+  return n;
+end
+$$;
+
+-- ---------------------------------------------------------------------
+-- 6. Cegah eskalasi hak akses oleh admin biasa
+-- ---------------------------------------------------------------------
+create or replace function public.guard_admin_row()
+returns trigger
+language plpgsql security definer
+set search_path = public
+as $$
+begin
+  -- Menolak penambahan/promosi/hapus baris superadmin oleh admin biasa
+  if not public.is_superadmin() then
+    if (tg_op = 'DELETE' and old.role = 'superadmin')
+       or (tg_op = 'UPDATE' and (new.role = 'superadmin' or old.role = 'superadmin')) then
+      raise exception 'Hanya superadmin yang dapat mengelola akun superadmin' using errcode = '42501';
+    end if;
+  end if;
+
+  return case when tg_op = 'DELETE' then old else new end;
+end
+$$;
+
+drop trigger if exists admins_guard on public.admins;
+create trigger admins_guard
+  before update or delete on public.admins
+  for each row execute function public.guard_admin_row();
+
+-- ---------------------------------------------------------------------
+-- 7. Policy RLS
+-- ---------------------------------------------------------------------
+-- Konten publik: baca tetap terbuka, ubah mengikuti hak akses modul.
+-- Pasangan: tabel -> modul yang mengendalikannya.
+do $$
+declare
+  pairs text[] := array[
+    'settings', 'pengaturan',
+    'divisions', 'sekbid',
+    'members', 'pengurus',
+    'programs', 'program',
+    'events', 'agenda',
+    'gallery', 'galeri'
+  ];
+  i integer;
+begin
+  for i in 1 .. array_length(pairs, 1) / 2 loop
+    execute format('drop policy if exists "Admin dapat mengelola" on public.%I', pairs[i * 2 - 1]);
+    execute format(
+      'create policy "Admin dapat mengelola" on public.%I for all to authenticated using (public.can_access(%L, ''write'')) with check (public.can_access(%L, ''write''))',
+      pairs[i * 2 - 1], pairs[i * 2], pairs[i * 2]
+    );
+  end loop;
+end $$;
+
+-- Berita: publik hanya melihat yang terbit, admin boleh melihat draf
+drop policy if exists "Publik membaca berita terbit" on public.posts;
+create policy "Publik membaca berita terbit" on public.posts for select using (published or public.can_access('berita', 'read'));
+drop policy if exists "Admin dapat mengelola" on public.posts;
+create policy "Admin dapat mengelola" on public.posts for all to authenticated using (public.can_access('berita', 'write')) with check (public.can_access('berita', 'write'));
+
+-- Aspirasi
+drop policy if exists "Admin dapat mengelola" on public.aspirations;
+create policy "Admin dapat mengelola" on public.aspirations for all to authenticated using (public.can_access('aspirasi', 'write')) with check (public.can_access('aspirasi', 'write'));
+
+-- Admin: superadmin atau admin berizin modul 'akun'; baris sendiri tidak boleh disentuh
+drop policy if exists "Superadmin mengelola admin" on public.admins;
+drop policy if exists "Admin berizin mengelola admin" on public.admins;
+create policy "Admin berizin mengelola admin" on public.admins for all to authenticated
+  using (public.can_manage_access() and user_id <> auth.uid())
+  with check (public.can_manage_access() and (public.is_superadmin() or role = 'admin'));
+
+-- Tabel hak akses
+drop policy if exists "Admin melihat hak akses" on public.admin_permissions;
+create policy "Admin melihat hak akses" on public.admin_permissions for select to authenticated using (public.is_admin());
+drop policy if exists "Admin berizin mengelola hak akses" on public.admin_permissions;
+create policy "Admin berizin mengelola hak akses" on public.admin_permissions for all to authenticated
+  using (public.can_manage_access() and user_id <> auth.uid())
+  with check (public.can_manage_access() and user_id <> auth.uid());
+
+drop policy if exists "Admin melihat template sekbid" on public.division_permissions;
+create policy "Admin melihat template sekbid" on public.division_permissions for select to authenticated using (public.is_admin());
+drop policy if exists "Admin berizin mengelola template sekbid" on public.division_permissions;
+create policy "Admin berizin mengelola template sekbid" on public.division_permissions for all to authenticated
+  using (public.can_manage_access() or public.can_access('sekbid', 'write'))
+  with check (public.can_manage_access() or public.can_access('sekbid', 'write'));
+
+-- Media: mengikuti modul galeri
+drop policy if exists "Admin dapat mengunggah media" on storage.objects;
+create policy "Admin dapat mengunggah media" on storage.objects
+  for insert to authenticated with check (bucket_id = 'media' and public.can_access('galeri', 'write'));
+drop policy if exists "Admin dapat mengubah media" on storage.objects;
+create policy "Admin dapat mengubah media" on storage.objects
+  for update to authenticated using (bucket_id = 'media' and public.can_access('galeri', 'write'));
+drop policy if exists "Admin dapat menghapus media" on storage.objects;
+create policy "Admin dapat menghapus media" on storage.objects
+  for delete to authenticated using (bucket_id = 'media' and public.can_access('galeri', 'write'));
+
+-- ---------------------------------------------------------------------
+-- 8. Izin akses tabel baru
+-- ---------------------------------------------------------------------
+grant select, insert, update, delete on public.admin_permissions, public.division_permissions to authenticated;
+revoke all on public.admin_permissions, public.division_permissions from anon;
+grant execute on function public.can_access(text, text) to anon, authenticated;
+grant execute on function public.can_manage_access() to anon, authenticated;
+grant execute on function public.apply_division_template(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------
+-- 9. Data awal
+-- ---------------------------------------------------------------------
+-- Superadmin tidak butuh baris izin (dilewati otomatis oleh can_access).
+-- Admin lama tetap penuh supaya tidak ada perubahan perilaku mendadak.
+insert into public.admin_permissions (user_id, module, access)
+select a.user_id, m, 'write'
+from public.admins a
+cross join unnest(array[
+  'beranda', 'aspirasi', 'berita', 'agenda', 'program',
+  'pengurus', 'sekbid', 'galeri', 'pengaturan', 'akun'
+]) as m
+where a.role = 'admin'
+on conflict (user_id, module) do nothing;
+
+-- Template awal tiap seksi bidang: boleh melihat modul utama, ubah ditentukan per.Repository
+insert into public.division_permissions (division_id, module, access)
+select d.id, m, 'read'
+from public.divisions d
+cross join unnest(array['beranda', 'berita', 'agenda', 'program', 'pengaturan']) as m
+on conflict (division_id, module) do nothing;
+
+
+-- =====================================================================
+-- 1. Sederhanakan nama anggota contoh: "Anggota Sekbid N A/B" -> "Anggota Sekbid N"
+-- 2. Sisakan satu anggota per sekbid (duplikat dihapus, id terkecil dipertahankan)
+-- 3. Admin yang tertaut ke anggota sebuah sekbid boleh menambah/mengubah
+--    anggota sekbidnya sendiri, tanpa perlu akses penuh modul 'pengurus'
+-- =====================================================================
+
+-- 1. Buang sufiks A / B pada nama anggota contoh
+update public.members
+   set name = regexp_replace(name, '\s+[AB]$', '')
+ where name ~ '^Anggota Sekbid\s+\d+\s+[AB]$';
+
+-- 2. Satu anggota per sekbid
+delete from public.members m
+  using public.members d
+ where d.id < m.id
+   and d.name = m.name
+   and coalesce(d.position, '') = coalesce(m.position, '')
+   and coalesce(m.division_id, -1) = coalesce(d.division_id, -1);
+
+-- 3. Hak kelola anggota milik sekbid sendiri
+create or replace function public.manages_division(p_division bigint)
+returns boolean
+language sql stable security definer
+set search_path = public
+as $$
+  select p_division is not null and exists (
+    select 1
+    from public.admins a
+    join public.members me on me.id = a.member_id
+    where a.user_id = auth.uid() and me.division_id = p_division
+  )
+$$;
+
+drop policy if exists "Admin dapat mengelola" on public.members;
+create policy "Admin dapat mengelola" on public.members for all to authenticated
+  using (public.can_access('pengurus', 'write') or public.manages_division(division_id))
+  with check (public.can_access('pengurus', 'write') or public.manages_division(division_id));
+
+grant execute on function public.manages_division(bigint) to anon, authenticated;
+
+
 -- ============================ DATA CONTOH ============================
 do $seed$
 begin
@@ -394,8 +735,8 @@ begin
     ('org_name',         to_jsonb('OSIS SMA Negeri 3 Rembang'::text)),
     ('school_name',      to_jsonb('SMA Negeri 3 Rembang'::text)),
     ('period',           to_jsonb('2026/2027'::text)),
-    ('cabinet_name',     to_jsonb('Kabinet Cakrawala Aksara'::text)),
-    ('tagline',          to_jsonb('Bergerak Bersama, Berkarya untuk Smaga'::text)),
+    ('cabinet_name',     to_jsonb('Kabinet Tri Hita Karana'::text)),
+    ('tagline',          to_jsonb('Bergerak Bersama, Berkarya untuk SMAGA'::text)),
     ('about',            to_jsonb('Organisasi Siswa Intra Sekolah (OSIS) SMA Negeri 3 Rembang adalah wadah resmi bagi seluruh siswa untuk mengembangkan potensi, menyalurkan aspirasi, dan berperan aktif dalam membangun lingkungan sekolah yang religius, berprestasi, dan berkarakter.'::text)),
     ('vision',           to_jsonb('Mewujudkan OSIS SMA Negeri 3 Rembang sebagai organisasi yang religius, inovatif, kolaboratif, dan menjadi teladan dalam membangun budaya sekolah yang berprestasi dan berkarakter Pancasila.'::text)),
     ('missions',         '[
@@ -405,12 +746,13 @@ begin
         "Membangun budaya literasi, kreativitas, dan pemanfaatan teknologi secara positif.",
         "Menumbuhkan kepedulian sosial dan cinta lingkungan di lingkungan sekolah dan masyarakat."
       ]'::jsonb),
-    ('chairman_message', to_jsonb('Assalamu’alaikum warahmatullahi wabarakatuh. Terima kasih atas kepercayaan seluruh warga SMA Negeri 3 Rembang. Bersama Kabinet Cakrawala Aksara, kami berkomitmen menghadirkan OSIS yang terbuka, mendengar, dan bergerak nyata. Mari kita wujudkan Smaga yang lebih hebat, bersama!'::text)),
+    ('chairman_message', to_jsonb('Assalamu’alaikum warahmatullahi wabarakatuh. Terima kasih atas kepercayaan seluruh warga SMA Negeri 3 Rembang. Bersama Kabinet Tri Hita Karana, kami berkomitmen menghadirkan OSIS yang terbuka, mendengar, dan bergerak nyata. Mari kita wujudkan Smaga yang lebih hebat, bersama!'::text)),
     ('address',          to_jsonb('Jl. Gajah Mada No. 8, Pantiharjo, Kec. Kaliori, Kab. Rembang, Jawa Tengah'::text)),
     ('email',            to_jsonb('osis@sma3rembang.sch.id'::text)),
     ('phone',            to_jsonb('(0295) 691280'::text)),
     ('instagram',        to_jsonb('osis.smagarembang'::text)),
-    ('youtube',          to_jsonb(''::text)),
+    ('youtube',        to_jsonb(''::text)),
+    ('tiktok',         to_jsonb(''::text)),
     ('maps_embed',       to_jsonb('https://www.google.com/maps?q=SMA+Negeri+3+Rembang&output=embed'::text))
   on conflict (key) do nothing;
 
@@ -423,7 +765,7 @@ begin
     ('Kreativitas, Keterampilan, dan Kewirausahaan', 'Sekbid 6', 'Market day, bazar, dan pelatihan kewirausahaan siswa.', 'Lightbulb', 6),
     ('Kualitas Jasmani, Kesehatan, dan Gizi', 'Sekbid 7', 'Senam bersama, classmeeting olahraga, dan kampanye hidup sehat.', 'Activity', 7),
     ('Sastra dan Budaya', 'Sekbid 8', 'Pentas seni, bulan bahasa, dan pelestarian budaya lokal Rembang.', 'Palette', 8),
-    ('Teknologi Informasi dan Komunikasi', 'Sekbid 9', 'Pengelolaan media sosial, website, dan dokumentasi OSIS.', 'Monitor', 9),
+    ('Komunikasi Media dan Publikasi', 'Sekbid 9', 'Pengelolaan media sosial, website, dan dokumentasi OSIS.', 'Monitor', 9),
     ('Komunikasi dalam Bahasa Inggris', 'Sekbid 10', 'English day, debate club, dan lomba berbahasa Inggris.', 'Languages', 10);
 
   -- Pengurus inti
@@ -436,14 +778,13 @@ begin
     ('Nama Bendahara I', 'Bendahara I', 'XI-4', true, 'Transparan dan amanah.', 6),
     ('Nama Bendahara II', 'Bendahara II', 'X-2', true, null, 7);
 
-  -- Anggota tiap sekbid (1 koordinator + 2 anggota)
+  -- Anggota tiap sekbid (1 koordinator + 1 anggota)
   insert into public.members (name, position, class_name, division_id, is_core, sort_order)
   select format(v.label, d.sort_order), v.position, v.class_name, d.id, false, v.ord
   from public.divisions d
   cross join (values
     ('Koordinator Sekbid %s', 'Koordinator', 'XI', 1),
-    ('Anggota Sekbid %s A', 'Anggota', 'X', 2),
-    ('Anggota Sekbid %s B', 'Anggota', 'X', 3)
+    ('Anggota Sekbid %s', 'Anggota', 'X', 2)
   ) as v(label, position, class_name, ord)
   order by d.sort_order, v.ord;
 
@@ -467,7 +808,7 @@ begin
 
   insert into public.posts (title, slug, excerpt, content, category, author, created_at) values
     ('Pelantikan Pengurus OSIS Periode 2026/2027', 'pelantikan-pengurus-osis-2026-2027',
-     'Pengurus OSIS SMA Negeri 3 Rembang Kabinet Cakrawala Aksara resmi dilantik oleh Kepala Sekolah.',
+     'Pengurus OSIS SMA Negeri 3 Rembang Kabinet Tri Hita Karana resmi dilantik oleh Kepala Sekolah.',
      E'Pengurus OSIS SMA Negeri 3 Rembang periode 2026/2027 resmi dilantik dalam upacara bendera yang diikuti seluruh warga sekolah.\n\nDalam sambutannya, Kepala Sekolah berpesan agar pengurus baru menjadi teladan, amanah, dan mampu menjadi jembatan aspirasi siswa.\n\nKetua OSIS terpilih menyampaikan komitmen untuk menjalankan program kerja yang inovatif serta membuka kanal aspirasi digital yang dapat diakses seluruh siswa melalui website ini.',
      'Organisasi', 'Sekbid 9 - TIK', '2026-08-03 08:00:00+07'),
     ('Semarak Peringatan Maulid Nabi di Smaga', 'semarak-maulid-nabi-smaga',

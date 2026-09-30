@@ -1,33 +1,38 @@
 import { useState } from 'react';
 import { Link, NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import {
-  CalendarDays, ClipboardList, ExternalLink, Images, KeyRound, Layers, LayoutDashboard, LogOut, Menu, MessageSquare, Newspaper, Settings, Users, X,
+  CalendarDays, ClipboardList, ExternalLink, Images, KeyRound, Layers, LayoutDashboard, LogOut, Menu, MessageSquare, MonitorSmartphone, Newspaper, Settings, ShieldCheck, Users, X,
 } from 'lucide-react';
 import { useAuth } from '../../lib/context';
-import { Logo, Spinner } from '../../components/ui';
+import { Empty, Logo, Spinner } from '../../components/ui';
 
 const MENU = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/aspirasi', label: 'Aspirasi', icon: MessageSquare },
-  { to: '/admin/berita', label: 'Berita', icon: Newspaper },
-  { to: '/admin/agenda', label: 'Agenda', icon: CalendarDays },
-  { to: '/admin/program', label: 'Program Kerja', icon: ClipboardList },
-  { to: '/admin/pengurus', label: 'Pengurus', icon: Users },
-  { to: '/admin/sekbid', label: 'Seksi Bidang', icon: Layers },
-  { to: '/admin/galeri', label: 'Galeri', icon: Images },
-  { to: '/admin/pengaturan', label: 'Pengaturan Situs', icon: Settings },
-  { to: '/admin/akun', label: 'Akun & Admin', icon: KeyRound },
+  { to: '/admin/tampilan-siswa', label: 'Tampilan Siswa', icon: MonitorSmartphone, module: 'beranda' },
+  { to: '/admin/aspirasi', label: 'Aspirasi', icon: MessageSquare, module: 'aspirasi' },
+  { to: '/admin/berita', label: 'Berita', icon: Newspaper, module: 'berita' },
+  { to: '/admin/agenda', label: 'Agenda', icon: CalendarDays, module: 'agenda' },
+  { to: '/admin/program', label: 'Program Kerja', icon: ClipboardList, module: 'program' },
+  { to: '/admin/pengurus', label: 'Pengurus', icon: Users, module: 'pengurus' },
+  { to: '/admin/sekbid', label: 'Seksi Bidang', icon: Layers, module: 'sekbid' },
+  { to: '/admin/galeri', label: 'Galeri', icon: Images, module: 'galeri' },
+  { to: '/admin/pengaturan', label: 'Pengaturan Situs', icon: Settings, module: 'pengaturan' },
+  { to: '/admin/akun', label: 'Akun & Admin', icon: KeyRound, module: 'akun' },
+  { to: '/admin/akses', label: 'Hak Akses', icon: ShieldCheck, module: 'akun' },
 ];
 
 export default function AdminLayout() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, can } = useAuth();
   const [open, setOpen] = useState(false);
   const loc = useLocation();
 
   if (loading) return <Spinner className="min-h-screen" />;
   if (!user) return <Navigate to="/admin/login" state={{ from: loc.pathname }} replace />;
 
-  const current = MENU.find((m) => (m.end ? loc.pathname === m.to : loc.pathname.startsWith(m.to)));
+  // Menu & rute hanya ditampilkan bila pengguna punya hak akses modulnya
+  const menu = MENU.filter((m) => !m.module || can(m.module));
+  const current = menu.find((m) => (m.end ? loc.pathname === m.to : loc.pathname.startsWith(m.to)));
+  const blocked = !current && MENU.some((m) => (m.end ? loc.pathname === m.to : loc.pathname.startsWith(m.to)));
 
   return (
     <div className="flex min-h-screen bg-slate-100">
@@ -45,7 +50,7 @@ export default function AdminLayout() {
           </button>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {MENU.map((m) => (
+          {menu.map((m) => (
             <NavLink
               key={m.to}
               to={m.to}
@@ -78,11 +83,21 @@ export default function AdminLayout() {
           <h1 className="text-lg font-bold text-slate-900">{current?.label || 'Admin'}</h1>
           <div className="ml-auto text-right text-sm">
             <p className="font-semibold text-slate-800">{user.name}</p>
-            <p className="text-xs text-slate-500">{user.email}</p>
+            <p className="text-xs text-slate-500">
+              {user.member?.division?.short || user.member?.position || user.email}
+            </p>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">
-          <Outlet />
+          {blocked ? (
+            <Empty
+              icon="Shield"
+              title="Akses ditolak"
+              desc="Akun Anda belum diberi hak akses untuk halaman ini. Minta superadmin atau admin pengelola akses untuk mengaktifkannya."
+            />
+          ) : (
+            <Outlet />
+          )}
         </main>
       </div>
     </div>

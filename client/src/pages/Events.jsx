@@ -1,13 +1,44 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '../lib/context';
 import { getEvents } from '../lib/data';
 import { Empty, ErrorBox, PageHeader, Spinner } from '../components/ui';
 import { BULAN, dateParts, fmtTime } from '../lib/format';
 
-const HARI_S = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const HARI_S = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 const pad = (n) => String(n).padStart(2, '0');
 const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
+
+/** Kartu agenda ringkas; 2 kartu muat penuh, sisanya digeser horizontal. */
+function EventMiniCard({ event }) {
+  const d = dateParts(event.date);
+  return (
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white">
+      <div className="flex w-full items-center justify-center gap-1.5 bg-gold-400 px-2 py-1.5 text-ink-950">
+        <span className="text-lg leading-none font-extrabold tabular-nums">{d.day}</span>
+        <span className="text-[10px] font-bold tracking-wide uppercase">{d.month}</span>
+      </div>
+      <div className="flex flex-1 flex-col px-2.5 py-2">
+        <p className="line-clamp-2 text-xs leading-snug font-bold text-ink-900">{event.title}</p>
+        <p className="mt-1.5 text-[10px] text-ink-500">{fmtTime(event.time)} WIB</p>
+        <p className="mt-auto truncate pt-1.5 text-[10px] text-ink-400">{event.location || '-'}</p>
+      </div>
+    </article>
+  );
+}
+
+function EventRail({ events }) {
+  return (
+    <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+      {events.map((e) => (
+        <div key={e.id} className="w-[46%] shrink-0 snap-start sm:w-[46%] lg:w-56">
+          <EventMiniCard event={e} />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function Events() {
   const { data, loading, error } = useQuery(getEvents);
@@ -27,7 +58,8 @@ export default function Events() {
   const days = useMemo(() => {
     const first = new Date(cursor);
     const start = new Date(first);
-    start.setDate(1 - first.getDay());
+    // Kalender dimulai hari Senin
+    start.setDate(1 - ((first.getDay() + 6) % 7));
     return Array.from({ length: 42 }, (_, i) => {
       const d = new Date(start);
       d.setDate(start.getDate() + i);
@@ -37,7 +69,7 @@ export default function Events() {
 
   const monthKey = `${cursor.getFullYear()}-${pad(cursor.getMonth() + 1)}`;
   const list = selected ? byDate[selected] || [] : (data || []).filter((e) => e.date.startsWith(monthKey));
-  const upcoming = (data || []).filter((e) => e.date >= today).slice(0, 5);
+  const upcoming = (data || []).filter((e) => e.date >= today).slice(0, 10);
 
   const move = (n) => {
     setSelected(null);
@@ -46,107 +78,86 @@ export default function Events() {
 
   return (
     <>
-      <PageHeader eyebrow="Agenda" title="Kalender Kegiatan" desc="Jadwal kegiatan OSIS dan sekolah selama periode 2026/2027." />
-      <section className="py-16">
+      <PageHeader 
+        eyebrow="Agenda" 
+        title="Kalender Kegiatan" 
+        desc="Jadwal kegiatan OSIS dan sekolah selama periode 2026/2027." 
+      />
+      <section className="section-py bg-white pb-16 sm:pb-20">
         <div className="container-x">
           {loading && <Spinner />}
           {error && <ErrorBox message={error} />}
           {data && (
-            <div className="grid gap-8 lg:grid-cols-3">
-              <div className="card p-5 lg:col-span-2">
-                <div className="mb-4 flex items-center justify-between">
-                  <button className="btn-ghost p-2" onClick={() => move(-1)} aria-label="Bulan sebelumnya">
-                    <ChevronLeft />
-                  </button>
-                  <h2 className="text-lg font-bold text-brand-950">
-                    {BULAN[cursor.getMonth()]} {cursor.getFullYear()}
-                  </h2>
-                  <button className="btn-ghost p-2" onClick={() => move(1)} aria-label="Bulan berikutnya">
-                    <ChevronRight />
-                  </button>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-500">
-                  {HARI_S.map((h) => (
-                    <div key={h} className="py-2">
-                      {h}
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-7 gap-1">
-                  {days.map((d) => {
-                    const key = ymd(d);
-                    const inMonth = d.getMonth() === cursor.getMonth();
-                    const evs = byDate[key] || [];
-                    const isSel = selected === key;
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => setSelected(isSel ? null : key)}
-                        className={`flex min-h-16 flex-col items-center rounded-xl p-1.5 text-sm transition sm:min-h-20 ${
-                          isSel ? 'bg-brand-700 text-white' : key === today ? 'bg-gold-400/20 ring-1 ring-gold-400' : 'hover:bg-slate-100'
-                        } ${inMonth ? '' : 'opacity-35'}`}
-                      >
-                        <span className="font-semibold">{d.getDate()}</span>
-                        <div className="mt-1 flex flex-wrap justify-center gap-0.5">
-                          {evs.slice(0, 3).map((e) => (
-                            <span key={e.id} className={`h-1.5 w-1.5 rounded-full ${isSel ? 'bg-white' : 'bg-brand-600'}`} />
-                          ))}
-                        </div>
-                        {evs[0] && <span className={`mt-1 hidden w-full truncate text-[10px] sm:block ${isSel ? 'text-brand-100' : 'text-brand-700'}`}>{evs[0].title}</span>}
+            <>
+              <div className="grid gap-6 lg:grid-cols-3">
+                  <div className="card p-5 lg:col-span-2">
+                    <div className="mb-4 flex items-center justify-between">
+                      <button type="button" className="btn-ghost p-2" onClick={() => move(-1)} aria-label="Bulan sebelumnya">
+                        <ChevronLeft className="h-5 w-5" />
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="mb-4 font-bold text-brand-950">{selected ? `Agenda ${dateParts(selected).day} ${dateParts(selected).monthFull}` : `Agenda ${BULAN[cursor.getMonth()]}`}</h3>
-                <div className="space-y-3">
-                  {list.length === 0 && <Empty icon="Inbox" title="Tidak ada agenda" />}
-                  {list.map((e) => (
-                    <EventItem key={e.id} e={e} />
-                  ))}
-                </div>
-                {!selected && upcoming.length > 0 && (
-                  <>
-                    <h3 className="mt-8 mb-4 font-bold text-brand-950">Akan Datang</h3>
-                    <div className="space-y-3">
-                      {upcoming.map((e) => (
-                        <EventItem key={e.id} e={e} />
+                      <h2 className="text-lg font-bold text-ink-900">
+                        {BULAN[cursor.getMonth()]} {cursor.getFullYear()}
+                      </h2>
+                      <button type="button" className="btn-ghost p-2" onClick={() => move(1)} aria-label="Bulan berikutnya">
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-ink-500">
+                      {HARI_S.map((h, i) => (
+                        <div key={h} className={`py-2 ${i > 4 ? 'text-red-500' : ''}`}>{h}</div>
                       ))}
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {days.map((d) => {
+                        const key = ymd(d);
+                        const inMonth = d.getMonth() === cursor.getMonth();
+                        const evs = byDate[key] || [];
+                        const isSel = selected === key;
+                        const weekend = isWeekend(d);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => setSelected(isSel ? null : key)}
+                            className={`flex min-h-16 flex-col items-center justify-center rounded-xl p-1.5 text-sm transition sm:min-h-20 ${
+                              isSel ? 'bg-gold-400 text-ink-950' : key === today ? 'bg-gold-100 ring-1 ring-gold-400' : 'hover:bg-ink-100'
+                            } ${inMonth ? '' : 'opacity-35'}`}
+                          >
+                            <span className={`font-semibold ${!isSel && weekend ? 'text-red-500' : ''}`}>{d.getDate()}</span>
+                            <div className="mt-1 flex flex-wrap justify-center gap-0.5">
+                              {evs.slice(0, 3).map((e) => (
+                                <span key={e.id} className={`h-1.5 w-1.5 rounded-full ${isSel ? 'bg-ink-950' : 'bg-gold-500'}`} />
+                              ))}
+                            </div>
+                            {evs[0] && <span className={`mt-1 hidden w-full truncate text-[10px] sm:block ${isSel ? 'text-ink-800' : 'text-ink-600'}`}>{evs[0].title}</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="mb-3 font-bold text-ink-900">{selected ? `Agenda ${dateParts(selected).day} ${dateParts(selected).monthFull}` : `Agenda ${BULAN[cursor.getMonth()]}`}</h3>
+                    {list.length === 0 ? (
+                      <Empty icon="Inbox" title="Tidak ada agenda" />
+                    ) : (
+                      <EventRail events={list} />
+                    )}
+
+                    {!selected && upcoming.length > 0 && (
+                      <div className="mt-8">
+                        <h3 className="mb-3 font-bold text-ink-900">
+                          Akan Datang <span className="text-sm font-semibold text-ink-500">({upcoming.length})</span>
+                        </h3>
+                        <EventRail events={upcoming} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+            </>
           )}
         </div>
       </section>
     </>
-  );
-}
-
-function EventItem({ e }) {
-  const d = dateParts(e.date);
-  return (
-    <div className="card flex gap-4 p-4">
-      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-xl bg-brand-700 text-white">
-        <span className="text-lg leading-none font-extrabold">{d.day}</span>
-        <span className="text-[10px] uppercase">{d.month}</span>
-      </div>
-      <div className="min-w-0">
-        <span className="badge bg-gold-400/20 text-amber-800">{e.category}</span>
-        <p className="mt-1 font-bold text-slate-900">{e.title}</p>
-        {e.description && <p className="text-xs text-slate-500">{e.description}</p>}
-        <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-slate-500">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" /> {fmtTime(e.time)}
-          </span>
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" /> {e.location || '-'}
-          </span>
-        </div>
-      </div>
-    </div>
   );
 }

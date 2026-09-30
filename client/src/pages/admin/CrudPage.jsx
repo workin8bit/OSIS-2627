@@ -19,7 +19,9 @@ export default function CrudPage({ endpoint, title, fields, columns, defaults = 
   const [filterVal, setFilterVal] = useState('');
 
   const openNew = () => {
-    setForm({ ...defaults });
+    // `defaults` boleh fungsi agar ikut memakai filter yang sedang aktif
+    // (mis. tambah anggota langsung terisi Seksi Bidang yang dipilih)
+    setForm({ ...(typeof defaults === 'function' ? defaults({ [filters?.key]: filterVal }) : defaults) });
     setEditing({});
   };
   const openEdit = (row) => {

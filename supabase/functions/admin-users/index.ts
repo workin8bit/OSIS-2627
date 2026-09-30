@@ -1,12 +1,16 @@
-// Edge Function: manajemen akun admin (khusus superadmin).
+// Edge Function: manajemen akun admin.
 // Membuat / menghapus user Supabase Auth membutuhkan service role key,
 // sehingga harus dijalankan di sisi server (bukan di browser).
 //
 // Deploy:  supabase functions deploy admin-users
 //
 // Body JSON:
-//   { "action": "create", "email": "...", "password": "...", "name": "...", "role": "admin" | "superadmin" }
+//   { "action": "create", "email": "...", "password": "...", "name": "...",
+//     "role": "admin" | "superadmin", "member_id": 12 }
 //   { "action": "delete", "user_id": "uuid" }
+//
+// Pemanggil harus superadmin atau admin yang punya akses 'write' pada modul
+// 'akun' (lihat tabel admin_permissions).
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -35,8 +39,16 @@ Deno.serve(async (req) => {
   const { data: userData, error: userErr } = await admin.auth.getUser(token);
   if (userErr || !userData?.user) return json({ error: 'Silakan login terlebih dahulu' }, 401);
 
-  const { data: me } = await admin.from('admins').select('role').eq('user_id', userData.user.id).maybeSingle();
-  if (me?.role !== 'superadmin') return json({ error: 'Hanya superadmin yang dapat mengelola akun admin' }, 403);
+  const callerId = userData.user.id;
+  const { data: me } = await admin.from('admins').select('role').eq('user_id', callerId).maybeSingle();
+  const { data: grant } = await admin
+    .from('admin_permissions')
+    .select('access')
+    .eq('user_id', callerId)
+    .eq('module', 'akun')
+    .maybeSingle();
+  const mayManage = me?.role === 'superadmin' || grant?.access === 'write';
+  if (!mayManage) return json({ error: 'Anda tidak berwenang menambah atau menghapus akun admin' }, 403);
 
   let body: Record<string, unknown>;
   try {
@@ -49,7 +61,8 @@ Deno.serve(async (req) => {
     const email = String(body.email ?? '').trim().toLowerCase();
     const password = String(body.password ?? '');
     const name = String(body.name ?? '').trim();
-    const role = body.role === 'superadmin' ? 'superadmin' : 'admin';
+    const role = me?.role === 'superadmin' && body.role === 'superadmin' ? 'superadmin' : 'admin';
+    const memberId = body.member_id == null || body.member_id === '' ? null : Number(body.member_id);
     if (!email || !name) return json({ error: 'Lengkapi email dan nama' }, 400);
     if (password.length < 6) return json({ error: 'Password minimal 6 karakter' }, 400);
 
@@ -61,18 +74,27 @@ Deno.serve(async (req) => {
     });
     if (error || !created.user) return json({ error: error?.message ?? 'Gagal membuat user' }, 400);
 
-    const { error: insErr } = await admin.from('admins').insert({ user_id: created.user.id, name, email, role });
+    const { error: insErr } = await admin
+      .from('admins')
+      .insert({ user_id: created.user.id, name, email, role, member_id: Number.isNaN(memberId as number) ? null : memberId });
     if (insErr) {
       await admin.auth.admin.deleteUser(created.user.id);
       return json({ error: insErr.message }, 400);
     }
-    return json({ user_id: created.user.id, email, name, role }, 201);
+    return json({ user_id: created.user.id, email, name, role, member_id: memberId }, 201);
   }
 
   if (body.action === 'delete') {
     const userId = String(body.user_id ?? '');
     if (!userId) return json({ error: 'user_id wajib diisi' }, 400);
-    if (userId === userData.user.id) return json({ error: 'Tidak bisa menghapus akun sendiri' }, 400);
+    if (userId === callerId) return json({ error: 'Tidak bisa menghapus akun sendiri' }, 400);
+
+    // Hanya superadmin boleh menghapus akun superadmin
+    if (me?.role !== 'superadmin') {
+      const { data: target } = await admin.from('admins').select('role').eq('user_id', userId).maybeSingle();
+      if (target?.role === 'superadmin') return json({ error: 'Hanya superadmin yang dapat menghapus akun superadmin' }, 403);
+    }
+
     const { error } = await admin.auth.admin.deleteUser(userId); // baris admins ikut terhapus (on delete cascade)
     if (error) return json({ error: error.message }, 400);
     return json({ ok: true });

@@ -28,19 +28,29 @@ Tidak ada server Node sendiri — frontend langsung berbicara dengan Supabase, d
 | **Aspirasi** | Formulir aspirasi (boleh anonim) → **kode tiket** untuk melacak status |
 
 ### Panel Admin (`/admin`)
-Dashboard · kelola aspirasi (status + tanggapan) · CRUD berita, agenda, program kerja, pengurus, sekbid, galeri (unggah ke Supabase Storage) · pengaturan situs · ubah password · tambah/hapus admin (superadmin).
+Dashboard · kelola aspirasi (status + tanggapan) · CRUD berita, agenda, program kerja, pengurus, sekbid, galeri (unggah ke Supabase Storage) · **Tampilan Siswa** (kelola isi Beranda) · pengaturan situs · ubah password · **Hak Akses** (tambah pengurus yang punya akun, tautkan ke seksi bidang, atur modul per orang).
 
 ## Keamanan (RLS)
 
 | Tabel | Publik (anon) | Admin |
 |---|---|---|
-| `settings`, `divisions`, `members`, `programs`, `events`, `gallery` | baca | baca & tulis |
-| `posts` | baca yang **terbit** saja | baca & tulis |
-| `aspirations` | ❌ tidak ada akses langsung — hanya lewat RPC `submit_aspiration`, `track_aspiration`, `public_aspirations` (tanpa identitas pengirim) | baca, ubah, hapus |
-| `admins` | ❌ | baca; tulis khusus superadmin |
-| Storage `media` | baca | unggah/ubah/hapus |
+| `settings`, `divisions`, `members`, `programs`, `events`, `gallery` | baca | sesuai hak akses modul (`read` = lihat, `write` = kelola) |
+| `posts` | baca yang **terbit** saja | sesuai hak akses modul `berita` |
+| `aspirations` | ❌ tidak ada akses langsung — hanya lewat RPC `submit_aspiration`, `track_aspiration`, `public_aspirations` (tanpa identitas pengirim) | sesuai hak akses modul `aspirasi` |
+| `admins` | ❌ | baca; tulis khusus superadmin atau admin yang punya `akun: write` |
+| `admin_permissions`, `division_permissions` | ❌ | baca; tulis khusus pengelola akses |
+| Storage `media` | baca | unggah/ubah/hapus bila punya `galeri: write` |
 
 Admin = user Supabase Auth yang terdaftar di tabel `public.admins`. User login yang tidak ada di tabel itu tidak punya hak apa pun.
+
+### Hak akses berbasis modul & seksi bidang
+
+- `public.admins.member_id` menautkan akun admin ke baris `members`, sehingga Sekbid-nya diketahui.
+- `public.admin_permissions` menyimpan hak akses per admin: `read` (buka halaman) atau `write` (tambah/ubah/hapus).
+- `public.division_permissions` adalah template per seksi bidang. RPC `apply_division_template(user_id)` menyalin template itu ke akun admin.
+- Modul: `beranda` (Tampilan Siswa), `berita`, `agenda`, `program`, `pengurus`, `sekbid`, `galeri`, `aspirasi`, `pengaturan`, `akun`.
+- Superadmin selalu punya akses penuh dan tidak dapat diedit/dihapus oleh admin lain. Tidak ada admin yang dapat mengubah hak akses dirinya sendiri (pencegahan eskalasi).
+- Semua aturan ditegakkan RLS lewat fungsi `can_access(module, need)`, jadi menyembunyikan menu di antarmuka bukan satu-satunya pengaman.
 
 ---
 
@@ -71,19 +81,28 @@ psql "<CONNECTION_STRING>" -f supabase/seed.sql   # data contoh (opsional)
 **Authentication → Sign In / Providers → Email**: nonaktifkan **Allow new users to sign up**. Akun admin dibuat oleh superadmin, bukan daftar sendiri.
 
 ### 4. Buat superadmin pertama
+**Opsi A — lewat Dashboard (paling aman, kunci tidak menyentuh komputer lain):**
 1. **Authentication → Users → Add user → Create new user**: isi email & password, centang *Auto Confirm User*.
 2. Di **SQL Editor** jalankan (ganti emailnya):
    ```sql
    insert into public.admins (user_id, name, email, role)
-   select id, 'Administrator OSIS', email, 'superadmin'
+   select id, 'Administrator OSIS', 'admin@contoh.sch.id', 'superadmin'
    from auth.users where email = 'admin@contoh.sch.id';
    ```
+
+**Opsi B — lewat skrip di komputer Anda sendiri** (butuh *service_role key* dari **Project Settings → API Keys**; jangan pernah menaruh key itu di repo atau di frontend):
+```powershell
+$env:SUPABASE_URL = "https://<ref>.supabase.co"
+$env:SUPABASE_SERVICE_ROLE_KEY = "sb_secret_..."      # atau setx agar permanen
+npm run admin:create -- --email superadmin@osissmaga.id --password "osis2627" --name "Administrator OSIS"
+```
+Skrip membuat user Auth (email langsung terverifikasi) sekaligus.insert baris `admins` ber-role `superadmin`. Jalankan **setelah** migrasi `supabase/migrations/*.sql` terpasang.
 
 ### 5. Deploy Edge Function (untuk menambah/menghapus admin dari panel)
 ```bash
 npx supabase functions deploy admin-users --project-ref <PROJECT_REF>
 ```
-Tanpa langkah ini semua fitur tetap jalan, hanya menu *Tambah Admin* yang tidak aktif (admin tetap bisa ditambah manual seperti langkah 4).
+Tanpa langkah ini semua fitur tetap jalan, hanya menambah/mengapus akun dari halaman *Hak Akses* yang tidak aktif (admin tetap bisa ditambah manual seperti langkah 4). Fungsi ini memakai kolom `admins.member_id` dan tabel `admin_permissions`, jadi **deploy ulang** setelah migrasi hak akses dipakai.
 
 ### 6. Jalankan frontend
 ```bash

@@ -18,13 +18,15 @@ import { DivisionsAdmin, EventsAdmin, GalleryAdmin, MembersAdmin, PostsAdmin, Pr
 import AspirationsAdmin from './pages/admin/AspirationsAdmin';
 import SettingsAdmin from './pages/admin/SettingsAdmin';
 import AccountAdmin from './pages/admin/AccountAdmin';
+import StudentViewAdmin from './pages/admin/StudentViewAdmin';
+import AksesAdmin from './pages/admin/AksesAdmin';
 
 function NotFound() {
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center bg-slate-50 px-4 pt-20 text-center">
-      <p className="text-7xl font-extrabold text-brand-700">404</p>
-      <p className="mt-2 text-lg font-semibold text-slate-700">Halaman tidak ditemukan</p>
-      <Link to="/" className="btn-primary mt-6">
+    <div className="flex min-h-[70vh] flex-col items-center justify-center bg-ink-950 px-4 pt-20 text-center">
+      <p className="text-7xl font-extrabold text-sun-400">404</p>
+      <p className="mt-2 text-lg font-semibold text-ink-200">Halaman tidak ditemukan</p>
+      <Link to="/" className="btn-gold mt-6">
         Kembali ke Beranda
       </Link>
     </div>
@@ -61,6 +63,7 @@ export default function App() {
               <Route path="admin/login" element={<Login />} />
               <Route path="admin" element={<AdminLayout />}>
                 <Route index element={<Dashboard />} />
+                <Route path="tampilan-siswa" element={<StudentViewAdmin />} />
                 <Route path="aspirasi" element={<AspirationsAdmin />} />
                 <Route path="berita" element={<PostsAdmin />} />
                 <Route path="agenda" element={<EventsAdmin />} />
@@ -70,6 +73,7 @@ export default function App() {
                 <Route path="galeri" element={<GalleryAdmin />} />
                 <Route path="pengaturan" element={<SettingsAdmin />} />
                 <Route path="akun" element={<AccountAdmin />} />
+                <Route path="akses" element={<AksesAdmin />} />
               </Route>
             </Routes>
           </AuthProvider>
