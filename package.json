@@ -13,12 +13,14 @@
     "preview": "npm run preview --prefix client",
     "test:db": "node supabase/tests/db.test.mjs",
     "build:sql": "node scripts/build-setup-sql.mjs",
+    "db:patch": "node scripts/apply-access-patch.mjs",
     "admin:create": "node scripts/create-superadmin.mjs",
     "deploy": "npx vercel --prod --cwd client",
     "deploy:preview": "npx vercel --cwd client"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "pg": "^8.23.0",
     "supabase": "^2.118.0"
   }
 }

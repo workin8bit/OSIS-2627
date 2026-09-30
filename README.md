@@ -67,7 +67,24 @@ File ini berisi skema (tabel, RLS, fungsi, bucket storage) + data contoh, dan am
 
 > `setup.sql` dibuat otomatis dari `supabase/migrations/` + `supabase/seed.sql`. Setelah mengubah salah satunya, jalankan `npm run build:sql`.
 
-> **Situs sudah terpasang, tapi hak akses belum aktif?** Error yang muncul adalah `Could not find the 'member_id' column of 'admins' in the schema cache` atau `relation "public.admin_permissions" does not exist`. Buka **SQL Editor → New query**, lalu jalankan **satu per satu** (supabase SQL Editor memakai satu transaksi, jadi memecahnya membuat kesalahan mudah dilacak):
+> **Situs sudah terpasang, tapi hak akses belum aktif?** Error yang muncul adalah `Could not find the 'member_id' column of 'admins' in the schema cache` atau `relation "public.admin_permissions" does not exist`.
+
+#### Cara tercepat: satu perintah dari komputer Anda
+
+Buka **Supabase Dashboard → Project Settings → Database → Database password**, lalu di terminal repo ini:
+
+```powershell
+$env:PG_PASSWORD = "password-yang-anda-salin"
+npm run db:patch
+```
+
+Skrip `scripts/apply-access-patch.mjs` konek ke pooler Asia Tenggara, menjalankan `patch-1` → `patch-2` → `patch-3` berurutan, mencetak hasil verifikasi, lalu menjalankan patch sekali lagi untuk membuktikan idempoten. Password hanya hidup di environment Powershell sesi itu — tidak pernah ditulis ke repo atau frontend.
+
+Selesai setelah itu: **Project Settings → API → Reload schema**, lalu buka `/admin/akses` dengan Ctrl+Shift+R dan tekan **Pindahkan data ke tabel resmi**.
+
+<details><summary>Alternatif: tempel manual di SQL Editor</summary>
+
+Buka **SQL Editor → New query**, lalu jalankan **satu per satu** (SQL Editor memakai satu transaksi, jadi memecahkannya membuat kesalahan mudah dilacak):
 
    | Urutan | File | Isi |
    | --- | --- | --- |
@@ -77,6 +94,8 @@ File ini berisi skema (tabel, RLS, fungsi, bucket storage) + data contoh, dan am
 
    Ketiganya idempoten (aman dijalankan ulang). Patch 3 ditutup query verifikasi — `kolom_member_id` harus `1`, `tabel_izin` `2`, `jumlah_anggota` `27`, `template_sekbid` `50`.
    Bila `kolom_member_id` sudah `1` tetapi error *schema cache* masih muncul, muat ulang cache lewat **Project Settings → API → Reload schema**, lalu hard refresh browser (Ctrl+Shift+R).
+
+</details>
 
 #### Mode sementara (opsional, tidak memblokir)
 
