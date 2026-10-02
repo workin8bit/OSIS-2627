@@ -21,7 +21,7 @@ export default function Profile() {
         <div className="container-x grid gap-10 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
             <Card className="p-6 sm:p-8">
-              <div className="mb-4 flex items-center gap-2 text-brand-600">
+              <div className="mb-4 flex items-center gap-2 text-gold-600">
                 <Eye className="h-5 w-5" /> <h3 className="font-bold text-ink-900">Tentang OSIS</h3>
               </div>
               <p className="leading-relaxed text-ink-600">{s.about}</p>
@@ -29,19 +29,19 @@ export default function Profile() {
 
             <div className="grid gap-6 md:grid-cols-2">
               <Card className="p-6">
-                <div className="mb-4 flex items-center gap-2 text-brand-600">
+                <div className="mb-4 flex items-center gap-2 text-gold-600">
                   <Target className="h-5 w-5" /> <h3 className="font-bold text-ink-900">Visi</h3>
                 </div>
                 <p className="text-justify leading-relaxed font-medium text-ink-800">{s.vision}</p>
               </Card>
               <Card className="p-6 md:col-span-2">
-                <div className="mb-4 flex items-center gap-2 text-brand-600">
+                <div className="mb-4 flex items-center gap-2 text-gold-600">
                   <Target className="h-5 w-5" /> <h3 className="font-bold text-ink-900">Misi</h3>
                 </div>
                 <ol className="space-y-4">
                   {(s.missions || []).map((m, i) => (
                     <li key={i} className="flex gap-4">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">{i + 1}</span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-200 text-sm font-bold text-gold-800">{i + 1}</span>
                       <span className="text-ink-700 leading-relaxed">{m}</span>
                     </li>
                   ))}
@@ -51,16 +51,16 @@ export default function Profile() {
           </div>
 
           <aside className="space-y-6">
-            <Card className="relative overflow-hidden bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white">
+            <Card className="relative overflow-hidden bg-gradient-to-br from-gold-700 to-gold-950 p-6 text-white">
               <Quote className="absolute top-4 right-4 h-12 w-12 text-white/10" />
-              <p className="text-xs font-bold tracking-widest text-gold-300 uppercase">Sambutan Ketua</p>
-              <p className="mt-3 text-justify text-sm leading-relaxed text-pretty text-ink-100">“{s.chairman_message}”</p>
+              <p className="text-xs font-bold tracking-widest text-gold-200 uppercase">Sambutan Ketua</p>
+              <p className="mt-3 text-justify text-sm leading-relaxed text-pretty text-gold-50">“{s.chairman_message}”</p>
               {chair && (
                 <div className="mt-5 flex items-center gap-3">
-                  <Avatar name={chair.name} src={chair.photo} className="h-12 w-12 text-base ring-2 ring-gold-400" />
+                  <Avatar name={chair.name} src={chair.photo} className="h-12 w-12 text-base ring-2 ring-gold-300" />
                   <div>
                     <p className="font-bold">{chair.name}</p>
-                    <p className="text-xs text-ink-200">{chair.position}</p>
+                    <p className="text-xs text-gold-100">{chair.position}</p>
                   </div>
                 </div>
               )}
@@ -70,16 +70,16 @@ export default function Profile() {
               <p className="font-bold text-ink-900">Sekretariat</p>
               <div className="space-y-3 text-sm">
                 <p className="flex gap-2 text-ink-600">
-                  <MapPin className="h-4 w-4 shrink-0 text-brand-600" /> {s.address}
+                  <MapPin className="h-4 w-4 shrink-0 text-gold-600" /> {s.address}
                 </p>
                 {s.phone && (
                   <p className="flex gap-2 text-ink-600">
-                    <Phone className="h-4 w-4 shrink-0 text-brand-600" /> {s.phone}
+                    <Phone className="h-4 w-4 shrink-0 text-gold-600" /> {s.phone}
                   </p>
                 )}
                 {s.email && (
                   <p className="flex gap-2 text-ink-600">
-                    <Mail className="h-4 w-4 shrink-0 text-brand-600" /> {s.email}
+                    <Mail className="h-4 w-4 shrink-0 text-gold-600" /> {s.email}
                   </p>
                 )}
               </div>
@@ -111,7 +111,7 @@ export default function Profile() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {(divisions || []).map((d) => (
               <Card key={d.id} className="p-5 transition hover:-translate-y-1 hover:shadow-lg">
-                <div className="mb-3 inline-flex rounded-xl bg-brand-100 p-3 text-brand-700">
+                <div className="mb-3 inline-flex rounded-xl bg-gold-100 p-3 text-gold-700">
                   <Icon name={d.icon} className="h-6 w-6" />
                 </div>
                 <Badge variant="gold" className="mb-2">{d.short}</Badge>
