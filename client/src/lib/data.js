@@ -134,49 +134,11 @@ export async function getStructure() {
 }
 
 /**
- * Satu anggota pengurus beserta seksi bidangnya, programmia, dan anggota
- * seksi yang lain. Untuk halaman profil lengkap tiap pengurus.
+ * Satu anggota pengurus untuk halaman profil. Field yang tampil (foto, nama,
+ * kelas, jabatan, Instagram, motto) seluruhnya diisi dari form Edit Pengurus.
  */
-export async function getMemberDetail(id) {
-  const member = unwrap(await supabase.from('members').select('*').eq('id', id).maybeSingle());
-  if (!member) return null;
-
-  const division = member.division_id
-    ? unwrap(await supabase.from('divisions').select('*').eq('id', member.division_id).maybeSingle())
-    : null;
-
-  const [programs, colleagues] = await Promise.all([
-    member.division_id
-      ? supabase
-          .from('programs')
-          .select('*, division:divisions(name, short)')
-          .eq('division_id', member.division_id)
-          .order('start_date')
-          .then(unwrap)
-      : Promise.resolve([]),
-    member.division_id
-      ? supabase
-          .from('members')
-          .select('id, name, position, class_name, photo, sort_order')
-          .eq('division_id', member.division_id)
-          .eq('is_core', false)
-          .neq('id', member.id)
-          .order('sort_order')
-          .order('id')
-          .then(unwrap)
-      : Promise.resolve([]),
-  ]);
-
-  return {
-    member,
-    division,
-    programs: uniqueBy(programs, (p) => p.title).map((p) => ({
-      ...p,
-      division_name: p.division?.name,
-      division_short: p.division?.short,
-    })),
-    colleagues,
-  };
+export async function getMember(id) {
+  return unwrap(await supabase.from('members').select('*').eq('id', id).maybeSingle());
 }
 
 export async function getPrograms() {
