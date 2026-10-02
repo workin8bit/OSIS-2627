@@ -420,7 +420,7 @@ function MemberCard({ member, big = false, showInstagram = true, onSelect, class
         </a>
       )}
       {(onSelect || member.id) && (
-        <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600">
+        <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-gold-600">
           Lihat profil
           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
         </span>
@@ -509,7 +509,7 @@ function DivisionCard({ division, members = [], onSelectMember }) {
   return (
     <div className="card overflow-hidden">
       <div className="flex items-center gap-4 border-b border-ink-200 bg-ink-50/50 px-6 py-4">
-        <div className="rounded-xl bg-brand-600 p-2.5 text-white">
+        <div className="rounded-xl bg-gold-400 p-2.5 text-brand-950">
           <Icon name={division.icon} className="h-5 w-5" />
         </div>
         <div>

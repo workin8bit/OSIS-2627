@@ -88,6 +88,19 @@ function Footer() {
             </div>
           </div>
           <p className="mt-3 max-w-md text-sm leading-relaxed text-ink-400">{s.about || s.tagline}</p>
+        </div>
+        <div>
+          <p className="mb-3 font-bold text-white">Kontak</p>
+          <ul className="footer-contact">
+            <li className="flex gap-2">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" /> {s.address}
+            </li>
+            {s.phone && (
+              <li className="flex gap-2">
+                <Phone className="h-4 w-4 shrink-0 text-gold-400" /> {s.phone}
+              </li>
+            )}
+          </ul>
           <div className="footer-social mt-4">
             {s.instagram && (
               <a href={`https://instagram.com/${s.instagram}`} target="_blank" rel="noreferrer" className="footer-social-btn" aria-label="Instagram">
@@ -110,19 +123,6 @@ function Footer() {
               </a>
             )}
           </div>
-        </div>
-        <div>
-          <p className="mb-3 font-bold text-white">Kontak</p>
-          <ul className="footer-contact">
-            <li className="flex gap-2">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" /> {s.address}
-            </li>
-            {s.phone && (
-              <li className="flex gap-2">
-                <Phone className="h-4 w-4 shrink-0 text-gold-400" /> {s.phone}
-              </li>
-            )}
-          </ul>
         </div>
       </div>
       <div className="footer-bottom">
