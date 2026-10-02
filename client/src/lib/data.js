@@ -136,9 +136,11 @@ export async function getStructure() {
 /**
  * Satu anggota pengurus untuk halaman profil. Field yang tampil (foto, nama,
  * kelas, jabatan, Instagram, motto) seluruhnya diisi dari form Edit Pengurus.
+ * `division` ikut diambil karena jabatan perlu digabung dengan nama seksi,
+ * misalnya "Koordinator" + "Sekbid 1" menjadi "Koordinator Sekbid 1".
  */
 export async function getMember(id) {
-  return unwrap(await supabase.from('members').select('*').eq('id', id).maybeSingle());
+  return unwrap(await supabase.from('members').select('*, division:divisions(short)').eq('id', id).maybeSingle());
 }
 
 export async function getPrograms() {

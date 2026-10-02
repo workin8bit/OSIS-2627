@@ -8,6 +8,20 @@ import { Avatar, Card, Empty, ErrorBox, InstagramIcon, PageHeader, Spinner } fro
 /** Handle Instagram disimpan admin apa adanya, kadang dengan tanda @. */
 const igHandle = (value = '') => value.trim().replace(/^@+/, '');
 
+/**
+ * Jabatan lengkap: field "Jabatan" pada Edit Pengurus hanya berisi peran
+ * ("Koordinator"), sedangkan seksi bidang disimpan terpisah. Gabungkan keduanya
+ * supaya terbaca "Koordinator Sekbid 1". Pengurus inti tidak punya seksi, jadi
+ * jabatan 그대로 dipakai.
+ */
+const jabatanLengkap = (member) => {
+  const peran = (member.position ?? '').trim();
+  const seksi = (member.division?.short ?? '').trim();
+  if (!peran) return seksi;
+  if (!seksi) return peran;
+  return `${peran} ${seksi}`;
+};
+
 export default function MemberProfile() {
   const { id } = useParams();
   const { data: member, loading, error } = useQuery(() => getMember(id), [id]);
@@ -39,14 +53,11 @@ export default function MemberProfile() {
 
   const instagram = igHandle(member.instagram);
   const kelasNama = (member.class_name ?? '').trim();
+  const jabatan = jabatanLengkap(member);
 
   return (
     <>
-      <PageHeader
-        eyebrow="Profil Pengurus"
-        title={member.name}
-        desc={member.position || undefined}
-      />
+      <PageHeader eyebrow="Profil Pengurus" title={member.name} desc={jabatan || undefined} />
 
       <section className="section-py bg-white">
         <div className="container-x">
@@ -66,7 +77,11 @@ export default function MemberProfile() {
 
             <h2 className="mt-6 text-2xl font-extrabold text-ink-900">{member.name}</h2>
 
-            {member.position && <p className="mt-1 font-semibold text-gold-600">{member.position}</p>}
+            {jabatan && (
+              <p className="mx-auto mt-3 w-fit rounded-full bg-gold-400/15 px-5 py-1.5 text-center text-sm font-bold text-gold-700 ring-1 ring-gold-400/40">
+                {jabatan}
+              </p>
+            )}
 
             <div className="mt-5 flex flex-col items-center gap-2 text-sm text-ink-600">
               {kelasNama && (
