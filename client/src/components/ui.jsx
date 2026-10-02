@@ -96,7 +96,7 @@ function PageHeader({ title, desc, eyebrow, children, className = '' }) {
   );
 }
 
-function Modal({ open, onClose, title, children, wide = false, className = '' }) {
+function Modal({ open, onClose, title, children, wide = false, bodyClassName = 'p-5', className = '' }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === 'Escape' && onClose();
@@ -117,7 +117,7 @@ function Modal({ open, onClose, title, children, wide = false, className = '' })
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div className={bodyClassName}>{children}</div>
       </div>
     </div>
   );
@@ -455,14 +455,19 @@ function MemberProfileLink({ member, onSelect }) {
   );
 }
 
-/** Isi satu kartu profil: foto, nama, jabatan, kelas, Instagram, dan motto. */
+/**
+ * Isi satu kartu profil: foto, nama, jabatan, kelas, Instagram, dan motto.
+ * Panel motto dibuat full-bleed dan menempel ke sisi bawah kartu, jadi batas
+ * kartu tepat berhenti di bawah moto — tanpa ruang kosong menggantung.
+ * Pembungkus kartu induk harus memakai `overflow-hidden p-0`.
+ */
 function MemberProfileCard({ member }) {
   const instagram = igHandle(member.instagram);
   const kelasNama = (member.class_name ?? '').trim();
   const jabatan = jabatanLengkap(member);
 
   return (
-    <div className="p-2 text-center">
+    <div className={`px-6 pt-8 text-center sm:px-8 ${member.quote ? 'pb-0' : 'pb-8'}`}>
       <Avatar name={member.name} src={member.photo} className="mx-auto h-40 w-40 text-4xl ring-4 ring-gold-400" />
       <h2 className="mt-6 text-2xl font-extrabold text-ink-900">{member.name}</h2>
 
@@ -491,7 +496,7 @@ function MemberProfileCard({ member }) {
       </div>
 
       {member.quote && (
-        <div className="mt-8 rounded-2xl bg-ink-50 px-6 py-6">
+        <div className="-mx-6 mt-8 bg-ink-50 px-6 py-6 sm:-mx-8 sm:px-8">
           <Quote className="mx-auto h-6 w-6 text-gold-500" />
           <p className="mt-3 text-base leading-relaxed text-ink-700 italic">“{member.quote}”</p>
         </div>

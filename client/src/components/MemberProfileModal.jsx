@@ -15,7 +15,13 @@ export default function MemberProfileModal({ memberId, onClose }) {
   );
 
   return (
-    <Modal open={open} onClose={onClose} title={member?.name || 'Profil Pengurus'}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={member?.name || 'Profil Pengurus'}
+      className="overflow-hidden"
+      bodyClassName="p-0"
+    >
       {loading && <Spinner />}
       {error && <ErrorBox message={error} />}
       {member && <MemberProfileCard member={member} />}

@@ -48,7 +48,7 @@ export default function MemberProfile() {
             <ArrowLeft className="h-4 w-4" /> Kembali ke daftar pengurus
           </Link>
 
-          <Card className="mx-auto max-w-2xl p-6 sm:p-8">
+          <Card className="mx-auto max-w-2xl overflow-hidden p-0">
             <MemberProfileCard member={member} />
           </Card>
         </div>
