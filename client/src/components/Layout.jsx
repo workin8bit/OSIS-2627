@@ -105,7 +105,7 @@ function Footer() {
   const tiktok = String(s.tiktok || s.instagram || '').replace('@', '').trim();
   return (
     <footer className="footer-main">
-      <div className="container-x grid gap-8 py-10 md:grid-cols-2 lg:grid-cols-3">
+      <div className="container-x grid gap-8 py-8 md:grid-cols-2 lg:grid-cols-3">
         <div className="md:col-span-2 lg:col-span-2">
           <div className="footer-brand">
             <Logo className="h-10 w-10 shrink-0" />
