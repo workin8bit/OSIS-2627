@@ -407,18 +407,43 @@ function ProgramCard({ program, className = '' }) {
 
 function MemberCard({ member, big = false, showInstagram = true, className = '' }) {
   return (
-    <div className={`card-hover flex flex-col items-center p-6 text-center ${big ? 'ring-2 ring-gold-400' : ''} ${className}`}>
+    <div className={`card-hover group relative flex flex-col items-center p-6 text-center ${big ? 'ring-2 ring-gold-400' : ''} ${className}`}>
       <Avatar name={member.name} src={member.photo} className={big ? 'h-28 w-28 text-3xl' : 'h-20 w-20 text-xl'} />
       <p className={`mt-4 font-bold text-ink-900 ${big ? 'text-lg' : ''}`}>{member.name}</p>
-      <p className="text-sm font-semibold text-brand-600">{member.position}</p>
+      <p className="text-sm font-semibold text-gold-600">{member.position}</p>
       {member.class_name && <p className="text-xs text-ink-500">Kelas {member.class_name}</p>}
       {member.quote && <p className="mt-3 text-xs text-ink-500 italic">"{member.quote}"</p>}
       {showInstagram && member.instagram && (
-        <a href={`https://instagram.com/${member.instagram.replace('@', '')}`} target="_blank" rel="noreferrer noopener" className="mt-3 inline-flex items-center gap-1 text-xs text-rose-600 hover:underline">
+        <a href={`https://instagram.com/${member.instagram.replace('@', '')}`} target="_blank" rel="noreferrer noopener" className="relative z-20 mt-3 inline-flex items-center gap-1 text-xs text-rose-600 hover:underline">
           <InstagramIcon className="h-3.5 w-3.5" /> @{member.instagram.replace('@', '')}
         </a>
       )}
+      {member.id && (
+        <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600">
+          Lihat profil
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </span>
+      )}
+      <MemberProfileLink member={member} />
     </div>
+  );
+}
+
+/**
+ * Tautan "Lihat profil" ke halaman detail seorang pengurus.
+ * Memakai pola stretched-link: <a> transparan menutupi seluruh kartu, jadi
+ * kartu tetap bisa diklik di area mana pun tanpa bersarang <a> di dalam <a>.
+ */
+function MemberProfileLink({ member }) {
+  if (!member?.id) return null;
+  return (
+    <Link
+      to={`/pengurus/${member.id}`}
+      className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+      aria-label={`Lihat profil lengkap ${member.name}`}
+    >
+      <span className="sr-only">Lihat profil lengkap</span>
+    </Link>
   );
 }
 
@@ -437,13 +462,15 @@ function DivisionCard({ division, members = [] }) {
       <div className="grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-4">
         {members.length === 0 && <p className="text-sm text-ink-500 col-span-full text-center py-4">Belum ada anggota.</p>}
         {members.map((m) => (
-          <div key={m.id} className="flex items-center gap-3 rounded-xl border border-ink-200 p-3 hover:bg-ink-50 transition-colors">
+          <div key={m.id} className="group relative flex items-center gap-3 rounded-xl border border-ink-200 p-3 hover:border-gold-400 hover:bg-ink-50 transition-colors">
             <Avatar name={m.name} src={m.photo} className="h-12 w-12 text-sm" />
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-ink-900">{m.name}</p>
-              <p className="text-xs text-brand-600">{m.position}</p>
+              <p className="text-xs text-gold-600">{m.position}</p>
               {m.class_name && <p className="text-xs text-ink-500">Kelas {m.class_name}</p>}
             </div>
+            <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-ink-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gold-600" />
+            <MemberProfileLink member={m} />
           </div>
         ))}
       </div>

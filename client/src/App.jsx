@@ -6,6 +6,7 @@ import PublicLayout from './components/Layout';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Structure from './pages/Structure';
+import MemberProfile from './pages/MemberProfile';
 import Programs from './pages/Programs';
 import { PostDetail, PostList } from './pages/Posts';
 import Events from './pages/Events';
@@ -52,6 +53,7 @@ export default function App() {
                 <Route index element={<Home />} />
                 <Route path="profil" element={<Profile />} />
                 <Route path="struktur" element={<Structure />} />
+                <Route path="pengurus/:id" element={<MemberProfile />} />
                 <Route path="program" element={<Programs />} />
                 <Route path="berita" element={<PostList />} />
                 <Route path="berita/:slug" element={<PostDetail />} />
