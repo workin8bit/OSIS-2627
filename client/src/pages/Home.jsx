@@ -396,6 +396,22 @@ function ProgramCarousel({ programs, loading, expanded, onToggle, editable, acti
   );
 }
 
+/** Tombol "Selengkapnya" di dalam kartu berita (kartunya sendiri sudah jadi link). */
+function ReadMore({ compact = false, className = '' }) {
+  return (
+    <span
+      className={
+        compact
+          ? `inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700 transition-colors group-hover:bg-brand-600 group-hover:text-white ${className}`
+          : `inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-bold text-white transition-colors group-hover:bg-brand-700 ${className}`
+      }
+    >
+      Selengkapnya
+      <ArrowRight className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} />
+    </span>
+  );
+}
+
 function NewsSection({ posts, loading, editable, actions }) {
   const ui = useEditor();
   const [busy, setBusy] = useState(false);
@@ -456,6 +472,7 @@ function NewsSection({ posts, loading, editable, actions }) {
                 <p className="text-xs text-ink-500">{formatDate(lead.created_at)}</p>
                 <h3 className="mt-1.5 text-xl font-extrabold text-ink-900">{lead.title}</h3>
                 <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-600">{lead.excerpt}</p>
+                <ReadMore className="mt-4" />
               </div>
             </Link>
             {toolbar(lead)}
@@ -466,17 +483,18 @@ function NewsSection({ posts, loading, editable, actions }) {
           <div key={post.id}>
             <Link
               to={`/berita/${post.slug}`}
-              className="flex items-center gap-3 rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-ink-300"
+              className="group flex items-center gap-3 rounded-2xl border border-ink-200 bg-white p-3 transition-colors hover:border-ink-300"
             >
               <div className="h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-ink-200">
                 {post.cover && <img src={post.cover} alt="" className="h-full w-full object-cover" loading="lazy" />}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-bold tracking-wide text-ink-500 uppercase">
                   {post.category} · {relativeTime(post.created_at)}
                 </p>
                 <p className="mt-1 line-clamp-2 text-sm font-bold text-ink-900">{post.title}</p>
               </div>
+              <ReadMore compact />
             </Link>
             {toolbar(post)}
           </div>
