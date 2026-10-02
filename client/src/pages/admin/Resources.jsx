@@ -29,7 +29,7 @@ export function PostsAdmin() {
         },
         { name: 'author', label: 'Penulis' },
         { name: 'excerpt', label: 'Ringkasan', type: 'textarea', rows: 2 },
-        { name: 'content', label: 'Isi Berita', type: 'textarea', rows: 10, help: 'Pisahkan paragraf dengan baris kosong.' },
+        { name: 'content', label: 'Isi Berita', type: 'richtext', rows: 12, help: 'Pilih teks lalu tekan tombol toolbar untuk menebalkan, memberi subjudul, daftar, atau tautan. Baris kosong membuat paragraf baru.' },
         { name: 'cover', label: 'Gambar Sampul', type: 'image' },
         { name: 'published', label: 'Terbitkan', type: 'checkbox' },
       ]}

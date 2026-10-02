@@ -3,10 +3,11 @@ import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { table } from '../../lib/data';
 import { useQuery, useToast } from '../../lib/context';
 import { Empty, ErrorBox, ImageInput, Modal, Spinner } from '../../components/ui';
+import RichTextField from './RichTextField';
 
 /**
  * Halaman CRUD generik.
- * fields: [{ name, label, type: text|textarea|select|date|time|number|checkbox|image|range, options, required, full, help }]
+ * fields: [{ name, label, type: text|textarea|richtext|select|date|time|number|checkbox|image|range, options, required, full, help }]
  * columns: [{ key, label, render(row) }]
  */
 export default function CrudPage({ endpoint, title, fields, columns, defaults = {}, searchKeys = [], filters, wide = false, emptyIcon = 'Inbox' }) {
@@ -138,7 +139,7 @@ export default function CrudPage({ endpoint, title, fields, columns, defaults = 
       <Modal open={!!editing} onClose={close} title={`${editing?.id ? 'Edit' : 'Tambah'} ${title}`} wide={wide}>
         <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
           {fields.map((f) => (
-            <div key={f.name} className={f.full || f.type === 'textarea' || f.type === 'image' ? 'sm:col-span-2' : ''}>
+            <div key={f.name} className={f.full || f.type === 'textarea' || f.type === 'richtext' || f.type === 'image' ? 'sm:col-span-2' : ''}>
               {f.type === 'checkbox' ? (
                 <label className="flex cursor-pointer items-center gap-2 pt-6 text-sm font-medium text-slate-700">
                   <input type="checkbox" className="h-4 w-4 accent-brand-700" checked={!!form[f.name]} onChange={(e) => setForm({ ...form, [f.name]: e.target.checked })} />
@@ -174,6 +175,8 @@ function Field({ f, value, onChange }) {
   switch (f.type) {
     case 'textarea':
       return <textarea className="input" rows={f.rows || 4} value={v} onChange={(e) => onChange(e.target.value)} required={f.required} />;
+    case 'richtext':
+      return <RichTextField value={v} onChange={onChange} required={f.required} rows={f.rows} />;
     case 'select':
       return (
         <select className="input" value={v} onChange={(e) => onChange(e.target.value)} required={f.required}>

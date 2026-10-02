@@ -5,6 +5,7 @@ import { useQuery } from '../lib/context';
 import { getPost, getPosts } from '../lib/data';
 import { Empty, ErrorBox, PageHeader, Spinner, Card, Badge, TabButton } from '../components/ui';
 import { formatDate } from '../lib/format';
+import { renderMarkdown } from '../lib/markdown';
 
 export function PostCard({ post, large = false, className = '' }) {
   return (
@@ -151,13 +152,10 @@ export function PostDetail() {
               {data.cover && (
                 <img src={data.cover} alt={data.title} className="mt-8 w-full rounded-2xl object-cover shadow-lg" />
               )}
-              <div className="prose-osis mt-8 text-lg">
-                {(data.content || '').split(/\n\s*\n/).map((para, i) => (
-                  <p key={i} className="whitespace-pre-line">
-                    {para}
-                  </p>
-                ))}
-              </div>
+              <div
+                className="prose-osis mt-8 text-lg"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(data.content) }}
+              />
               {data.related?.length > 0 && (
                 <div className="mt-14 border-t border-ink-200 pt-8">
                   <h2 className="mb-5 text-xl font-bold text-ink-900">Berita Lainnya</h2>
