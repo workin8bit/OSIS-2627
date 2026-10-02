@@ -51,9 +51,13 @@ export function initials(name = '') {
     .join('');
 }
 
-/** Handle Instagram disimpan admin apa adanya, kadang dengan tanda @. */
-export function igHandle(value = '') {
-  return value.trim().replace(/^@+/, '');
+/**
+ * Handle Instagram disimpan admin apa adanya, kadang dengan tanda @.
+ * Kolom `instagram` bisa null di database, jadi harus ditangani secara eksplisit
+ * (nilai default parameter hanya berlaku untuk undefined, bukan null).
+ */
+export function igHandle(value) {
+  return String(value ?? '').trim().replace(/^@+/, '');
 }
 
 /**

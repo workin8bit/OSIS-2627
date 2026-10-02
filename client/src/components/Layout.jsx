@@ -1,8 +1,38 @@
-import { useEffect, useState } from 'react';
+import { Component, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Mail, MapPin, Menu, Phone, X, Bell, Settings, LogOut, User, LayoutDashboard, Calendar, Grid, ChevronRight, ArrowLeft, Home } from 'lucide-react';
 import { Logo, BottomNav, Avatar, BottomSheet } from './ui';
 import { useSettings, useAuth } from '../lib/context';
+
+/**
+ * Tanpa batas galat, satu kesalahan render membuat seluruh situs kosong putih.
+ * Fallback ini menahan kerusakan di satu bagian halaman saja.
+ */
+class ErrorBoundary extends Component {
+  state = { error: null };
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+        <p className="text-lg font-bold text-ink-900">Terjadi kesalahan saat menampilkan halaman ini.</p>
+        <p className="mt-2 max-w-md text-sm text-ink-500">{String(this.state.error.message || this.state.error)}</p>
+        <div className="mt-6 flex gap-3">
+          <button type="button" onClick={() => this.setState({ error: null })} className="btn-secondary">
+            Coba lagi
+          </button>
+          <Link to="/" className="btn-gold">
+            Kembali ke Beranda
+          </Link>
+        </div>
+      </div>
+    );
+  }
+}
 
 function Navbar({ onOpenMenu }) {
   const { settings } = useSettings();
@@ -191,7 +221,9 @@ function PublicLayout() {
     <div className={`flex min-h-screen flex-col ${isAdmin ? 'pb-24' : ''}`}> {/* pb-24 for tab bar */}
       <Navbar onOpenMenu={() => setSheetOpen(true)} />
       <main className="flex-1 pt-16 lg:pt-20">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       {isAdmin && (
         <BottomNav
