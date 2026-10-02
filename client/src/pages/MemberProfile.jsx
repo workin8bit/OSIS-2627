@@ -1,26 +1,10 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, GraduationCap, Quote } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '../lib/context';
 import { getMember } from '../lib/data';
-import { Avatar, Card, Empty, ErrorBox, InstagramIcon, PageHeader, Spinner } from '../components/ui';
-
-/** Handle Instagram disimpan admin apa adanya, kadang dengan tanda @. */
-const igHandle = (value = '') => value.trim().replace(/^@+/, '');
-
-/**
- * Jabatan lengkap: field "Jabatan" pada Edit Pengurus hanya berisi peran
- * ("Koordinator"), sedangkan seksi bidang disimpan terpisah. Gabungkan keduanya
- * supaya terbaca "Koordinator Sekbid 1". Pengurus inti tidak punya seksi, jadi
- * jabatan 그대로 dipakai.
- */
-const jabatanLengkap = (member) => {
-  const peran = (member.position ?? '').trim();
-  const seksi = (member.division?.short ?? '').trim();
-  if (!peran) return seksi;
-  if (!seksi) return peran;
-  return `${peran} ${seksi}`;
-};
+import { jabatanLengkap } from '../lib/format';
+import { Card, Empty, ErrorBox, MemberProfileCard, PageHeader, Spinner } from '../components/ui';
 
 export default function MemberProfile() {
   const { id } = useParams();
@@ -51,13 +35,9 @@ export default function MemberProfile() {
     );
   }
 
-  const instagram = igHandle(member.instagram);
-  const kelasNama = (member.class_name ?? '').trim();
-  const jabatan = jabatanLengkap(member);
-
   return (
     <>
-      <PageHeader eyebrow="Profil Pengurus" title={member.name} desc={jabatan || undefined} />
+      <PageHeader eyebrow="Profil Pengurus" title={member.name} desc={jabatanLengkap(member) || undefined} />
 
       <section className="section-py bg-white">
         <div className="container-x">
@@ -68,45 +48,8 @@ export default function MemberProfile() {
             <ArrowLeft className="h-4 w-4" /> Kembali ke daftar pengurus
           </Link>
 
-          <Card className="mx-auto max-w-2xl p-8 text-center sm:p-10">
-            <Avatar
-              name={member.name}
-              src={member.photo}
-              className="mx-auto h-40 w-40 text-4xl ring-4 ring-gold-400"
-            />
-
-            <h2 className="mt-6 text-2xl font-extrabold text-ink-900">{member.name}</h2>
-
-            {jabatan && (
-              <p className="mx-auto mt-3 w-fit rounded-full bg-gold-400/15 px-5 py-1.5 text-center text-sm font-bold text-gold-700 ring-1 ring-gold-400/40">
-                {jabatan}
-              </p>
-            )}
-
-            <div className="mt-5 flex flex-col items-center gap-2 text-sm text-ink-600">
-              {kelasNama && (
-                <p className="flex items-center gap-1.5">
-                  <GraduationCap className="h-4 w-4 text-ink-400" /> Kelas {kelasNama}
-                </p>
-              )}
-              {instagram && (
-                <a
-                  href={`https://instagram.com/${instagram}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex items-center gap-1.5 font-semibold text-rose-600 hover:underline"
-                >
-                  <InstagramIcon className="h-4 w-4" /> @{instagram}
-                </a>
-              )}
-            </div>
-
-            {member.quote && (
-              <div className="mt-8 rounded-2xl bg-ink-50 px-6 py-6">
-                <Quote className="mx-auto h-6 w-6 text-gold-500" />
-                <p className="mt-3 text-base leading-relaxed text-ink-700 italic">“{member.quote}”</p>
-              </div>
-            )}
+          <Card className="mx-auto max-w-2xl p-6 sm:p-8">
+            <MemberProfileCard member={member} />
           </Card>
         </div>
       </section>

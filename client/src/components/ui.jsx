@@ -4,9 +4,10 @@ import {
   Monitor, Moon, Music, Palette, Shield, Star, Trophy, Users, Vote, X, ChevronLeft, ChevronRight,
   CheckCircle2, Copy, MessageSquare, Search, Send, ShieldCheck, CalendarDays, Eye, Newspaper, User,
   ArrowLeft, ArrowRight, MapPin, Phone, Mail, Quote, Target, Clock, ChevronDown, Home, Bell, Settings,
-  Image, LayoutDashboard, BarChart2, FileText, FolderOpen, Grid, Megaphone as MegaphoneIcon
+  Image, LayoutDashboard, BarChart2, FileText, FolderOpen, Grid, Megaphone as MegaphoneIcon,
+  GraduationCap
 } from 'lucide-react';
-import { initials } from '../lib/format';
+import { initials, igHandle, jabatanLengkap } from '../lib/format';
 import { uploadFile } from '../lib/data';
 import { useToast } from '../lib/context';
 
@@ -405,7 +406,7 @@ function ProgramCard({ program, className = '' }) {
   );
 }
 
-function MemberCard({ member, big = false, showInstagram = true, className = '' }) {
+function MemberCard({ member, big = false, showInstagram = true, onSelect, className = '' }) {
   return (
     <div className={`card-hover group relative flex flex-col items-center p-6 text-center ${big ? 'ring-2 ring-gold-400' : ''} ${className}`}>
       <Avatar name={member.name} src={member.photo} className={big ? 'h-28 w-28 text-3xl' : 'h-20 w-20 text-xl'} />
@@ -414,40 +415,92 @@ function MemberCard({ member, big = false, showInstagram = true, className = '' 
       {member.class_name && <p className="text-xs text-ink-500">Kelas {member.class_name}</p>}
       {member.quote && <p className="mt-3 text-xs text-ink-500 italic">"{member.quote}"</p>}
       {showInstagram && member.instagram && (
-        <a href={`https://instagram.com/${member.instagram.replace('@', '')}`} target="_blank" rel="noreferrer noopener" className="relative z-20 mt-3 inline-flex items-center gap-1 text-xs text-rose-600 hover:underline">
-          <InstagramIcon className="h-3.5 w-3.5" /> @{member.instagram.replace('@', '')}
+        <a href={`https://instagram.com/${igHandle(member.instagram)}`} target="_blank" rel="noreferrer noopener" className="relative z-20 mt-3 inline-flex items-center gap-1 text-xs text-rose-600 hover:underline">
+          <InstagramIcon className="h-3.5 w-3.5" /> @{igHandle(member.instagram)}
         </a>
       )}
-      {member.id && (
+      {(onSelect || member.id) && (
         <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-brand-600">
           Lihat profil
           <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
         </span>
       )}
-      <MemberProfileLink member={member} />
+      <MemberProfileLink member={member} onSelect={onSelect} />
     </div>
   );
 }
 
 /**
- * Tautan "Lihat profil" ke halaman detail seorang pengurus.
- * Memakai pola stretched-link: <a> transparan menutupi seluruh kartu, jadi
- * kartu tetap bisa diklik di area mana pun tanpa bersarang <a> di dalam <a>.
+ * Area klik pada kartu pengurus memakai pola stretched-link: elemen transparan
+ * menutupi seluruh kartu. Kalau `onSelect` diberikan, elemennya <button> yang
+ * membuka modal di tempat; tanpa itu menjadi <Link> ke halaman profil.
  */
-function MemberProfileLink({ member }) {
-  if (!member?.id) return null;
+function MemberProfileLink({ member, onSelect }) {
+  if (!member?.id && !onSelect) return null;
+  const className =
+    'absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600';
+  const label = `Lihat profil lengkap ${member?.name ?? ''}`.trim();
+
+  if (onSelect) {
+    return (
+      <button type="button" onClick={() => onSelect(member)} className={className} aria-label={label}>
+        <span className="sr-only">Lihat profil lengkap</span>
+      </button>
+    );
+  }
   return (
-    <Link
-      to={`/pengurus/${member.id}`}
-      className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-      aria-label={`Lihat profil lengkap ${member.name}`}
-    >
+    <Link to={`/pengurus/${member.id}`} className={className} aria-label={label}>
       <span className="sr-only">Lihat profil lengkap</span>
     </Link>
   );
 }
 
-function DivisionCard({ division, members = [] }) {
+/** Isi satu kartu profil: foto, nama, jabatan, kelas, Instagram, dan motto. */
+function MemberProfileCard({ member }) {
+  const instagram = igHandle(member.instagram);
+  const kelasNama = (member.class_name ?? '').trim();
+  const jabatan = jabatanLengkap(member);
+
+  return (
+    <div className="p-2 text-center">
+      <Avatar name={member.name} src={member.photo} className="mx-auto h-40 w-40 text-4xl ring-4 ring-gold-400" />
+      <h2 className="mt-6 text-2xl font-extrabold text-ink-900">{member.name}</h2>
+
+      {jabatan && (
+        <p className="mx-auto mt-3 w-fit rounded-full bg-gold-400/15 px-5 py-1.5 text-center text-sm font-bold text-gold-700 ring-1 ring-gold-400/40">
+          {jabatan}
+        </p>
+      )}
+
+      <div className="mt-5 flex flex-col items-center gap-2 text-sm text-ink-600">
+        {kelasNama && (
+          <p className="flex items-center gap-1.5">
+            <GraduationCap className="h-4 w-4 text-ink-400" /> Kelas {kelasNama}
+          </p>
+        )}
+        {instagram && (
+          <a
+            href={`https://instagram.com/${instagram}`}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-1.5 font-semibold text-rose-600 hover:underline"
+          >
+            <InstagramIcon className="h-4 w-4" /> @{instagram}
+          </a>
+        )}
+      </div>
+
+      {member.quote && (
+        <div className="mt-8 rounded-2xl bg-ink-50 px-6 py-6">
+          <Quote className="mx-auto h-6 w-6 text-gold-500" />
+          <p className="mt-3 text-base leading-relaxed text-ink-700 italic">“{member.quote}”</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DivisionCard({ division, members = [], onSelectMember }) {
   return (
     <div className="card overflow-hidden">
       <div className="flex items-center gap-4 border-b border-ink-200 bg-ink-50/50 px-6 py-4">
@@ -470,7 +523,7 @@ function DivisionCard({ division, members = [] }) {
               {m.class_name && <p className="text-xs text-ink-500">Kelas {m.class_name}</p>}
             </div>
             <ArrowRight className="ml-auto h-4 w-4 shrink-0 text-ink-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gold-600" />
-            <MemberProfileLink member={m} />
+            <MemberProfileLink member={m} onSelect={onSelectMember} />
           </div>
         ))}
       </div>
@@ -640,6 +693,7 @@ export {
   ProgramCard,
   MemberCard,
   DivisionCard,
+  MemberProfileCard,
   StatCard,
   TabButton,
   Chip,

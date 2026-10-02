@@ -51,6 +51,25 @@ export function initials(name = '') {
     .join('');
 }
 
+/** Handle Instagram disimpan admin apa adanya, kadang dengan tanda @. */
+export function igHandle(value = '') {
+  return value.trim().replace(/^@+/, '');
+}
+
+/**
+ * Jabatan lengkap: field "Jabatan" pada Edit Pengurus hanya berisi peran
+ * ("Koordinator"), sedangkan seksi bidang disimpan terpisah. Gabungkan keduanya
+ * supaya terbaca "Koordinator Sekbid 1". Pengurus inti tidak punya seksi, jadi
+ * jabatan 그대로 dipakai.
+ */
+export function jabatanLengkap(member) {
+  const peran = (member?.position ?? '').trim();
+  const seksi = (member?.division?.short ?? '').trim();
+  if (!peran) return seksi;
+  if (!seksi) return peran;
+  return `${peran} ${seksi}`;
+}
+
 export { BULAN, HARI };
 
 export const STATUS_PROGRAM = {
