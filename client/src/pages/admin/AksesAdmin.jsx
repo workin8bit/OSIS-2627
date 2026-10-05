@@ -420,6 +420,10 @@ select public.apply_division_template(
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="font-bold text-slate-900">Hak Akses per Pengurus</h2>
           <p className="text-sm text-slate-500">"Lihat saja" = boleh membuka halaman, "Kelola penuh" = bisa menambah, mengubah, dan menghapus.</p>
+          <p className="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            Agar seorang pengurus bisa menambah akun pengurus lain di halaman ini, modul <strong>Akun &amp; Hak Akses</strong>{' '}
+            miliknya harus disetel <strong>Kelola penuh</strong> — inilah satu-satunya gerbang yang diperiksa server, bukan sekadar tampilan. Superadmin boleh menambah akun admin biasa, tetapi tidak dapat membuat akun superadmin baru.
+          </p>
         </div>
 
         <div className="overflow-x-auto">

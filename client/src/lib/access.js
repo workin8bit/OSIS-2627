@@ -129,8 +129,12 @@ export async function fetchPermissionMap() {
 
 export async function fetchPermissions(userId) {
   const map = await fetchPermissionMap();
+  // null hanya berarti tabel hak akses belum tersedia, sehingga admin memakai
+  // akses penuh. Admin yang tabelnya sudah ada tapi belum punya baris izin
+  // harus dapat objek kosong — kalau ikut null, antarmuka menganggapnya punya
+  // akses penuh padahal server (can_access & Edge Function) menolaknya.
   if (map === null) return null;
-  return map[userId] || null;
+  return map[userId] || {};
 }
 
 export async function savePermissions(userId, map) {
