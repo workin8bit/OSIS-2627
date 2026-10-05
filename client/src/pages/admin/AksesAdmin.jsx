@@ -516,11 +516,12 @@ select public.apply_division_template(
           </table>
         </div>
         <p className="border-t border-slate-100 px-6 py-3 text-xs text-slate-500">
-          Perubahan disimpan otomatis. Superadmin selalu memiliki akses penuh dan tidak dapat diedit dari sini. tautan ke{' '}
+          Perubahan disimpan otomatis. Superadmin selalu memiliki akses penuh dan tidak dapat diedit dari sini. Keanggotaan
+          seksi bidang diatur dari{' '}
           <Link to="/admin/pengurus" className="font-semibold text-brand-700 underline">
             data Pengurus
-          </Link>{' '}
-          untuk menautkan atau melepas keanggotaan seksi bidang.
+          </Link>
+          .
         </p>
       </div>
 
