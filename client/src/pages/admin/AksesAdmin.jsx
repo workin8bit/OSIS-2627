@@ -214,9 +214,10 @@ export default function AksesAdmin() {
       });
       setForm({ member_id: '', email: '', password: '' });
 
-      // Edge Function menyimpan member_id di tabel admins. Bila kolomnya belum
-      // ada, ia melaporkan warning; tautan dicatat lewat penyimpanan cadangan.
-      if (created?.user_id && created.linked === false) {
+      // Edge Function menyimpan member_id di tabel admins. Bila kolomnya belum ada, ia
+      // melaporkan warning; tautan dicatat lewat penyimpanan cadangan. `linked !== true`
+      // juga mencakup Edge Function versi lama yang tidak mengirim field `linked`.
+      if (created?.user_id && created.linked !== true) {
         await linkAdminMember(created.user_id, pickMember.id).catch(() => {});
       }
       reload();
@@ -350,12 +351,22 @@ export default function AksesAdmin() {
                 <optgroup key={g.name} label={`${g.name} · ${g.items.length} anggota`}>
                   {g.items.map((m) => (
                     <option key={m.id} value={m.id}>
-                      {m.name} · {m.position}
+                      {m.name} · {[m.position, m.divisionName].filter(Boolean).join(' ')}
                     </option>
                   ))}
                 </optgroup>
               ))}
             </select>
+            {pickMember && (
+              <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-gold-50 px-3 py-2 text-xs text-ink-600">
+                <Link2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600" />
+                <span>
+                  Akun ini akan otomatis ditautkan ke <strong className="text-ink-900">{pickMember.name}</strong> pada{' '}
+                  <strong className="text-ink-900">{pickMember.divisionName}</strong>, lalu mengikuti template hak akses
+                  seksi tersebut. Untuk melepasnya, ubah kolom "Bagian" pada baris akun di tabel bawah.
+                </span>
+              </p>
+            )}
           </label>
           <label className="block">
             <span className="label">Email login</span>
