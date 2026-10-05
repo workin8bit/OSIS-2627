@@ -311,7 +311,7 @@ export default function AksesAdmin() {
             <button type="button" className="btn-secondary px-3 py-1.5 text-xs" onClick={reloadSchema} disabled={migrating}>
               Periksa lagi
             </button>
-            <button type="button" className="btn-primary px-3 py-1.5 text-xs" onClick={runMigrate} disabled={migrating}>
+            <button type="button" className="btn-gold px-3 py-1.5 text-xs" onClick={runMigrate} disabled={migrating}>
               {migrating ? 'Memindahkan…' : 'Pindahkan data ke tabel resmi'}
             </button>
             <span className="text-xs text-amber-800">
@@ -330,7 +330,7 @@ export default function AksesAdmin() {
 
       <div className="card p-6">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-100 text-gold-700">
             <ShieldCheck className="h-5 w-5" />
           </span>
           <div>
@@ -373,7 +373,7 @@ export default function AksesAdmin() {
             />
           </label>
           <div className="flex flex-wrap items-center gap-3 lg:col-span-4">
-            <button className="btn-primary" disabled={busy === 'create'}>
+            <button className="btn-gold" disabled={busy === 'create'}>
               <UserPlus className="h-4 w-4" /> Buat akun &amp; terapkan template seksi bidang
             </button>
             <p className="text-xs text-slate-500">
@@ -517,7 +517,7 @@ select public.apply_division_template(
         <p className="border-t border-slate-100 px-6 py-3 text-xs text-slate-500">
           Perubahan disimpan otomatis. Superadmin selalu memiliki akses penuh dan tidak dapat diedit dari sini. Keanggotaan
           seksi bidang diatur dari{' '}
-          <Link to="/admin/pengurus" className="font-semibold text-brand-700 underline">
+          <Link to="/admin/pengurus" className="font-semibold text-gold-700 underline">
             data Pengurus
           </Link>
           .
@@ -536,7 +536,7 @@ select public.apply_division_template(
               <div key={g.name} className="rounded-xl border border-slate-200 px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-slate-800">{g.name}</p>
-                  <span className="badge-primary shrink-0 text-[11px]">{g.items.length} anggota</span>
+                  <span className="badge-gold shrink-0 text-[11px]">{g.items.length} anggota</span>
                 </div>
                 <p className="mt-1 text-[11px] text-slate-500">
                   {linked} punya akun · {g.items.length - linked} belum
