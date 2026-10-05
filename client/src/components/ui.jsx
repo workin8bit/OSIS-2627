@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
-  Activity, BookOpen, Camera, Flag, Heart, ImagePlus, Inbox, Languages, Lightbulb, Loader2, Megaphone,
+  Activity, BookOpen, Camera, Check, Flag, Heart, ImagePlus, Images, Inbox, Languages, Lightbulb, Loader2, Megaphone,
   Monitor, Moon, Music, Palette, Shield, Star, Trophy, Users, Vote, X, ChevronLeft, ChevronRight,
   CheckCircle2, Copy, MessageSquare, Search, Send, ShieldCheck, CalendarDays, Eye, Newspaper, User,
   ArrowLeft, ArrowRight, MapPin, Phone, Mail, Quote, Target, Clock, ChevronDown, Home, Bell, Settings,
@@ -8,8 +9,8 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { initials, igHandle, jabatanLengkap } from '../lib/format';
-import { uploadFile } from '../lib/data';
-import { useToast } from '../lib/context';
+import { addPhotoToGallery, getGallery, uploadFile } from '../lib/data';
+import { useQuery, useToast } from '../lib/context';
 
 // Icons available for divisions (selectable in admin panel)
 export const ICONS = {
@@ -123,16 +124,31 @@ function Modal({ open, onClose, title, children, wide = false, bodyClassName = '
   );
 }
 
+/**
+ * pemilih gambar: unggah baru, atau pakai foto yang sudah ada di Galeri.
+ * `onChange` menerima URL foto. Opsi "Tambahkan ke Galeri" mendaftarkan
+ * hasil unggahan ke tabel galeri supaya ikut tampil di halaman /galeri.
+ */
 function ImageInput({ value, onChange, label = 'Gambar' }) {
   const ref = useRef();
   const [busy, setBusy] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [toGallery, setToGallery] = useState(false);
   const toast = useToast();
   const onFile = async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
     setBusy(true);
     try {
-      onChange(await uploadFile(f));
+      const url = await uploadFile(f);
+      onChange(url);
+      if (toGallery) {
+        // Kegagalan mendaftarkan ke galeri tidak boleh membuat foto yang
+        // sudah terunggah terlihat gagal — fotonya sudah tersimpan.
+        addPhotoToGallery({ image: url, title: f.name.replace(/\.[^.]+$/, ''), album: 'Umum' })
+          .then(() => toast('Foto diunggah dan ditambahkan ke Galeri'))
+          .catch(() => toast('Foto diunggah, tetapi gagal ditambahkan ke Galeri', 'error'));
+      }
     } catch (err) {
       toast(err.message, 'error');
     } finally {
@@ -151,15 +167,72 @@ function ImageInput({ value, onChange, label = 'Gambar' }) {
           <button type="button" className="btn-outline" onClick={() => ref.current.click()} disabled={busy}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />} {value ? 'Ganti' : 'Unggah'}
           </button>
+          <button type="button" className="btn-outline" onClick={() => setPickerOpen(true)} disabled={busy}>
+            <Images className="h-4 w-4" /> Dari Galeri
+          </button>
           {value && (
             <button type="button" className="btn-ghost text-error-600 hover:text-error-700" onClick={() => onChange('')}>
               Hapus
             </button>
           )}
         </div>
-        <input ref={ref} type="file" accept="image/*" className="hidden" onChange={onFile} />
       </div>
+      <label className="flex cursor-pointer items-center gap-2 text-xs text-ink-500">
+        <input type="checkbox" checked={toGallery} onChange={(e) => setToGallery(e.target.checked)} className="h-3.5 w-3.5 accent-brand-700" />
+        Masukkan juga ke Galeri saat diunggah
+      </label>
+      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={onFile} />
+      <GalleryPicker open={pickerOpen} value={value} onClose={() => setPickerOpen(false)} onPick={(url) => { onChange(url); setPickerOpen(false); }} />
     </div>
+  );
+}
+
+/** Modal untuk memilih foto yang sudah tersimpan di Galeri. */
+function GalleryPicker({ open, onClose, onPick, value }) {
+  const { data, loading, error } = useQuery(() => (open ? getGallery() : Promise.resolve([])), [open]);
+  const albums = useMemo(() => {
+    const map = new Map();
+    (data || []).forEach((p) => {
+      if (!map.has(p.album)) map.set(p.album, []);
+      map.get(p.album).push(p);
+    });
+    return [...map.entries()];
+  }, [data]);
+
+  return (
+    <Modal open={open} onClose={onClose} title="Pilih Foto dari Galeri" wide bodyClassName="p-4">
+      {loading && <Spinner />}
+      {error && <ErrorBox message={error} />}
+      {!loading && !error && albums.length === 0 && (
+        <p className="py-8 text-center text-sm text-ink-500">Galeri masih kosong. Unggah foto terlebih dahulu.</p>
+      )}
+      <div className="max-h-[60vh] space-y-5 overflow-y-auto">
+        {albums.map(([album, photos]) => (
+          <div key={album}>
+            <p className="mb-2 text-xs font-bold tracking-wide text-ink-400 uppercase">{album}</p>
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {photos.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => onPick(p.image)}
+                  className={`group relative aspect-square overflow-hidden rounded-xl border-2 transition-colors ${
+                    value === p.image ? 'border-brand-600' : 'border-transparent hover:border-gold-400'
+                  }`}
+                >
+                  <img src={p.image} alt={p.title || ''} loading="lazy" className="h-full w-full object-cover" />
+                  {value === p.image && (
+                    <span className="absolute top-1 right-1 rounded-full bg-brand-600 p-1 text-white">
+                      <Check className="h-3 w-3" />
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Modal>
   );
 }
 
@@ -672,9 +745,6 @@ function Badge({ children, variant = 'primary', className = '', ...props }) {
   };
   return <span className={`badge ${variants[variant]} ${className}`} {...props}>{children}</span>;
 }
-
-// Import Link for AdminSidebar
-import { Link } from 'react-router-dom';
 
 // Export all components
 export {

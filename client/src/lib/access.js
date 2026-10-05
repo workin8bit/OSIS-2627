@@ -137,19 +137,34 @@ export async function fetchPermissions(userId) {
   return map[userId] || {};
 }
 
+/**
+ * Terapkan peta { modul: akses } pada tabel yang punya primary key
+ * (key, module). Urutannya penting: upsert dulu, baru hapus modul yang tidak
+ * lagi ada di peta. Kalau urutannya dibalik (hapus dulu, lalu insert) dan
+ * insert-nya gagal, seluruh izin hilang tanpa sisa.
+ */
+async function applyAccessMap(table, keyColumn, keyValue, clean) {
+  const modules = Object.keys(clean);
+  if (modules.length) {
+    const { error } = await supabase
+      .from(table)
+      .upsert(
+        modules.map((module) => ({ [keyColumn]: keyValue, module, access: clean[module] })),
+        { onConflict: `${keyColumn},module` },
+      );
+    if (error) throw error;
+  }
+  let stale = supabase.from(table).delete().eq(keyColumn, keyValue);
+  if (modules.length) stale = stale.not('module', 'in', `(${modules.join(',')})`);
+  const { error: delErr } = await stale;
+  if (delErr) throw delErr;
+}
+
 export async function savePermissions(userId, map) {
   const clean = sanitizeAccess(map);
   const { native } = await accessBackend();
   if (native) {
-    const { error: delErr } = await supabase.from('admin_permissions').delete().eq('user_id', userId);
-    if (delErr) throw delErr;
-    const rows = Object.entries(clean);
-    if (rows.length) {
-      const { error } = await supabase
-        .from('admin_permissions')
-        .insert(rows.map(([module, access]) => ({ user_id: userId, module, access })));
-      if (error) throw error;
-    }
+    await applyAccessMap('admin_permissions', 'user_id', userId, clean);
     return;
   }
   await mutateStore(ACCESS_KEYS.permissions, (store) => {
@@ -181,15 +196,7 @@ export async function saveDivisionTemplate(divisionId, map) {
   const clean = sanitizeAccess(map);
   const { native } = await accessBackend();
   if (native) {
-    const { error: delErr } = await supabase.from('division_permissions').delete().eq('division_id', divisionId);
-    if (delErr) throw delErr;
-    const rows = Object.entries(clean);
-    if (rows.length) {
-      const { error } = await supabase
-        .from('division_permissions')
-        .insert(rows.map(([module, access]) => ({ division_id: Number(divisionId), module, access })));
-      if (error) throw error;
-    }
+    await applyAccessMap('division_permissions', 'division_id', Number(divisionId), clean);
     return;
   }
   await mutateStore(ACCESS_KEYS.templates, (store) => {

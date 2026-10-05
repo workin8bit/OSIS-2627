@@ -188,6 +188,16 @@ export async function getGallery() {
   return unwrap(await supabase.from('gallery').select('*').order('created_at', { ascending: false }));
 }
 
+/**
+ * Daftarkan foto yang sudah terunggah ke tabel galeri supaya ikut tampil di
+ * halaman /galeri. Dipakai oleh ImageInput ketika admin mencentang
+ * "Tambahkan ke Galeri" saat mengunggah.
+ */
+export async function addPhotoToGallery({ image, title, album }) {
+  if (!image) return null;
+  return unwrap(await supabase.from('gallery').insert({ image, title: title || null, album: album || 'Umum' }).select().single());
+}
+
 export async function submitAspiration({ name, class_name, category, message, anonymous }) {
   return unwrap(
     await supabase.rpc('submit_aspiration', {
