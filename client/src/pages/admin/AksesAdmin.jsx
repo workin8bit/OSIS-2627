@@ -27,11 +27,6 @@ const ACCESS_OPTIONS = [
   { value: 'write', label: 'Kelola penuh' },
 ];
 
-const toRows = (map) =>
-  Object.entries(map)
-    .filter((entry) => entry[1])
-    .map((entry) => ({ module: entry[0], access: entry[1] }));
-
 const AccessSelect = ({ value, onChange, disabled }) => (
   <select
     className="input py-1.5 text-xs"
@@ -150,7 +145,7 @@ export default function AksesAdmin() {
     setBusy(adminId);
     setGrants((g) => ({ ...g, [adminId]: map }));
     try {
-      await setAdminPermissions(adminId, toRows(map));
+      await setAdminPermissions(adminId, map);
       toast('Hak akses berhasil disimpan');
     } catch (err) {
       setGrants((g) => ({ ...g, [adminId]: grants[adminId] || {} }));

@@ -27,6 +27,17 @@ export const DEFAULT_PERMISSIONS = Object.fromEntries(MODULES.map((m) => [m, 'wr
 /** Template bawaan seksi bidang: boleh melihat modul utama. */
 export const DEFAULT_TEMPLATES = { beranda: 'read', berita: 'read', agenda: 'read', program: 'read', pengaturan: 'read' };
 
+/**
+ * Buang pasangan yang tidak punya bentuk { modul, 'read' | 'write' }.
+ * Database menegakkan keduanya lewat check constraint; memfilter di sini
+ * membuat select yang salah bentuk gagal di sisi klien, bukan dengan pesan
+ * "violates check constraint" yang sulit dipahami.
+ */
+const sanitizeAccess = (map) =>
+  Object.fromEntries(
+    Object.entries(map || {}).filter(([module, access]) => MODULES.includes(module) && (access === 'read' || access === 'write')),
+  );
+
 let cached = null;
 
 /**
@@ -123,11 +134,12 @@ export async function fetchPermissions(userId) {
 }
 
 export async function savePermissions(userId, map) {
+  const clean = sanitizeAccess(map);
   const { native } = await accessBackend();
   if (native) {
     const { error: delErr } = await supabase.from('admin_permissions').delete().eq('user_id', userId);
     if (delErr) throw delErr;
-    const rows = Object.entries(map).filter(([, access]) => access);
+    const rows = Object.entries(clean);
     if (rows.length) {
       const { error } = await supabase
         .from('admin_permissions')
@@ -137,7 +149,7 @@ export async function savePermissions(userId, map) {
     return;
   }
   await mutateStore(ACCESS_KEYS.permissions, (store) => {
-    store[userId] = { ...map };
+    store[userId] = { ...clean };
     return store;
   });
 }
@@ -162,11 +174,12 @@ export async function fetchDivisionTemplates() {
 }
 
 export async function saveDivisionTemplate(divisionId, map) {
+  const clean = sanitizeAccess(map);
   const { native } = await accessBackend();
   if (native) {
     const { error: delErr } = await supabase.from('division_permissions').delete().eq('division_id', divisionId);
     if (delErr) throw delErr;
-    const rows = Object.entries(map).filter(([, access]) => access);
+    const rows = Object.entries(clean);
     if (rows.length) {
       const { error } = await supabase
         .from('division_permissions')
@@ -176,7 +189,7 @@ export async function saveDivisionTemplate(divisionId, map) {
     return;
   }
   await mutateStore(ACCESS_KEYS.templates, (store) => {
-    store[divisionId] = { ...map };
+    store[divisionId] = { ...clean };
     return store;
   });
 }
