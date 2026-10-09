@@ -9,7 +9,7 @@ import Structure from './pages/Structure';
 import MemberProfile from './pages/MemberProfile';
 import Programs from './pages/Programs';
 import { PostDetail, PostList } from './pages/Posts';
-import Events from './pages/Events';
+import Events, { EventDetail } from './pages/Events';
 import Gallery from './pages/Gallery';
 import Aspiration from './pages/Aspiration';
 import AdminLayout from './pages/admin/AdminLayout';
@@ -58,6 +58,7 @@ export default function App() {
                 <Route path="berita" element={<PostList />} />
                 <Route path="berita/:slug" element={<PostDetail />} />
                 <Route path="agenda" element={<Events />} />
+                <Route path="agenda/:id" element={<EventDetail />} />
                 <Route path="galeri" element={<Gallery />} />
                 <Route path="aspirasi" element={<Aspiration />} />
                 <Route path="*" element={<NotFound />} />

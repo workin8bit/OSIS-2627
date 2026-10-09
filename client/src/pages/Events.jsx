@@ -1,5 +1,6 @@
+import { Link, useParams } from 'react-router-dom';
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react';
 import { useQuery } from '../lib/context';
 import { getEvents } from '../lib/data';
 import { Empty, ErrorBox, PageHeader, Spinner } from '../components/ui';
@@ -14,7 +15,7 @@ const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
 function EventMiniCard({ event }) {
   const d = dateParts(event.date);
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-ink-200 bg-white">
+    <Link to={`/agenda/${event.id}`} className="card-hover flex flex-col h-full overflow-hidden rounded-2xl border border-ink-200 bg-white">
       <div className="flex w-full items-center justify-center gap-1.5 bg-gold-400 px-2 py-1.5 text-ink-950">
         <span className="text-lg leading-none font-extrabold tabular-nums">{d.day}</span>
         <span className="text-[10px] font-bold tracking-wide uppercase">{d.month}</span>
@@ -24,7 +25,7 @@ function EventMiniCard({ event }) {
         <p className="mt-1.5 text-[10px] text-ink-500">{fmtTime(event.time)} WIB</p>
         <p className="mt-auto truncate pt-1.5 text-[10px] text-ink-400">{event.location || '-'}</p>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -161,3 +162,62 @@ export default function Events() {
     </>
   );
 }
+
+/** Halaman detail agenda */
+function EventDetail() {
+  const { id } = useParams();
+  const { data, loading, error } = useQuery(() => getEvents().then((evs) => evs.find((e) => e.id == id)), [id]);
+
+  if (loading) return <Spinner />;
+  if (error) return <ErrorBox message={error} />;
+  if (!data) {
+    return (
+      <>
+        <PageHeader title="Agenda" desc="Kegiatan tidak ditemukan." />
+        <section className="section-py bg-white">
+          <div className="container-x text-center">
+            <Empty icon="Inbox" title="Kegiatan tidak ditemukan" />
+            <Link to="/agenda" className="btn-secondary mt-6">
+              Kembali ke kalender
+            </Link>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  const d = dateParts(data.date);
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Detail Agenda"
+        title={data.title}
+        desc={`${d.day} ${d.monthFull} ${d.year} · ${fmtTime(data.time)} WIB · ${data.location || 'Lokasi belum ditentukan'}`}
+      />
+      <section className="section-py bg-white">
+        <div className="container-x max-w-2xl">
+          <Link to="/agenda" className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700">
+            Kembali ke kalender
+          </Link>
+          <div className="card p-6">
+            {data.category && <span className="badge-gold text-xs mb-3">{data.category}</span>}
+            <h2 className="text-2xl font-bold text-ink-900">{data.title}</h2>
+            <div className="mt-4 grid gap-2 text-sm text-ink-600">
+              <p className="flex items-center gap-2"><CalendarDays className="h-4 w-4" /> {d.day} {d.monthFull} {d.year}</p>
+              <p className="flex items-center gap-2"><Clock className="h-4 w-4" /> {fmtTime(data.time)} WIB</p>
+              {data.location && <p className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {data.location}</p>}
+            </div>
+            {data.description && (
+              <div className="mt-6 prose-osis text-base">
+                {data.description}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
+
+export { Events, EventDetail };
